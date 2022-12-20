@@ -27,7 +27,7 @@ def vectorize_data(data, g2v, config) -> np.ndarray:
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--k_value",    type=int, required=True, help="k value for K-NN")
+    parser.add_argument("-k", "--k_value",    type=int, help="k value for K-NN", default=7)
     parser.add_argument("-cfg", "--config",     type=str, required=True, help="Configuration for featurizers")
     parser.add_argument("-train", "--train_path", type=str, required=True, help="Path to train data") 
     parser.add_argument("-eval", "--eval_path",  type=str, required=True, help="Path to eval data") 
