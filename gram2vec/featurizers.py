@@ -7,9 +7,14 @@ import demoji
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 
-np.seterr(invalid='ignore')
+np.seterr(invalid="ignore")
 
-def count_pos_tags(document) -> np.ndarray:  
+def make_counter(document, query:list):
+    pass
+
+
+
+def pos_tags(document) -> np.ndarray:  
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     tag_dict = {tag:0 for tag in tags}
     
@@ -23,9 +28,11 @@ def count_pos_tags(document) -> np.ndarray:
 
     
     
-def count_func_words(document) -> np.ndarray:  
+def func_words(document) -> np.ndarray:  
     # modified NLTK stopwords file
-    with open ("resources/function_words.text", "r") as fin:
+    
+    #! make this func generate function_words.txt if not exists
+    with open ("resources/function_words.txt", "r") as fin:
         function_words = list(map(lambda x: x.strip("\n"), fin.readlines()))
 
     func_dict = {word:0 for word in function_words}
@@ -39,7 +46,7 @@ def count_func_words(document) -> np.ndarray:
 
 
     
-def count_punc(document) -> np.ndarray:
+def punc(document) -> np.ndarray:
     
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", ":(", ":)", "...", "..", "(", ")", ":))", "–", "‘", "’", ";)"]
     punc_dict = {punc:0 for punc in punc_marks}
@@ -53,9 +60,9 @@ def count_punc(document) -> np.ndarray:
 
 
   
-def count_letters(document) -> np.ndarray: 
+def letters(document) -> np.ndarray: 
 
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
     letter_dict = {letter:0 for letter in letters}
     doc_letters = [letter for token in document.doc for letter in token.text if letter in letters]
@@ -69,7 +76,7 @@ def count_letters(document) -> np.ndarray:
 
 
 
-def count_pos_ngrams(document):
+def pos_bigrams(document):
     
     # build the vocab. This enforces the ngram_vectorizer to count the same ngrams for all docs
     
@@ -125,7 +132,12 @@ def avg_word_length(document):
 #? pos subsequences?
 
 
-  
+
+
+def parse_config():
+    pass
+
+
 @dataclass
 class Document:
     doc          :spacy.tokens.doc.Doc
@@ -145,11 +157,11 @@ class GrammarVectorizer:
         
         self.nlp = utils.load_spacy("en_core_web_md")
         self.featurizers = {
-            1 : count_pos_tags,
-            2 : count_func_words,
-            3 : count_punc,
-            4 : count_letters,
-            5 : count_pos_ngrams,
+            1 : pos_tags,
+            2 : func_words,
+            3 : punc,
+            4 : letters,
+            5 : pos_bigrams,
         }
     
     def vectorize(self, text:str, config:list[int]=None) -> np.ndarray:
@@ -173,4 +185,12 @@ class GrammarVectorizer:
                 vectors.append(featurizer(document))
                 assert not np.isnan(vector).any()
                 
-        return np.concatenate(vectors)         
+        return np.concatenate(vectors)
+    
+    
+# featurizer testing grounds
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
