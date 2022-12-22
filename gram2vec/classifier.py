@@ -3,7 +3,6 @@
 import argparse
 import utils
 import numpy as np
-import toml
 from dataclasses import dataclass
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
@@ -12,54 +11,55 @@ from sklearn import metrics
 from featurizers import GrammarVectorizer
 
 
-def vectorize_data(data, g2v, config) -> np.ndarray:
+def vectorize_data(data, g2v) -> np.ndarray:
     """Vectorizes a dict of documents. Returns a matrix from all documents"""
     vectors = []
     authors = []
     for id in data.keys():
         for text in data[id]:
-            grammar_vector = g2v.vectorize(text, config=config)
+            grammar_vector = g2v.vectorize(text)
             vectors.append(grammar_vector)
             authors.append(id)
-    #import ipdb;ipdb.set_trace()
+    
     return np.stack(vectors), authors
 
-
-def parse_config(path):
-    
-    configs = toml.load(path)
-    
-    
-    for run, config in configs.items():
-        pass
 
 
 @utils.timer_func
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--k_value", type=int, help="k value for K-NN", default=7)
-    parser.add_argument("-cfg", "--config_path", type=str, required=True, help="Configuration for featurizers")
-    parser.add_argument("-train", "--train_path", type=str, required=True, help="Path to train data") 
-    parser.add_argument("-eval", "--eval_path", type=str, required=True, help="Path to eval data") 
-    args = parser.parse_args()
+    parser.add_argument("-k", 
+                        "--k_value", 
+                        type=int, 
+                        help="k value for K-NN", 
+                        default=7)
     
+    parser.add_argument("-train", 
+                        "--train_path", 
+                        type=str, 
+                        help="Path to train data",
+                        default="data/pan/train_dev_test/train.json") 
+    
+    parser.add_argument("-eval", 
+                        "--eval_path", 
+                        type=str,
+                        help="Path to eval data",
+                        default="data/pan/train_dev_test/dev.json") 
+    
+    args = parser.parse_args()
+
     g2v    = GrammarVectorizer()
     le     = LabelEncoder()
     scalar = StandardScaler()
     
-    #! need loop over config
-    
-    
-    
-    
+    # load train and eval
     train  = utils.load_json(args.train_path)
     eval   = utils.load_json(args.eval_path)
     
-    # vectorize the data
-    
-    X_train, Y_train = vectorize_data(train, g2v, config) 
-    X_eval,  Y_eval  = vectorize_data(eval, g2v, config)
+    # vectorize
+    X_train, Y_train = vectorize_data(train, g2v) 
+    X_eval,  Y_eval  = vectorize_data(eval, g2v)
 
     # scale the vectors to behave for sklearn. 
     X_train_scaled = scalar.fit_transform(X_train)
@@ -77,7 +77,7 @@ def main():
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
 
     print(accuracy)
-    print(f"Features: {[g2v.featurizers[cfg].__name__ for cfg in config]}")
+    print(f"Features: {[feat.__name__ for feat in g2v.config()]}")
 
 
     #! save putput

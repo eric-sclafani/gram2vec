@@ -1,5 +1,6 @@
 
 import spacy
+import toml
 import utils
 import numpy as np
 from dataclasses import dataclass
@@ -9,12 +10,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 np.seterr(invalid="ignore")
 
-def make_counter(document, query:list):
-    pass
+# ~~~ Featurizers ~~~
 
-
-
-def pos_tags(document) -> np.ndarray:  
+def pos_unigrams(document) -> np.ndarray:  
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     tag_dict = {tag:0 for tag in tags}
     
@@ -132,9 +130,7 @@ def avg_word_length(document):
 #? pos subsequences?
 
 
-
-
-
+# ~~~ Featurizers end ~~~
 
 
 @dataclass
@@ -154,46 +150,45 @@ class GrammarVectorizer:
     
     def __init__(self):
         
+        
         self.nlp = utils.load_spacy("en_core_web_md")
-        self.featurizers = {
-            1 : pos_tags,
-            2 : func_words,
-            3 : punc,
-            4 : letters,
-            5 : pos_bigrams,
-        }
+        
+        self.featurizers = [
+            pos_unigrams,
+            pos_bigrams,
+            func_words, 
+            punc,
+            letters, 
+            
+        ]
+        
+    def config(self):
+        
+        toml_config = toml.load("config.toml")["Featurizers"]
+        config = []
+        
+        for feat in self.featurizers:
+            try:
+                if toml_config[feat.__name__] == 1:
+                    config.append(feat)
+            except KeyError:
+                raise KeyError(f"Feature '{feat.__name__}' does not exist in config.toml")
+        return config
+        
     
-    def vectorize(self, text:str, config:list[int]=None) -> np.ndarray:
-        """Applies featurizers to an input text, optionally according to a configuration"""
+    def vectorize(self, text:str) -> np.ndarray:
+        """Applies featurizers to an input text. Returns a 1-D array."""
         
         text_demojified = demoji.replace(text, "") # dep parser hates emojis 
         doc = self.nlp(text_demojified)
         document = Document.from_nlp(doc, text)
         
         vectors = []
-        for feat_id, featurizer in self.featurizers.items():
-            try:
-                if feat_id in config: 
-                    vector = featurizer(document)
-                    assert not np.isnan(vector).any()
-                    vectors.append(vector)
+        for feat in self.featurizers:
+            if feat in self.config():
+                vector = feat(document)
+                assert not np.isnan(vector).any() 
+                vectors.append(vector)
                     
-            except TypeError:
-                #! apply sanity checking here
-                vector = featurizer(document)
-                vectors.append(featurizer(document))
-                assert not np.isnan(vector).any()
-                
         return np.concatenate(vectors)
     
-    
-    
-
-    
-    
-# featurizer testing grounds
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()
