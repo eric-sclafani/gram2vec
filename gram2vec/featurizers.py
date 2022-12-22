@@ -134,8 +134,7 @@ def avg_word_length(document):
 
 
 
-def parse_config():
-    pass
+
 
 
 @dataclass
@@ -186,6 +185,10 @@ class GrammarVectorizer:
                 assert not np.isnan(vector).any()
                 
         return np.concatenate(vectors)
+    
+    
+    
+
     
     
 # featurizer testing grounds

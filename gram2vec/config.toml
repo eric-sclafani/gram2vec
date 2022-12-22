@@ -4,3 +4,17 @@ pos_bigrams=1
 func_words=1
 letters=1
 punc=1
+
+[run2]
+pos_count=1
+pos_bigrams=0
+func_words=0
+letters=1
+punc=1
+
+[run3]
+pos_count=1
+pos_bigrams=1
+func_words=1
+letters=0
+punc=0
