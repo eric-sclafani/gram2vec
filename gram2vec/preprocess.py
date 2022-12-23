@@ -171,6 +171,7 @@ def train_dev_test_splits(data:dict):
                 train[author_id].append(text)
     return train, dev, test
 
+#! this func is deprecatd and its functionality is due to be moved into a separate script
 def save_dev_bins(dev, train):
     """Sort dev by author frequency in train, and split into bins"""
     

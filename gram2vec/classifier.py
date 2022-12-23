@@ -3,7 +3,6 @@
 import argparse
 import utils
 import numpy as np
-from dataclasses import dataclass
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
