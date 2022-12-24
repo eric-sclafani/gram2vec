@@ -82,7 +82,7 @@ def main():
     print(f"Features: {[feat.__name__ for feat in g2v.config()]}")
 
 
-    #! save putput
+    #! save output
 
 if __name__ == "__main__":
     main()

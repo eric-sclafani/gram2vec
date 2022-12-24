@@ -4,7 +4,6 @@ import spacy
 import toml
 import numpy as np
 from nltk import bigrams
-from nltk.corpus import stopwords
 import os
 from dataclasses import dataclass
 import demoji
@@ -15,6 +14,7 @@ import utils
 
 np.seterr(invalid="ignore")
 
+
 # ~~~ Helper functions ~~~
 
 
@@ -22,7 +22,7 @@ np.seterr(invalid="ignore")
 def get_counts(features:list, doc_features:list) -> list[int]:
     """
     Counts the frequency of items in 'features' that occur in 'doc_features'.
-    When 'feat_dict' and 'count_doc_features' are intersected, the 0 counts in 'feat_dict' 
+    When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
     get overwritten by the counts in 'count_doc_features'. When features are not found in 'count_doc_features', 
     the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
     
@@ -37,15 +37,14 @@ def get_counts(features:list, doc_features:list) -> list[int]:
     count_doc_features = Counter(doc_features)
     
     count_dict = {}
-    for feature in count_doc_features.keys():
+    for feature in feat_dict.keys():
+        if feature in count_doc_features:
+            to_add = count_doc_features[feature]
+        else:
+            to_add = feat_dict[feature]
         
+        count_dict[feature] = to_add
         
-        
-    
-    try:
-        assert len(features) == len(list(count_dict.values()))
-    except:
-        import ipdb;ipdb.set_trace()
         
     return list(count_dict.values())
 
