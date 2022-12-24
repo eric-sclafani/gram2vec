@@ -196,22 +196,6 @@ def save_dev_bins(dev, train):
     utils.save_json({k:v for k, v in dev_[49:56]}, "data/dev_bins/dev_bin_8.json")
         
                                    
-def generate_vocabularies(data):
-    """This function aggregates all tokens and pos tags into .txt files. Needed for ngram featurizers."""
-    
-    nlp = utils.load_spacy("en_core_web_md")
-    # stuffs all texts into one list
-    all_docs = [entry for id in data.keys() for entry in data[id]]
-    
-    for filename in ["all_tokens.txt", "all_pos_tags.txt"]:
-        with open(f"resources/{filename}", "w") as fout:
-            for text in all_docs:
-                doc = nlp(text)
-                for token in doc:
-                    to_write = token.text if filename == "all_tokens.txt" else token.pos_
-                    fout.write(to_write)
-                    fout.write("\n")
-    
 def save_dataset_stats(data:dict):
     
     authors    = []
@@ -242,11 +226,7 @@ def main():
     utils.save_json(sorted_authors, "data/preprocessed/sorted_authors.json")
     utils.save_json(fixed_sorted_authors, "data/preprocessed/fixed_sorted_author.json")
     print("Done!")
-    
-    print("Generating vocabularies...")
-    generate_vocabularies(fixed_sorted_authors)
-    print("Done!")
-    
+
     print("Dividing data into splits...")
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
     for split, path in [(train, "data/train_dev_test/train.json"), (dev, "data/train_dev_test/dev.json"), (test, "data/train_dev_test/test.json")]:

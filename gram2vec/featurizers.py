@@ -187,6 +187,7 @@ class Document:
         return cls(doc, tokens, pos_tags, text)
     
 class GrammarVectorizer:
+    """This constructor houses all featurizers and the means to apply them"""
     
     def __init__(self):
         self.nlp = utils.load_spacy("en_core_web_md")
@@ -198,7 +199,7 @@ class GrammarVectorizer:
             punc,
             letters,]
         
-    def config(self):
+    def _config(self):
         
         toml_config = toml.load("config.toml")["Featurizers"]
         config = []
@@ -220,7 +221,7 @@ class GrammarVectorizer:
         
         vectors = []
         for feat in self.featurizers:
-            if feat in self.config():
+            if feat in self._config():
                 vector = feat(document)
                 assert not np.isnan(vector).any() 
                 vectors.append(vector)
