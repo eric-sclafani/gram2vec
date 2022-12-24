@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
-import utils
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
+
+# project imports
+import utils
 from featurizers import GrammarVectorizer
 
 

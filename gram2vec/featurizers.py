@@ -1,43 +1,52 @@
+#!/usr/bin/env python3
 
 import spacy
 import toml
-import utils
 import numpy as np
+from nltk import bigrams
 import os
 from dataclasses import dataclass
 import demoji
 from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
+
+# project import
+import utils
 
 np.seterr(invalid="ignore")
 
 # ~~~ Helper functions ~~~
 
-
-def get_counts(features:list, doc_to_count:list) -> list[int]:
+def get_counts(features:list, iterable:list) -> list[int]:
     """
     Counts the occurrences of 'features' in 'doc_to_count'
     Merges two dictionaries so that counts of 0 are preserved
     
     """
     count_dict = {feat:0 for feat in features}
-    counter = Counter(doc_to_count)
+    counter = Counter(iterable)
     count_dict.update(counter)
     
     return list(count_dict.values())
+
+def get_pos_bigrams(doc):
+    return Counter(bigrams([token.pos_ for token in doc]))
+
 
 def generate_pos_vocab(path):
     
     data = utils.load_json(path)
     nlp = utils.load_spacy("en_core_web_md")
     
-    vocab_vectorizer = CountVectorizer(analyzer="word", ngram_range=(2,2), max_features=50)
-    all_tokens = utils.load_txt("resources/all_pos_tags.txt")
-    vocab_vectorizer.fit([all_tokens])
-    vocab = vocab_vectorizer.vocabulary_
-    utils.save_pkl(vocab, "resources/pan_pos_vocab.pkl")
+    bigram_counters = []
+    all_text_docs = [entry for id in data.keys() for entry in data[id]]
+    for text in all_text_docs:
+        doc = nlp(text)
+        bigram_counters.append(get_pos_bigrams(doc))
     
+    all_bigrams_counter = dict(sum(bigram_counters, Counter()).most_common(50))
+    pos_bigrams_vocab = {bigram:0 for bigram in all_bigrams_counter.keys()}
     
+    utils.save_pkl(pos_bigrams_vocab,"resources/pan_pos_vocab.pkl")
     
     
 def generate_funcwords_vocab():
@@ -52,6 +61,19 @@ def pos_unigrams(document) -> np.ndarray:
     counts = get_counts(tags, document.pos_tags)
     return np.array(counts) / len(document.pos_tags)
 
+def pos_bigrams(document):
+    
+    
+    
+    if not os.path.exists("resources/pan_pos_vocab.pkl"):
+        vocab = generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")
+    else:
+        vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
+        
+    
+
+    #return (pos_ngrams.toarray().flatten()) / len(document.pos_tags) # normalize by # of pos tags in current document
+
 
 def func_words(document) -> np.ndarray:  
     
@@ -61,7 +83,6 @@ def func_words(document) -> np.ndarray:
 
     doc_func_words = [token for token in document.tokens if token in function_words]
     counts = get_counts(function_words, doc_func_words)
-    
     return np.array(counts) / len(document.tokens)
 
 
@@ -70,7 +91,6 @@ def punc(document) -> np.ndarray:
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", ":(", ":)", "...", "..", "(", ")", ":))", "–", "‘", "’", ";)"]
     doc_punc_marks = [token.text for token in document.doc if token.text in punc_marks]
     counts = get_counts(punc_marks, doc_punc_marks)
-    
     return np.array(counts) / len(document.tokens) 
 
 
@@ -82,30 +102,15 @@ def letters(document) -> np.ndarray:
                    for letter in token.text if letter in letters]
     
     counts = get_counts(letters, doc_letters)
-    
     return np.array(counts) / len(doc_letters)
 
 
-def pos_bigrams(document):
-    
-    # build the vocab. This enforces the ngram_vectorizer to count the same ngrams for all docs
-    
-    if not os.path.exists("resources/pan_pos_vocab.pkl"):
-        vocab = generate_pos_vocab("data/pan/preprocessed/fixed_sorted_authors.json")
-    else:
-        vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
-        
-    ngram_vectorizer = CountVectorizer(analyzer="word", ngram_range=(2,2), max_features=50, vocabulary=vocab)
-    pos_ngrams = ngram_vectorizer.fit_transform([" ".join(document.pos_tags)])
 
-    return (pos_ngrams.toarray().flatten()) / len(document.pos_tags) # normalize by # of pos tags in current document
     
 
 
 # incomplete
 def mixed_ngrams(n, document):
-    
-    ngrams = lambda n, items: [tuple(items[i:i+n]) for i in range(len(items)-1)]
     pass
 
 
@@ -205,9 +210,7 @@ class GrammarVectorizer:
 # testing code 
 def main():
     
-    g2v = GrammarVectorizer()
-    g2v.vectorize("this is a string. I am happy that this is a string")
-    
+    generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")    
        
 
 

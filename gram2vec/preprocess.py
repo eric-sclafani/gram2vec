@@ -1,6 +1,5 @@
-#!/usr/bin/env 
+#!/usr/bin/env python3
 import json
-import utils
 import re
 from copy import deepcopy
 from nltk.corpus import names
@@ -8,6 +7,9 @@ from random import choice, randint
 import re
 from collections import defaultdict
 import csv
+
+# project import
+import utils
 
 def load_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
     """This function loads the raw json data as a list of dicts and extracts each pair"""
