@@ -4,6 +4,7 @@ import spacy
 import toml
 import numpy as np
 from nltk import bigrams
+from nltk.corpus import stopwords
 import os
 from dataclasses import dataclass
 import demoji
@@ -16,16 +17,36 @@ np.seterr(invalid="ignore")
 
 # ~~~ Helper functions ~~~
 
-def get_counts(features:list, iterable:list) -> list[int]:
+
+
+def get_counts(features:list, doc_features:list) -> list[int]:
     """
-    Counts the occurrences of 'features' in 'doc_to_count'
-    Merges two dictionaries so that counts of 0 are preserved
+    Counts the frequency of items in 'features' that occur in 'doc_features'.
+    When 'feat_dict' and 'count_doc_features' are intersected, the 0 counts in 'feat_dict' 
+    get overwritten by the counts in 'count_doc_features'. When features are not found in 'count_doc_features', 
+    the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
+    
+    Params:
+        features(list) = set list of features to count. Each feature is initially mapped to 0
+        iterable(list) = list of features from a document to count. 
+    Returns:
+        list: list of feature counts
     
     """
-    count_dict = {feat:0 for feat in features}
-    counter = Counter(iterable)
-    count_dict.update(counter)
+    feat_dict = {feat:0 for feat in features}
+    count_doc_features = Counter(doc_features)
     
+    count_dict = {}
+    for feature in count_doc_features.keys():
+        
+        
+        
+    
+    try:
+        assert len(features) == len(list(count_dict.values()))
+    except:
+        import ipdb;ipdb.set_trace()
+        
     return list(count_dict.values())
 
 def get_pos_bigrams(doc):
@@ -36,22 +57,19 @@ def generate_pos_vocab(path):
     
     data = utils.load_json(path)
     nlp = utils.load_spacy("en_core_web_md")
-    
     bigram_counters = []
+    
     all_text_docs = [entry for id in data.keys() for entry in data[id]]
     for text in all_text_docs:
         doc = nlp(text)
         bigram_counters.append(get_pos_bigrams(doc))
     
-    all_bigrams_counter = dict(sum(bigram_counters, Counter()).most_common(50))
-    pos_bigrams_vocab = {bigram:0 for bigram in all_bigrams_counter.keys()}
-    
-    utils.save_pkl(pos_bigrams_vocab,"resources/pan_pos_vocab.pkl")
-    
-    
-def generate_funcwords_vocab():
-    pass
+    # this line adds all the counters into one dict, getting the 50 most common pos bigrams
+    pos_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
         
+    utils.save_pkl(list(pos_bigrams.keys()),"resources/pan_pos_vocab.pkl")
+    
+    
 
 # ~~~ Featurizers ~~~
 
@@ -59,30 +77,34 @@ def pos_unigrams(document) -> np.ndarray:
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     counts = get_counts(tags, document.pos_tags)
+    assert len(tags) == len(counts)
+    
     return np.array(counts) / len(document.pos_tags)
 
 def pos_bigrams(document):
-    
-    
-    
-    if not os.path.exists("resources/pan_pos_vocab.pkl"):
-        vocab = generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")
-    else:
-        vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
-        
-    
 
-    #return (pos_ngrams.toarray().flatten()) / len(document.pos_tags) # normalize by # of pos tags in current document
+    if not os.path.exists("resources/pan_pos_vocab.pkl"):
+        generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")
+    
+    vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
+    doc_pos_bigrams = get_pos_bigrams(document.doc)
+    counts = get_counts(vocab, doc_pos_bigrams)
+    
+    assert len(vocab) == len(counts), f"{len(vocab)} != {len(counts)}"
+    
+    return np.array(counts) / len(document.pos_tags) # normalize by # of pos tags in current document
 
 
 def func_words(document) -> np.ndarray:  
     
-    # modified NLTK stopwords file #! make this generate automatically
+    # modified NLTK stopwords set
     with open ("resources/function_words.txt", "r") as fin:
-        function_words = list(map(lambda x: x.strip("\n"), fin.readlines()))
+        function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
 
     doc_func_words = [token for token in document.tokens if token in function_words]
     counts = get_counts(function_words, doc_func_words)
+    assert len(function_words) == len(counts)
+    
     return np.array(counts) / len(document.tokens)
 
 
@@ -91,6 +113,8 @@ def punc(document) -> np.ndarray:
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", ":(", ":)", "...", "..", "(", ")", ":))", "–", "‘", "’", ";)"]
     doc_punc_marks = [token.text for token in document.doc if token.text in punc_marks]
     counts = get_counts(punc_marks, doc_punc_marks)
+    assert len(punc_marks) == len(counts)
+    
     return np.array(counts) / len(document.tokens) 
 
 
@@ -99,9 +123,11 @@ def letters(document) -> np.ndarray:
     letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
     doc_letters = [letter for token in document.doc 
-                   for letter in token.text if letter in letters]
-    
+                          for letter in token.text 
+                          if letter in letters]
     counts = get_counts(letters, doc_letters)
+    assert len(letters) == len(counts)
+    
     return np.array(counts) / len(doc_letters)
 
 
@@ -171,8 +197,7 @@ class GrammarVectorizer:
             pos_bigrams,
             func_words, 
             punc,
-            letters,
-        ]
+            letters,]
         
     def config(self):
         
@@ -210,8 +235,8 @@ class GrammarVectorizer:
 # testing code 
 def main():
     
-    generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")    
-       
+    g2v = GrammarVectorizer()
+
 
 
 if __name__ == "__main__":

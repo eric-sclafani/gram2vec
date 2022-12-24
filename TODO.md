@@ -4,15 +4,12 @@ This file contains ideas for future additions/improvements
 
 ## Additions:
 - add sanity checkers for all featurizers (correct shapes, NaN, etc...)
-- ADD LOGGING
 - add functions to get information about the vectors
 - add glove lexical vector to the feature vector
     - in document, get glove vecs for each word and average them -> stick into grammar vector
 - add syntactic stuff
 - fix odd parenthesis issue in `preproccess.py` in **fix_data**
 - Ablation studies
-- merge pos ngram count function with pos unigram count function?
-- make `resource/` stuff generate automatically if not present
 - move bin dev into a shell script
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
@@ -24,3 +21,4 @@ This file contains ideas for future additions/improvements
 - add sentence boundary syms for ngrams
 - k-NN: if no majority vote, switch k value??
 - KNN vs NN (1 vector/document VS 1 vector/author k=1)
+- add logging?

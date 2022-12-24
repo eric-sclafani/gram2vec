@@ -22,6 +22,7 @@ def vectorize_data(data, g2v) -> np.ndarray:
             vectors.append(grammar_vector)
             authors.append(id)
     
+    
     return np.stack(vectors), authors
 
 
