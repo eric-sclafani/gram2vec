@@ -41,11 +41,11 @@ def feature_logger(logger_name, level=logging.DEBUG):
 
 # ~~~ Helper functions ~~~
 
-def get_counts(sample_space:list, doc_features:list) -> list[int]:
+def get_counts(sample_space:list, features:list) -> list[int]:
     """
-    Counts the frequency of items in 'sample_space' that occur in 'doc_features'.
+    Counts the frequency of items in 'sample_space' that occur in 'features'.
     When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
-    get overwritten by the counts in 'count_doc_features'. When features are not found in 'count_doc_features', 
+    get overwritten by the counts in 'doc_features'. When features are not found in 'doc_features', 
     the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
     
     Params:
@@ -56,18 +56,18 @@ def get_counts(sample_space:list, doc_features:list) -> list[int]:
     
     """
     feat_dict = {feat:0 for feat in sample_space}
-    count_doc_features = Counter(doc_features)
+    doc_features = Counter(features)
     
     count_dict = {}
     for feature in feat_dict.keys():
-        if feature in count_doc_features:
-            to_add = count_doc_features[feature]
+        if feature in doc_features:
+            to_add = doc_features[feature]
         else:
             to_add = feat_dict[feature]
         
         count_dict[feature] = to_add
         
-    return list(count_dict.values())
+    return list(count_dict.values()), count_dict
 
 
 def get_pos_bigrams(doc):
@@ -103,11 +103,11 @@ def docify(text:str, nlp):
 def pos_unigrams(document) -> np.ndarray:  
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
-    counts = get_counts(tags, document.pos_tags)
+    counts, doc_features = get_counts(tags, document.pos_tags)
     result = np.array(counts) / len(document.pos_tags)
     assert len(tags) == len(counts)
     
-    return result
+    return result, doc_features
 
 def pos_bigrams(document):
 
@@ -116,10 +116,11 @@ def pos_bigrams(document):
     
     vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
     doc_pos_bigrams = get_pos_bigrams(document.doc)
-    counts = get_counts(vocab, doc_pos_bigrams)
+    counts, doc_features = get_counts(vocab, doc_pos_bigrams)
+    result = np.array(counts) / len(document.pos_tags)
     assert len(vocab) == len(counts)
     
-    return np.array(counts) / len(document.pos_tags)
+    return result, doc_features
 
 
 def func_words(document) -> np.ndarray:  
@@ -129,20 +130,22 @@ def func_words(document) -> np.ndarray:
         function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
 
     doc_func_words = [token for token in document.tokens if token in function_words]
-    counts = get_counts(function_words, doc_func_words)
+    counts, doc_features = get_counts(function_words, doc_func_words)
+    result = np.array(counts) / len(document.tokens)
     assert len(function_words) == len(counts)
     
-    return np.array(counts) / len(document.tokens)
+    return result, doc_features
 
 
 def punc(document) -> np.ndarray:
     
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", ":(", ":)", "...", "..", "(", ")", ":))", "–", "‘", "’", ";)"]
     doc_punc_marks = [token.text for token in document.doc if token.text in punc_marks]
-    counts = get_counts(punc_marks, doc_punc_marks)
+    counts, doc_features = get_counts(punc_marks, doc_punc_marks)
+    result = np.array(counts) / len(document.tokens) 
     assert len(punc_marks) == len(counts)
     
-    return np.array(counts) / len(document.tokens) 
+    return result, doc_features
 
 
 def letters(document) -> np.ndarray: 
@@ -152,10 +155,11 @@ def letters(document) -> np.ndarray:
     doc_letters = [letter for token in document.doc 
                           for letter in token.text 
                           if letter in letters]
-    counts = get_counts(letters, doc_letters)
+    counts, doc_features = get_counts(letters, doc_letters)
+    result = np.array(counts) / len(doc_letters)
     assert len(letters) == len(counts)
     
-    return np.array(counts) / len(doc_letters)
+    return result, doc_features
 
 
 
@@ -246,11 +250,14 @@ class GrammarVectorizer:
         document = docify(text, self.nlp)
         
         vectors = []
-        for feat in self.featurizers.values():
-            if feat in self._config():
-                vector = feat(document)
-                assert not np.isnan(vector).any() 
-                vectors.append(vector)
+        for feat in self._config():
+            
+            vector, doc_features = feat(document)
+            assert not np.isnan(vector).any() 
+            vectors.append(vector)
+            
+            logger = feature_logger(f"logs/{feat.__name__}_log.log")
+            logger.debug(f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
     
