@@ -5,6 +5,7 @@ import toml
 import numpy as np
 from nltk import bigrams
 import os
+import logging
 from dataclasses import dataclass
 import demoji
 from collections import Counter
@@ -14,26 +15,47 @@ import utils
 
 np.seterr(invalid="ignore")
 
+# ~~~ Logging ~~~
+
+def feature_logger(logger_name, level=logging.DEBUG):
+    """
+    Method to return a custom logger with the given name and level
+    Credits: https://stackoverflow.com/questions/54591352/python-logging-new-log-file-each-loop-iteration
+    """
+    
+    if not os.path.exists("logs"):
+        os.mkdir("logs")
+        
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    format_string = ("%(message)s")
+    log_format = logging.Formatter(format_string)
+    
+    # Creating and adding the file handler
+    file_handler = logging.FileHandler(logger_name, mode='a')
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    return logger
+    
+
 
 # ~~~ Helper functions ~~~
 
-
-
-def get_counts(features:list, doc_features:list) -> list[int]:
+def get_counts(sample_space:list, doc_features:list) -> list[int]:
     """
-    Counts the frequency of items in 'features' that occur in 'doc_features'.
+    Counts the frequency of items in 'sample_space' that occur in 'doc_features'.
     When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
     get overwritten by the counts in 'count_doc_features'. When features are not found in 'count_doc_features', 
     the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
     
     Params:
-        features(list) = set list of features to count. Each feature is initially mapped to 0
-        iterable(list) = list of features from a document to count. 
+        sample_space(list) = list of set features to count. Each feature is initially mapped to 0
+        doc_features(list) = list of features from a document to count. 
     Returns:
         list: list of feature counts
     
     """
-    feat_dict = {feat:0 for feat in features}
+    feat_dict = {feat:0 for feat in sample_space}
     count_doc_features = Counter(doc_features)
     
     count_dict = {}
@@ -45,8 +67,8 @@ def get_counts(features:list, doc_features:list) -> list[int]:
         
         count_dict[feature] = to_add
         
-        
     return list(count_dict.values())
+
 
 def get_pos_bigrams(doc):
     return Counter(bigrams([token.pos_ for token in doc]))
@@ -69,6 +91,12 @@ def generate_pos_vocab(path):
     utils.save_pkl(list(pos_bigrams.keys()),"resources/pan_pos_vocab.pkl")
     
     
+def docify(text:str, nlp):
+    """Converts a text into a Document object"""
+    text_demojified = demoji.replace(text, "") # dep parser hates emojis 
+    doc = nlp(text_demojified)
+    return Document.from_nlp(doc, text)
+    
 
 # ~~~ Featurizers ~~~
 
@@ -76,9 +104,10 @@ def pos_unigrams(document) -> np.ndarray:
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     counts = get_counts(tags, document.pos_tags)
+    result = np.array(counts) / len(document.pos_tags)
     assert len(tags) == len(counts)
     
-    return np.array(counts) / len(document.pos_tags)
+    return result
 
 def pos_bigrams(document):
 
@@ -88,10 +117,9 @@ def pos_bigrams(document):
     vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
     doc_pos_bigrams = get_pos_bigrams(document.doc)
     counts = get_counts(vocab, doc_pos_bigrams)
+    assert len(vocab) == len(counts)
     
-    assert len(vocab) == len(counts), f"{len(vocab)} != {len(counts)}"
-    
-    return np.array(counts) / len(document.pos_tags) # normalize by # of pos tags in current document
+    return np.array(counts) / len(document.pos_tags)
 
 
 def func_words(document) -> np.ndarray:  
@@ -192,35 +220,33 @@ class GrammarVectorizer:
     def __init__(self):
         self.nlp = utils.load_spacy("en_core_web_md")
         
-        self.featurizers = [
-            pos_unigrams,
-            pos_bigrams,
-            func_words, 
-            punc,
-            letters,]
+        self.featurizers = {
+            "pos_unigrams":pos_unigrams,
+            "pos_bigrams" :pos_bigrams,
+            "func_words"  :func_words, 
+            "punc"        :punc,
+            "letters"     :letters,}
         
     def _config(self):
         
         toml_config = toml.load("config.toml")["Featurizers"]
         config = []
-        for feat in self.featurizers:
+        for name, feat in self.featurizers.items():
             try:
-                if toml_config[feat.__name__] == 1:
+                if toml_config[name] == 1:
                     config.append(feat)
             except KeyError:
-                raise KeyError(f"Feature '{feat.__name__}' does not exist in config.toml")
+                raise KeyError(f"Feature '{name}' does not exist in config.toml")
         return config
         
     
     def vectorize(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
-        text_demojified = demoji.replace(text, "") # dep parser hates emojis 
-        doc = self.nlp(text_demojified)
-        document = Document.from_nlp(doc, text)
+        document = docify(text, self.nlp)
         
         vectors = []
-        for feat in self.featurizers:
+        for feat in self.featurizers.values():
             if feat in self._config():
                 vector = feat(document)
                 assert not np.isnan(vector).any() 
@@ -229,16 +255,4 @@ class GrammarVectorizer:
         return np.concatenate(vectors)
     
     
-    
-    
-
-# testing code 
-def main():
-    
-    g2v = GrammarVectorizer()
-
-
-
-if __name__ == "__main__":
-    main()
     

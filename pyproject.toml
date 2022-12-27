@@ -26,3 +26,8 @@ orjson = "^3.8.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "gram2vec"
+]

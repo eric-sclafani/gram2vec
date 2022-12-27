@@ -79,7 +79,7 @@ def main():
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
 
     print(accuracy)
-    print(f"Features: {[feat.__name__ for feat in g2v.config()]}")
+    print(f"Features: {[feat.__name__ for feat in g2v._config()]}")
 
 
     #! save output
