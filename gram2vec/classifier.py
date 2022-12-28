@@ -50,10 +50,11 @@ def main():
                         default="data/pan/train_dev_test/dev.json") 
     
     args = parser.parse_args()
-
-    g2v    = GrammarVectorizer(logging=True)
+    
+    g2v    = GrammarVectorizer(logging=False)
     le     = LabelEncoder()
     scalar = StandardScaler()
+    
     
     # load train and eval
     train  = utils.load_json(args.train_path)
@@ -64,8 +65,8 @@ def main():
     X_eval,  Y_eval  = vectorize_data(eval, g2v)
 
     # scale the vectors to behave for sklearn. 
-    X_train_scaled = scalar.fit_transform(X_train)
-    X_eval_scaled  = scalar.transform(X_eval)
+    #X_train_scaled = scalar.fit_transform(X_train)
+    #X_eval_scaled  = scalar.transform(X_eval)
     
     # encode the labels
     Y_train_encoded = le.fit_transform(Y_train)
@@ -73,16 +74,34 @@ def main():
     
     
     model = KNeighborsClassifier(n_neighbors=int(args.k_value))
-    model.fit(X_train_scaled, Y_train_encoded)
+    model.fit(X_train, Y_train_encoded)
     
-    predictions = model.predict(X_eval_scaled)
+    predictions = model.predict(X_eval)
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
 
+    feats = [feat.__name__ for feat in g2v._config()]
+    eval_set = "dev" if args.eval_path.endswith("dev.json") else "test"
+    result_path = f"results/{eval_set}_results.json"
+    
+    print(f"Eval set: {eval_set}")
+    print(f"Features: {feats}")
     print(accuracy)
-    print(f"Features: {[feat.__name__ for feat in g2v._config()]}")
+    
+    try:
+        results = utils.load_json(result_path)
+    except:
+        utils.save_json({"results":[]}, result_path)
+        results = utils.load_json(result_path)
+    
+    
+    
+    results["results"].append({"acc": accuracy, "config":feats})
+    utils.save_json(data=results, path=result_path)
+        
+        
 
 
-    #! save output
+    
 
 if __name__ == "__main__":
     main()

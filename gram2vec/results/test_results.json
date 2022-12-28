@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "acc": 0.125,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters"
+      ]
+    }
+  ]
+}

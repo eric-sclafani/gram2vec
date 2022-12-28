@@ -3,7 +3,6 @@ This file contains ideas for future additions/improvements
 ------
 
 ## Additions:
-- add sanity checkers for all featurizers (correct shapes, NaN, etc...)
 - add functions to get information about the vectors
 - add glove lexical vector to the feature vector
     - in document, get glove vecs for each word and average them -> stick into grammar vector
@@ -21,4 +20,3 @@ This file contains ideas for future additions/improvements
 - add sentence boundary syms for ngrams
 - k-NN: if no majority vote, switch k value??
 - KNN vs NN (1 vector/document VS 1 vector/author k=1)
-- add logging?
