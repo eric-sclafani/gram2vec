@@ -51,7 +51,7 @@ def main():
     
     args = parser.parse_args()
 
-    g2v    = GrammarVectorizer()
+    g2v    = GrammarVectorizer(logging=True)
     le     = LabelEncoder()
     scalar = StandardScaler()
     

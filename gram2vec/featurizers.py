@@ -5,7 +5,6 @@ import toml
 import numpy as np
 from nltk import bigrams
 import os
-import logging
 from dataclasses import dataclass
 import demoji
 from collections import Counter
@@ -17,28 +16,15 @@ np.seterr(invalid="ignore")
 
 # ~~~ Logging ~~~
 
-def feature_logger(logger_name, level=logging.DEBUG):
-    """
-    Method to return a custom logger with the given name and level
-    Credits: https://stackoverflow.com/questions/54591352/python-logging-new-log-file-each-loop-iteration
-    """
+def feature_logger(filename, write):
     
     if not os.path.exists("logs"):
         os.mkdir("logs")
+    
+    with open(f"logs/{filename}", "a") as fout:
+        fout.write(write)
         
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    format_string = ("%(message)s")
-    log_format = logging.Formatter(format_string)
     
-    # Creating and adding the file handler
-    file_handler = logging.FileHandler(logger_name, mode='a')
-    file_handler.setFormatter(log_format)
-    logger.addHandler(file_handler)
-    return logger
-    
-
-
 # ~~~ Helper functions ~~~
 
 def get_counts(sample_space:list, features:list) -> list[int]:
@@ -221,8 +207,9 @@ class Document:
 class GrammarVectorizer:
     """This constructor houses all featurizers and the means to apply them"""
     
-    def __init__(self):
+    def __init__(self, logging=False):
         self.nlp = utils.load_spacy("en_core_web_md")
+        self.logging = logging
         
         self.featurizers = {
             "pos_unigrams":pos_unigrams,
@@ -256,8 +243,9 @@ class GrammarVectorizer:
             assert not np.isnan(vector).any() 
             vectors.append(vector)
             
-            logger = feature_logger(f"logs/{feat.__name__}_log.log")
-            logger.debug(f"{doc_features}\n{vector}\n\n")
+            if self.logging:
+                feature_logger(filename = f"{feat.__name__}.log", 
+                               write    = f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
     
