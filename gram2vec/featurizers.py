@@ -102,6 +102,7 @@ def pos_bigrams(document):
     
     vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
     doc_pos_bigrams = get_pos_bigrams(document.doc)
+    
     counts, doc_features = get_counts(vocab, doc_pos_bigrams)
     result = np.array(counts) / len(document.pos_tags)
     assert len(vocab) == len(counts)
