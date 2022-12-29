@@ -13,6 +13,7 @@ This file contains ideas for future additions/improvements
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prodosy: do people have a stress (melodic) preference?
+- change json funcs to use ujson
 
 ## Ideas
 - token level punc marks VS. string level (this does not account for text-based emojis, etc..)

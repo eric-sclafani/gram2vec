@@ -130,5 +130,6 @@ dmypy.json
 
 
 # project
-*/data/*
+*/data/pan
+*/data/mud
 */logs/*
