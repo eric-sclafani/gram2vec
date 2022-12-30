@@ -39,6 +39,46 @@
         "punc",
         "letters"
       ]
+    },
+    {
+      "acc": 0.12857142857142856,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters"
+      ]
+    },
+    {
+      "acc": 0.14642857142857144,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters"
+      ]
+    },
+    {
+      "acc": 0.14642857142857144,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters"
+      ]
+    },
+    {
+      "acc": 0.14642857142857144,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters"
+      ]
     }
   ]
 }

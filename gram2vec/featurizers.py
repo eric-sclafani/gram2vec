@@ -16,13 +16,13 @@ np.seterr(invalid="ignore")
 
 # ~~~ Logging ~~~
 
-def feature_logger(filename, write):
+def feature_logger(filename, writable):
     
-    if not os.path.exists("logs"):
+    if not os.path.exists("logs"): # make log dir if not exists
         os.mkdir("logs")
-    
-    with open(f"logs/{filename}", "a") as fout:
-        fout.write(write)
+               
+    with open(f"logs/{filename}.log", "a") as fout: 
+        fout.write(writable)
         
     
 # ~~~ Helper functions ~~~
@@ -125,12 +125,14 @@ def func_words(document) -> np.ndarray:
 
 def punc(document) -> np.ndarray:
     
-    punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", ":(", ":)", "...", "..", "(", ")", ":))", "–", "‘", "’", ";)"]
-    doc_punc_marks = [token.text for token in document.doc if token.text in punc_marks]
+    punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’"]
+    doc_punc_marks = [punc for token in document.doc 
+                      for punc in token.text
+                      if punc in punc_marks]
+    
+    
     counts, doc_features = get_counts(punc_marks, doc_punc_marks)
     result = np.array(counts) / len(document.tokens) 
-    
-    import ipdb;ipdb.set_trace()
     assert len(punc_marks) == len(counts)
     
     return result, doc_features
@@ -139,13 +141,17 @@ def punc(document) -> np.ndarray:
 def letters(document) -> np.ndarray: 
 
     letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-               "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+               "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+               "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý",]
     doc_letters = [letter for token in document.doc 
                           for letter in token.text 
                           if letter in letters]
+    
     counts, doc_features = get_counts(letters, doc_letters)
     result = np.array(counts) / len(doc_letters)
     assert len(letters) == len(counts)
+    
+    #import ipdb;ipdb.set_trace()
     
     return result, doc_features
 
@@ -246,8 +252,7 @@ class GrammarVectorizer:
             vectors.append(vector)
             
             if self.logging:
-                feature_logger(filename = f"{feat.__name__}.log", 
-                               write    = f"{doc_features}\n{vector}\n\n")
+                feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
     
