@@ -9,7 +9,7 @@ from collections import defaultdict
 import csv
 
 # project import
-import utils
+from gram2vec import utils
 
 def load_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
     """This function loads the raw json data as a list of dicts and extracts each pair"""
@@ -131,7 +131,6 @@ def sort_data(id_pairs, text_pairs) -> dict:
     return data 
 
 def fix_data(data):
-    """TODO: simplify code"""
     
     get_tags = lambda text: list(map(lambda x: f"<{x}>", re.findall(r"<(.*?)>", text))) # regex doesnt include the <> in the tags for findall, so they need to be re-added
     data = deepcopy(data) # prevent data mutation
@@ -214,7 +213,7 @@ def save_dataset_stats(data:dict):
 def main(): 
 
     print("Loading raw data...")
-    id_pairs, text_pairs = load_raw_data("data/raw/pairs.jsonl", "data/raw/truth.jsonl")
+    id_pairs, text_pairs = load_raw_data("data/pan/raw/pairs.jsonl", "data/pan/raw/truth.jsonl")
     print("Done!")
     
     print("Sorting and fixing data...")
@@ -223,13 +222,13 @@ def main():
     print("Done!")
     
     print("Saving preprocessed datasets...")
-    utils.save_json(sorted_authors, "data/preprocessed/sorted_authors.json")
-    utils.save_json(fixed_sorted_authors, "data/preprocessed/fixed_sorted_author.json")
+    utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_authors.json")
+    utils.save_json(fixed_sorted_authors, "data/pan/preprocessed/fixed_sorted_author.json")
     print("Done!")
 
     print("Dividing data into splits...")
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
-    for split, path in [(train, "data/train_dev_test/train.json"), (dev, "data/train_dev_test/dev.json"), (test, "data/train_dev_test/test.json")]:
+    for split, path in [(train, "data/pan/train_dev_test/train.json"), (dev, "data/pan/train_dev_test/dev.json"), (test, "data/pan/train_dev_test/test.json")]:
         utils.save_json(split, path)
     print("Done!")
     
@@ -237,9 +236,6 @@ def main():
     save_dataset_stats(sorted_authors)
     print("Done!")
     
-    print("Generating dev bins...")
-    save_dev_bins(dev, train)
-    print("Done!")
     
     
     

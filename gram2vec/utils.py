@@ -4,6 +4,8 @@ from nltk import Tree
 import numpy as np
 import pickle
 from time import time
+import subprocess
+
 
 def timer_func(func):
     # This function shows the execution time of the function object passed
@@ -32,7 +34,13 @@ def load_txt(path):
         return fin.read()
         
 def load_spacy(model:str):
-    nlp = spacy.load(model)
+    
+    try:
+        nlp = spacy.load(model)
+    except OSError:
+        print(f"{model} not detected. Downloading now...")
+        subprocess.run(f"python -m spacy download {model}") # untested
+        
     for name in ["lemmatizer", "ner"]:
         nlp.remove_pipe(name)
     return nlp
