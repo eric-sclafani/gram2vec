@@ -63,10 +63,6 @@ def main():
     # vectorize
     X_train, Y_train = vectorize_data(train, g2v) 
     X_eval,  Y_eval  = vectorize_data(eval, g2v)
-
-    # scale the vectors to behave for sklearn. 
-    #X_train_scaled = scalar.fit_transform(X_train)
-    #X_eval_scaled  = scalar.transform(X_eval)
     
     # encode the labels
     Y_train_encoded = le.fit_transform(Y_train)

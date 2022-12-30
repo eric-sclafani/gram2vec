@@ -162,23 +162,18 @@ def common_emojis(document):
     counts, doc_features = get_counts(vocab, emojis)
     result = np.array(counts) / len(vocab)
     
-    # try:
-    #     assert len(vocab) == len(counts)
-    # except:
-    #     import ipdb;ipdb.set_trace()
-    
     return result, doc_features
-
-
 
 # incomplete
 def mixed_bigrams(document):
     pass
 
+def glove_vector(document):
+    pass
 
 
-
-
+def word_level_stats(document):
+    pass
 
 # incomplete
 def num_words_per_sent(document):
@@ -197,6 +192,8 @@ def absolute_sent_length(document):
 
 def avg_word_length(document):
     pass
+
+# hapax legomena
 
 #? character ngrams?
 
@@ -263,19 +260,3 @@ class GrammarVectorizer:
                 feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
-    
-    
-    
-    
-    
-    
-def main():
-    """Testing"""
-    
-    
-    
-
-
-
-if __name__ == "__main__":
-    main()
