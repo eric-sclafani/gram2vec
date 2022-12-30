@@ -129,6 +129,8 @@ def punc(document) -> np.ndarray:
     doc_punc_marks = [token.text for token in document.doc if token.text in punc_marks]
     counts, doc_features = get_counts(punc_marks, doc_punc_marks)
     result = np.array(counts) / len(document.tokens) 
+    
+    import ipdb;ipdb.set_trace()
     assert len(punc_marks) == len(counts)
     
     return result, doc_features
