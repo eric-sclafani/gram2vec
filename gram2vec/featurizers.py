@@ -127,9 +127,8 @@ def punc(document) -> np.ndarray:
     
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’"]
     doc_punc_marks = [punc for token in document.doc 
-                      for punc in token.text
-                      if punc in punc_marks]
-    
+                           for punc in token.text
+                           if punc in punc_marks]
     
     counts, doc_features = get_counts(punc_marks, doc_punc_marks)
     result = np.array(counts) / len(document.tokens) 
@@ -151,25 +150,33 @@ def letters(document) -> np.ndarray:
     result = np.array(counts) / len(doc_letters)
     assert len(letters) == len(counts)
     
-    #import ipdb;ipdb.set_trace()
+    return result, doc_features
+
+
+def common_emojis(document):
+    
+    vocab = ["😅", "😂", "😊", "❤️", "😭", "👍", "👌", "😍", "💕", "🥰"]
+    extract_emojis = demoji.findall_list(document.text, desc=False)
+    emojis = list(filter(lambda x: x in vocab, extract_emojis))
+    
+    counts, doc_features = get_counts(vocab, emojis)
+    result = np.array(counts) / len(vocab)
+    
+    # try:
+    #     assert len(vocab) == len(counts)
+    # except:
+    #     import ipdb;ipdb.set_trace()
     
     return result, doc_features
 
 
 
-    
-
-
 # incomplete
-def mixed_ngrams(n, document):
+def mixed_bigrams(document):
     pass
 
 
 
-# incomplete
-def count_emojis(document):
-    emojis = demoji.findall_list(document.text, desc=False)
-    return len(emojis) / len(document.text)
 
 
 
@@ -220,11 +227,12 @@ class GrammarVectorizer:
         self.logging = logging
         
         self.featurizers = {
-            "pos_unigrams":pos_unigrams,
-            "pos_bigrams" :pos_bigrams,
-            "func_words"  :func_words, 
-            "punc"        :punc,
-            "letters"     :letters,}
+            "pos_unigrams"  :pos_unigrams,
+            "pos_bigrams"   :pos_bigrams,
+            "func_words"    :func_words, 
+            "punc"          :punc,
+            "letters"       :letters,
+            "common_emojis" :common_emojis}
         
     def _config(self):
         

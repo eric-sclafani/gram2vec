@@ -4,3 +4,4 @@ pos_bigrams=1
 func_words=1
 punc=1
 letters=1
+common_emojis=1
