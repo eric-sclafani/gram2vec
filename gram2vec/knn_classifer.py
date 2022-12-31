@@ -51,10 +51,8 @@ def main():
     
     args = parser.parse_args()
     
-    g2v    = GrammarVectorizer(logging=True)
-    le     = LabelEncoder()
-    scalar = StandardScaler()
-    
+    g2v = GrammarVectorizer(logging=True)
+    le  = LabelEncoder()
     
     # load train and eval
     train  = utils.load_json(args.train_path)
@@ -83,14 +81,14 @@ def main():
     print(f"Features: {feats}")
     print(accuracy)
     
-    try:
-        results = utils.load_json(result_path)
-    except:
-        utils.save_json({"results":[]}, result_path)
-        results = utils.load_json(result_path)
+    # try:
+    #     results = utils.load_json(result_path)
+    # except:
+    #     utils.save_json({"results":[]}, result_path)
+    #     results = utils.load_json(result_path)
     
-    results["results"].append({"acc": accuracy, "config":feats})
-    utils.save_json(data=results, path=result_path)
+    # results["results"].append({"acc": accuracy, "config":feats})
+    # utils.save_json(data=results, path=result_path)
            
 
 if __name__ == "__main__":

@@ -164,11 +164,17 @@ def common_emojis(document):
     
     return result, doc_features
 
-# incomplete
-def mixed_bigrams(document):
-    pass
+def doc_vector(document):
+    
+    arrays = []
+    for token in document.doc:
+        arrays.append(token.vector)
+        
+    result = np.mean(arrays, axis=0)
+    return result, None
 
-def glove_vector(document):
+
+def mixed_bigrams(document):
     pass
 
 
@@ -193,7 +199,7 @@ def absolute_sent_length(document):
 def avg_word_length(document):
     pass
 
-# hapax legomena
+#? hapax legomena
 
 #? character ngrams?
 
@@ -229,7 +235,8 @@ class GrammarVectorizer:
             "func_words"    :func_words, 
             "punc"          :punc,
             "letters"       :letters,
-            "common_emojis" :common_emojis}
+            "common_emojis" :common_emojis,
+            "doc_vector"    :doc_vector}
         
     def _config(self):
         

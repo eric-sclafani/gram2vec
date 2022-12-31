@@ -19,3 +19,8 @@ This file contains ideas for future additions/improvements
 - k-NN: if no majority vote, switch k value??
 - KNN vs NN (1 vector/document VS 1 vector/author k=1)
 - eos/bos?
+
+## Meeting notes:
+- sentence vector
+- mixed bigram
+- MUD
