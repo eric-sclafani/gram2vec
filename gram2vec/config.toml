@@ -7,3 +7,4 @@ letters=1
 common_emojis=1
 doc_vector=0
 word_stats=0
+dep_labels=1

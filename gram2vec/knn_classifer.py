@@ -54,6 +54,7 @@ def main():
     g2v = GrammarVectorizer(logging=True)
     le  = LabelEncoder()
     
+    
     # load train and eval
     train  = utils.load_json(args.train_path)
     eval   = utils.load_json(args.eval_path)

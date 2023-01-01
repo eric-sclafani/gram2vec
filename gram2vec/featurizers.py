@@ -161,7 +161,7 @@ def common_emojis(document):
     emojis = list(filter(lambda x: x in vocab, extract_emojis))
     
     counts, doc_features = get_counts(vocab, emojis)
-    result = np.array(counts) / len(vocab)
+    result = np.array(counts) / len(document.tokens)
     
     return result, doc_features
 
@@ -208,6 +208,20 @@ def word_stats(document):
     return array / len(words), array
     
     
+def dep_labels(document):
+    
+    labels = ['ROOT', 'acl', 'acomp', 'advcl', 'advmod', 'agent', 'amod', 'appos', 'attr', 'aux', 'auxpass', 'case', 'cc', 'ccomp', 'compound', 
+              'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 
+              'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp']
+    
+    document_dep_labels = [token.dep_ for token in document.doc]
+    counts, doc_features = get_counts(labels, document_dep_labels)
+    result = np.array(counts) / len(document_dep_labels)
+    assert len(counts) == len(labels)
+    
+    return result, doc_features
+
+
 
 def mixed_bigrams(document):
     pass
@@ -252,7 +266,8 @@ class GrammarVectorizer:
             "letters"       :letters,
             "common_emojis" :common_emojis,
             "doc_vector"    :doc_vector,
-            "word_stats"    :word_stats}
+            "word_stats"    :word_stats,
+            "dep_labels"    :dep_labels}
         
     def _config(self):
         
@@ -290,9 +305,9 @@ class GrammarVectorizer:
 def main():
     
     nlp = utils.load_spacy("en_core_web_md")
-    document = docify("This is a sentence with short and large words. It is a nice set of sentences lol", nlp)
+    document = docify("This is a sentence with short and large words. It is a nice set of sentences lol. This is also a testing thing for the spacy dependency parser, haha", nlp)
    
-    print(word_stats(document))
+    dep_labels(document)
 
 
 
