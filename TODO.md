@@ -4,7 +4,7 @@ This file contains ideas for future additions/improvements
 
 ## Additions:
 - add functions to get information about the vectors
-- add glove lexical vector to the feature vector
+- add glove lexical vector to the feature vector https://medium.com/analytics-vidhya/basics-of-using-pre-trained-glove-vectors-in-python-d38905f356db
     - in document, get glove vecs for each word and average them -> stick into grammar vector
 - add syntactic stuff
 - Ablation studies
@@ -18,9 +18,9 @@ This file contains ideas for future additions/improvements
 - add accented letters to letter counts?
 - k-NN: if no majority vote, switch k value??
 - KNN vs NN (1 vector/document VS 1 vector/author k=1)
-- eos/bos?
 
 ## Meeting notes:
 - sentence vector
 - mixed bigram
 - MUD
+- word stat normalizations

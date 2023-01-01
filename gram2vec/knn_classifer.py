@@ -81,14 +81,14 @@ def main():
     print(f"Features: {feats}")
     print(accuracy)
     
-    # try:
-    #     results = utils.load_json(result_path)
-    # except:
-    #     utils.save_json({"results":[]}, result_path)
-    #     results = utils.load_json(result_path)
+    try:
+        results = utils.load_json(result_path)
+    except:
+        utils.save_json({"results":[]}, result_path)
+        results = utils.load_json(result_path)
     
-    # results["results"].append({"acc": accuracy, "config":feats})
-    # utils.save_json(data=results, path=result_path)
+    results["results"].append({"acc": accuracy, "config":feats})
+    utils.save_json(data=results, path=result_path)
            
 
 if __name__ == "__main__":

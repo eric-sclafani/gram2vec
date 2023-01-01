@@ -4,6 +4,7 @@ import spacy
 import toml
 import numpy as np
 from nltk import bigrams
+from nltk import FreqDist
 import os
 from dataclasses import dataclass
 import demoji
@@ -86,7 +87,7 @@ def docify(text:str, nlp):
 
 # ~~~ Featurizers ~~~
 
-def pos_unigrams(document) -> np.ndarray:  
+def pos_unigrams(document) -> np.ndarray: 
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     counts, doc_features = get_counts(tags, document.pos_tags)
@@ -95,7 +96,7 @@ def pos_unigrams(document) -> np.ndarray:
     
     return result, doc_features
 
-def pos_bigrams(document):
+def pos_bigrams(document): # len = 50
 
     if not os.path.exists("resources/pan_pos_vocab.pkl"):
         generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")
@@ -109,7 +110,7 @@ def pos_bigrams(document):
     return result, doc_features
 
 
-def func_words(document) -> np.ndarray:  
+def func_words(document) -> np.ndarray:  # len = 145
     
     # modified NLTK stopwords set
     with open ("resources/function_words.txt", "r") as fin:
@@ -174,34 +175,45 @@ def doc_vector(document):
     return result, None
 
 
+def word_stats(document):
+    
+    words = document.words
+
+    # num short and large words
+    short_words = len([1 for word in words if len(word) < 5])
+    large_words = len([1 for word in words if len(word) > 4])
+    
+    # avg, std word length
+    word_lens = [len(word) for word in words] 
+    word_len_avg = np.mean(word_lens)
+    word_len_std = np.std(word_lens)
+    
+    # avg, std sentence length
+    sent_lens = [len(sent) for sent in document.doc.sents]
+    sent_len_avg = np.mean(sent_lens)
+    sent_len_std = np.std(sent_lens)
+    
+    # hapax legomena ratio (vocabulary richness - how many words only occur once)
+    fd = FreqDist(words)
+    hapax = len(fd.hapaxes())
+    
+    array = np.array([short_words, 
+                      large_words,
+                      word_len_avg,
+                      word_len_std,
+                      hapax,
+                      sent_len_avg,
+                      sent_len_std])
+    
+    return array / len(words), array
+    
+    
+
 def mixed_bigrams(document):
     pass
 
 
-def word_level_stats(document):
-    pass
-
-# incomplete
-def num_words_per_sent(document):
-    words_per_sent = np.array([len(sent) for sent in document.doc.sents]) / len(document.tokens) 
-    avg = np.mean(words_per_sent)
-    std = np.std(words_per_sent)
-    return avg, std
-    
-# incomplete
-def num_short_words(document):
-    pass
-
-# incomplete
-def absolute_sent_length(document):
-    pass
-
-def avg_word_length(document):
-    pass
-
-#? hapax legomena
-
-#? character ngrams?
+#? character bigrams?
 
 #? pos subsequences?
 
@@ -211,16 +223,19 @@ def avg_word_length(document):
 
 @dataclass
 class Document:
-    doc          :spacy.tokens.doc.Doc
-    tokens       :list[str]
-    pos_tags     :list[str]
-    text         :str
+    doc      :spacy.tokens.doc.Doc
+    tokens   :list[str]
+    words    :list[str]   
+    pos_tags :list[str]
+    text     :str
+    
     
     @classmethod
     def from_nlp(cls, doc, text):
-        tokens       = [token.text for token in doc]                   
-        pos_tags     = [token.pos_ for token in doc]                   
-        return cls(doc, tokens, pos_tags, text)
+        tokens   = [token.text for token in doc]                   
+        pos_tags = [token.pos_ for token in doc]    
+        words    = [token.text for token in doc if not token.is_punct]              
+        return cls(doc, tokens, words, pos_tags, text)
     
 class GrammarVectorizer:
     """This constructor houses all featurizers and the means to apply them"""
@@ -236,7 +251,8 @@ class GrammarVectorizer:
             "punc"          :punc,
             "letters"       :letters,
             "common_emojis" :common_emojis,
-            "doc_vector"    :doc_vector}
+            "doc_vector"    :doc_vector,
+            "word_stats"    :word_stats}
         
     def _config(self):
         
@@ -267,3 +283,19 @@ class GrammarVectorizer:
                 feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
+    
+    
+    
+    
+def main():
+    
+    nlp = utils.load_spacy("en_core_web_md")
+    document = docify("This is a sentence with short and large words. It is a nice set of sentences lol", nlp)
+   
+    print(word_stats(document))
+
+
+
+
+if __name__ == "__main__":
+    main()

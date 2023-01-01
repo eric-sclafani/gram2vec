@@ -65,6 +65,29 @@
         "letters",
         "common_emojis"
       ]
+    },
+    {
+      "acc": 0.12857142857142856,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "word_stats"
+      ]
+    },
+    {
+      "acc": 0.15,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis"
+      ]
     }
   ]
 }
