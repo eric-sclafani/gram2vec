@@ -53,6 +53,7 @@ def main():
     
     g2v = GrammarVectorizer(logging=True)
     le  = LabelEncoder()
+    scaler = StandardScaler()
     
     
     # load train and eval
@@ -67,6 +68,8 @@ def main():
     Y_train_encoded = le.fit_transform(Y_train)
     Y_eval_encoded  = le.transform(Y_eval)
     
+    # X_train = scaler.fit_transform(X_train)
+    # X_eval = scaler.transform(X_eval)
     
     model = KNeighborsClassifier(n_neighbors=int(args.k_value))
     model.fit(X_train, Y_train_encoded)
@@ -82,14 +85,14 @@ def main():
     print(f"Features: {feats}")
     print(accuracy)
     
-    try:
-        results = utils.load_json(result_path)
-    except:
-        utils.save_json({"results":[]}, result_path)
-        results = utils.load_json(result_path)
+    # try:
+    #     results = utils.load_json(result_path)
+    # except:
+    #     utils.save_json({"results":[]}, result_path)
+    #     results = utils.load_json(result_path)
     
-    results["results"].append({"acc": accuracy, "config":feats})
-    utils.save_json(data=results, path=result_path)
+    # results["results"].append({"acc": accuracy, "config":feats})
+    # utils.save_json(data=results, path=result_path)
            
 
 if __name__ == "__main__":

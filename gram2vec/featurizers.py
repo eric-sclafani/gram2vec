@@ -57,7 +57,11 @@ def get_counts(sample_space:list, features:list) -> list[int]:
     return list(count_dict.values()), count_dict
 
 
-def get_pos_bigrams(doc):
+
+# add boundaries for each sentence (bigrams)
+
+
+def get_pos_bigrams(doc) -> Counter:
     return Counter(bigrams([token.pos_ for token in doc]))
 
 
@@ -65,7 +69,7 @@ def generate_pos_vocab(path):
     
     data = utils.load_json(path)
     nlp = utils.load_spacy("en_core_web_md")
-    bigram_counters = []
+    bigram_counters = [] # becomes a list of dicts
     
     all_text_docs = [entry for id in data.keys() for entry in data[id]]
     for text in all_text_docs:
@@ -142,7 +146,7 @@ def letters(document) -> np.ndarray:
 
     letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-               "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý",]
+               "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý"]
     doc_letters = [letter for token in document.doc 
                           for letter in token.text 
                           if letter in letters]
@@ -172,6 +176,7 @@ def doc_vector(document):
         arrays.append(token.vector)
         
     result = np.mean(arrays, axis=0)
+    
     return result, None
 
 
@@ -197,15 +202,23 @@ def word_stats(document):
     fd = FreqDist(words)
     hapax = len(fd.hapaxes())
     
-    array = np.array([short_words, 
-                      large_words,
+    doc_features = {"short_words": short_words, 
+                    "large_words": large_words,
+                    "word_len_avg": word_len_avg,
+                    "word_len_std": word_len_std,
+                    "sent_len_avg": sent_len_avg,
+                    "sent_len_std": sent_len_std,
+                    "hapaxes": hapax}
+    
+    array = np.array([short_words / len(words), 
+                      large_words / len(words),
                       word_len_avg,
                       word_len_std,
-                      hapax,
                       sent_len_avg,
-                      sent_len_std])
+                      sent_len_std,
+                      hapax / len(words),])
     
-    return array / len(words), array
+    return array, doc_features
     
     
 def dep_labels(document):
