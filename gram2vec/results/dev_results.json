@@ -102,6 +102,20 @@
         "word_stats",
         "dep_labels"
       ]
+    },
+    {
+      "acc": 0.175,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector",
+        "doc_stats",
+        "dep_labels"
+      ]
     }
   ]
 }

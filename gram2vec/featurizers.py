@@ -56,13 +56,32 @@ def get_counts(sample_space:list, features:list) -> list[int]:
         
     return list(count_dict.values()), count_dict
 
-
-
-# add boundaries for each sentence (bigrams)
-
+def insert_boundaries(sent_spans:list[tuple], tokens:list):
+    """
+    This function inserts sentence boundaries to a list of tokens 
+    according to a list of (START, END) sentence index markers
+    
+    Works by enumerating the tokens and checking if each position 
+    is the start or end of a sentence, inserting the appropriate tag when
+    """
+    new_tokens = []
+    for i, item in enumerate(tokens):
+        for start, end in sent_spans:
+            if i == start:
+                new_tokens.append("BOS")
+            elif i == end:
+                new_tokens.append("EOS")    
+        new_tokens.append(item)
+    new_tokens.append("EOS")  
+        
+    return new_tokens
+        
 
 def get_pos_bigrams(doc) -> Counter:
-    return Counter(bigrams([token.pos_ for token in doc]))
+    
+    sent_spans = [(sent.start, sent.end) for sent in doc.sents]
+    pos = insert_boundaries(sent_spans, [token.pos_ for token in doc])
+    return Counter(bigrams(pos))
 
 
 def generate_pos_vocab(path):
@@ -74,7 +93,11 @@ def generate_pos_vocab(path):
     all_text_docs = [entry for id in data.keys() for entry in data[id]]
     for text in all_text_docs:
         doc = nlp(text)
-        bigram_counters.append(get_pos_bigrams(doc))
+        counts = get_pos_bigrams(doc)
+        try:
+            del counts[("EOS","BOS")]
+        except: pass
+        bigram_counters.append(counts)
     
     # this line adds all the counters into one dict, getting the 50 most common pos bigrams
     pos_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
