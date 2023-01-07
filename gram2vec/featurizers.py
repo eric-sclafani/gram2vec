@@ -81,13 +81,6 @@ def generate_pos_vocab(path):
         
     utils.save_pkl(list(pos_bigrams.keys()),"resources/pan_pos_vocab.pkl")
     
-    
-def docify(text:str, nlp):
-    """Converts a text into a Document object"""
-    text_demojified = demoji.replace(text, "") # dep parser hates emojis 
-    doc = nlp(text_demojified)
-    return Document.from_nlp(doc, text)
-    
 
 # ~~~ Featurizers ~~~
 
@@ -95,7 +88,7 @@ def pos_unigrams(document) -> np.ndarray:
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
     counts, doc_features = get_counts(tags, document.pos_tags)
-    result = np.array(counts) / len(document.pos_tags)
+    result = np.array(counts) #/ len(document.pos_tags)
     assert len(tags) == len(counts)
     
     return result, doc_features
@@ -108,7 +101,7 @@ def pos_bigrams(document): # len = 50
     vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
     doc_pos_bigrams = get_pos_bigrams(document.doc)
     counts, doc_features = get_counts(vocab, doc_pos_bigrams)
-    result = np.array(counts) / len(document.pos_tags)
+    result = np.array(counts) #/ len(document.pos_tags)
     assert len(vocab) == len(counts)
     
     return result, doc_features
@@ -122,7 +115,7 @@ def func_words(document) -> np.ndarray:  # len = 145
 
     doc_func_words = [token for token in document.tokens if token in function_words]
     counts, doc_features = get_counts(function_words, doc_func_words)
-    result = np.array(counts) / len(document.tokens)
+    result = np.array(counts) #/ len(document.tokens)
     assert len(function_words) == len(counts)
     
     return result, doc_features
@@ -136,7 +129,7 @@ def punc(document) -> np.ndarray:
                            if punc in punc_marks]
     
     counts, doc_features = get_counts(punc_marks, doc_punc_marks)
-    result = np.array(counts) / len(document.tokens) 
+    result = np.array(counts) #/ len(document.tokens) 
     assert len(punc_marks) == len(counts)
     
     return result, doc_features
@@ -152,7 +145,7 @@ def letters(document) -> np.ndarray:
                           if letter in letters]
     
     counts, doc_features = get_counts(letters, doc_letters)
-    result = np.array(counts) / len(doc_letters)
+    result = np.array(counts) #/ len(doc_letters)
     assert len(letters) == len(counts)
     
     return result, doc_features
@@ -165,7 +158,7 @@ def common_emojis(document):
     emojis = list(filter(lambda x: x in vocab, extract_emojis))
     
     counts, doc_features = get_counts(vocab, emojis)
-    result = np.array(counts) / len(document.tokens)
+    result = np.array(counts) #/ len(document.tokens)
     
     return result, doc_features
 
@@ -180,7 +173,7 @@ def doc_vector(document):
     return result, None
 
 
-def word_stats(document):
+def doc_stats(document):
     
     words = document.words
 
@@ -210,13 +203,13 @@ def word_stats(document):
                     "sent_len_std": sent_len_std,
                     "hapaxes": hapax}
     
-    array = np.array([short_words / len(words), 
-                      large_words / len(words),
+    array = np.array([short_words, 
+                      large_words,
                       word_len_avg,
                       word_len_std,
                       sent_len_avg,
                       sent_len_std,
-                      hapax / len(words),])
+                      hapax,])
     
     return array, doc_features
     
@@ -279,7 +272,7 @@ class GrammarVectorizer:
             "letters"       :letters,
             "common_emojis" :common_emojis,
             "doc_vector"    :doc_vector,
-            "word_stats"    :word_stats,
+            "doc_stats"     :doc_stats,
             "dep_labels"    :dep_labels}
         
     def _config(self):
@@ -298,7 +291,10 @@ class GrammarVectorizer:
     def vectorize(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
-        document = docify(text, self.nlp)
+        
+        text_demojified = demoji.replace(text, "") # dep parser hates emojis 
+        doc = self.nlp(text_demojified)
+        document = Document.from_nlp(doc, text)
         
         vectors = []
         for feat in self._config():
@@ -316,11 +312,7 @@ class GrammarVectorizer:
     
     
 def main():
-    
-    nlp = utils.load_spacy("en_core_web_md")
-    document = docify("This is a sentence with short and large words. It is a nice set of sentences lol. This is also a testing thing for the spacy dependency parser, haha", nlp)
-   
-    dep_labels(document)
+    pass
 
 
 
