@@ -10,12 +10,10 @@ from dataclasses import dataclass
 import demoji
 from collections import Counter
 
-# project import
+# project imports 
 import utils
 
-np.seterr(invalid="ignore")
-
-# ~~~ Logging ~~~
+# ~~~ Logging and global variables ~~~
 
 def feature_logger(filename, writable):
     
@@ -24,6 +22,10 @@ def feature_logger(filename, writable):
                
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
+        
+OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
+
+np.seterr(invalid="ignore")
         
     
 # ~~~ Helper functions ~~~
@@ -56,6 +58,31 @@ def get_counts(sample_space:list, features:list) -> list[int]:
         
     return list(count_dict.values()), count_dict
 
+def replace_openclass(tokens, pos):
+
+    for i in range(len(tokens)):
+        if pos[i] in OPEN_CLASS:
+            tokens[i] = pos[i]
+            
+    return tokens
+        
+def get_mixed_bigrams(doc) -> Counter:
+    
+    tokens = [token.text for token in doc]
+    pos    = [token.pos_ for token in doc]
+    mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
+    
+    # remove bigrams which are not mixed (i.e. (token,token) and (OPEN CLASS TAG, OPEN CLASS TAG) bigrams)
+    for x, y in mixed_bigrams:
+        if x in OPEN_CLASS and y in OPEN_CLASS or x not in OPEN_CLASS and y not in OPEN_CLASS:
+            mixed_bigrams.remove((x,y))
+            
+    return Counter(mixed_bigrams)
+          
+    
+    
+    
+    
 def insert_boundaries(sent_spans:list[tuple], tokens:list):
     """
     This function inserts sentence boundaries to a list of tokens 
@@ -75,7 +102,7 @@ def insert_boundaries(sent_spans:list[tuple], tokens:list):
     new_tokens.append("EOS")  
         
     return new_tokens
-        
+
 
 def get_pos_bigrams(doc) -> Counter:
     
@@ -86,9 +113,9 @@ def get_pos_bigrams(doc) -> Counter:
         del counter[("EOS","BOS")]
     except: pass
     
-    return counter
+    return counter  
 
-
+    
 def generate_pos_vocab(path):
     
     data = utils.load_json(path)
@@ -106,9 +133,10 @@ def generate_pos_vocab(path):
         bigram_counters.append(counts)
     
     # this line condenses all the counters into one dict, getting the 50 most common bigrams
-    pos_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
-        
-    utils.save_pkl(list(pos_bigrams.keys()),"resources/pan_pos_vocab.pkl")
+    common_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
+    
+    # saves the 50 most common bigrams as a list to a pickle
+    utils.save_pkl(list(common_bigrams.keys()),"resources/pan_pos_vocab.pkl")
     
 
 # ~~~ Featurizers ~~~
