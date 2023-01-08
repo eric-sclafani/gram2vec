@@ -3,6 +3,7 @@
 import spacy
 import toml
 import numpy as np
+np.seterr(invalid="ignore")
 from nltk import bigrams
 from nltk import FreqDist
 import os
@@ -25,9 +26,7 @@ def feature_logger(filename, writable):
         
 OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
 
-np.seterr(invalid="ignore")
-        
-    
+
 # ~~~ Helper functions ~~~
 
 def get_counts(sample_space:list, features:list) -> list[int]:
@@ -58,13 +57,14 @@ def get_counts(sample_space:list, features:list) -> list[int]:
         
     return list(count_dict.values()), count_dict
 
+
 def replace_openclass(tokens, pos):
 
     for i in range(len(tokens)):
         if pos[i] in OPEN_CLASS:
             tokens[i] = pos[i]
-            
     return tokens
+        
         
 def get_mixed_bigrams(doc) -> Counter:
     
@@ -72,16 +72,8 @@ def get_mixed_bigrams(doc) -> Counter:
     pos    = [token.pos_ for token in doc]
     mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
     
-    # remove bigrams which are not mixed (i.e. (token,token) and (OPEN CLASS TAG, OPEN CLASS TAG) bigrams)
-    for x, y in mixed_bigrams:
-        if x in OPEN_CLASS and y in OPEN_CLASS or x not in OPEN_CLASS and y not in OPEN_CLASS:
-            mixed_bigrams.remove((x,y))
-            
     return Counter(mixed_bigrams)
           
-    
-    
-    
     
 def insert_boundaries(sent_spans:list[tuple], tokens:list):
     """
@@ -115,30 +107,6 @@ def get_pos_bigrams(doc) -> Counter:
     
     return counter  
 
-    
-def generate_pos_vocab(path):
-    
-    data = utils.load_json(path)
-    nlp = utils.load_spacy("en_core_web_md")
-    bigram_counters = [] # becomes a list of dicts
-    
-    all_text_docs = [entry for id in data.keys() for entry in data[id]]
-    for text in all_text_docs:
-        doc = nlp(text)
-        
-        
-        counts = get_pos_bigrams(doc)
-        
-        
-        bigram_counters.append(counts)
-    
-    # this line condenses all the counters into one dict, getting the 50 most common bigrams
-    common_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
-    
-    # saves the 50 most common bigrams as a list to a pickle
-    utils.save_pkl(list(common_bigrams.keys()),"resources/pan_pos_vocab.pkl")
-    
-
 # ~~~ Featurizers ~~~
 
 def pos_unigrams(document) -> np.ndarray: 
@@ -152,10 +120,7 @@ def pos_unigrams(document) -> np.ndarray:
 
 def pos_bigrams(document): # len = 50
 
-    if not os.path.exists("resources/pan_pos_vocab.pkl"):
-        generate_pos_vocab("data/pan/preprocessed/fixed_sorted_author.json")
-    
-    vocab = utils.load_pkl("resources/pan_pos_vocab.pkl")
+    vocab = utils.load_pkl("resources/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
     doc_pos_bigrams = get_pos_bigrams(document.doc)
     counts, doc_features = get_counts(vocab, doc_pos_bigrams)
     result = np.array(counts) #/ len(document.pos_tags)
@@ -310,10 +275,9 @@ class Document:
 class GrammarVectorizer:
     """This constructor houses all featurizers and the means to apply them"""
     
-    def __init__(self, logging=False):
+    def __init__(self, data_path, logging=False):
         self.nlp = utils.load_spacy("en_core_web_md")
         self.logging = logging
-        
         self.featurizers = {
             "pos_unigrams"  :pos_unigrams,
             "pos_bigrams"   :pos_bigrams,
@@ -324,6 +288,8 @@ class GrammarVectorizer:
             "doc_vector"    :doc_vector,
             "doc_stats"     :doc_stats,
             "dep_labels"    :dep_labels}
+        
+        self._generate_vocab(data_path)
         
     def _config(self):
         
@@ -336,6 +302,41 @@ class GrammarVectorizer:
             except KeyError:
                 raise KeyError(f"Feature '{name}' does not exist in config.toml")
         return config
+    
+    def _generate_vocab(self, data_path):
+        """
+        Generates vocab files required by some featurizers. Assumes the following input data format:
+                            {
+                             author_id : [doc1, doc2,...docn],
+                             author_id : [...]
+                             }
+        """
+        data = utils.load_json(data_path)
+        dataset = "pan" if "pan" in data_path else "mud" # will need to be changed based on data set
+        counters = {
+            "pos_bigrams"     : [],
+            "pos_subsequences": [],
+            "mixed_bigrams"   : []
+        } 
+        
+        all_text_docs = [entry for id in data.keys() for entry in data[id]]
+        for feature, counter_list in counters.items():
+            out_path = f"resources/{dataset}_{feature}_vocab.pkl"
+            
+            if not os.path.exists(out_path):
+                for text in all_text_docs:
+                    doc = self.nlp(text)
+                    
+                    pos_counts = get_pos_bigrams(doc)
+                    counters["pos_bigrams"].append(pos_counts)
+                
+                    mixed_bigrams = get_mixed_bigrams(doc)
+                    counters["mixed_bigrams"].append(mixed_bigrams)
+        
+                # this line condenses all the counters into one dict, getting the 50 most common elements
+                most_common = dict(sum(counter_list, Counter()).most_common(50)) # most common returns list of tuples, gets converted back to dict
+                utils.save_pkl(list(most_common.keys()), out_path)
+        
         
     
     def vectorize(self, text:str) -> np.ndarray:
@@ -357,15 +358,3 @@ class GrammarVectorizer:
                 feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
                     
         return np.concatenate(vectors)
-    
-    
-    
-    
-def main():
-    pass
-
-
-
-
-if __name__ == "__main__":
-    main()
