@@ -81,7 +81,12 @@ def get_pos_bigrams(doc) -> Counter:
     
     sent_spans = [(sent.start, sent.end) for sent in doc.sents]
     pos = insert_boundaries(sent_spans, [token.pos_ for token in doc])
-    return Counter(bigrams(pos))
+    counter = Counter(bigrams(pos))
+    try:
+        del counter[("EOS","BOS")]
+    except: pass
+    
+    return counter
 
 
 def generate_pos_vocab(path):
@@ -93,13 +98,14 @@ def generate_pos_vocab(path):
     all_text_docs = [entry for id in data.keys() for entry in data[id]]
     for text in all_text_docs:
         doc = nlp(text)
+        
+        
         counts = get_pos_bigrams(doc)
-        try:
-            del counts[("EOS","BOS")]
-        except: pass
+        
+        
         bigram_counters.append(counts)
     
-    # this line adds all the counters into one dict, getting the 50 most common pos bigrams
+    # this line condenses all the counters into one dict, getting the 50 most common bigrams
     pos_bigrams = dict(sum(bigram_counters, Counter()).most_common(50))
         
     utils.save_pkl(list(pos_bigrams.keys()),"resources/pan_pos_vocab.pkl")
@@ -186,13 +192,7 @@ def common_emojis(document):
     return result, doc_features
 
 def doc_vector(document):
-    
-    arrays = []
-    for token in document.doc:
-        arrays.append(token.vector)
-        
-    result = np.mean(arrays, axis=0)
-    
+    result = document.doc.vector
     return result, None
 
 
@@ -256,7 +256,6 @@ def mixed_bigrams(document):
     pass
 
 
-#? character bigrams?
 
 #? pos subsequences?
 

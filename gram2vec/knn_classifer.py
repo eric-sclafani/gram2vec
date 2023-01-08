@@ -51,7 +51,7 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(logging=True)
+    g2v = GrammarVectorizer(logging=False)
     le  = LabelEncoder()
     scaler = StandardScaler()
     
@@ -83,6 +83,7 @@ def main():
     
     print(f"Eval set: {eval_set}")
     print(f"Features: {feats}")
+    print(f"Feature vector size: {X_train[0].shape}")
     print(accuracy)
     
     # try:
@@ -91,7 +92,7 @@ def main():
     #     utils.save_json({"results":[]}, result_path)
     #     results = utils.load_json(result_path)
     
-    # results["results"].append({"acc": accuracy, "config":feats})
+    # results["results"].append({"acc": accuracy, "config":feats, "vector_shape":f"{X_train[0].shape}"})
     # utils.save_json(data=results, path=result_path)
            
 
