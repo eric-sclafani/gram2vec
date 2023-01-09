@@ -52,7 +52,7 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(args.train_path, True)
+    g2v = GrammarVectorizer(args.train_path, False)
     le  = LabelEncoder()
     scaler = StandardScaler()
     
@@ -80,24 +80,26 @@ def main():
 
     feats = [feat.__name__ for feat in g2v._config()]
     eval_set = "dev" if args.eval_path.endswith("dev.json") else "test"
-    result_path = f"results/{eval_set}_results.json"
+    result_path = f"results/{eval_set}_results.json" if "bin" not in args.eval_path else f"results/{eval_set}_bin_results.json"
     
     print(f"Eval set: {eval_set}")
     print(f"Features: {feats}")
     print(f"Feature vector size: {len(X_train[0])}")
+    print(f"k: {args.k_value}")
     print(f"Accuracy: {accuracy}")
     
-    # try:
-    #     results = utils.load_json(result_path)
-    # except:
-    #     utils.save_json({"results":[]}, result_path)
-    #     results = utils.load_json(result_path)
+    try:
+        results = utils.load_json(result_path)
+    except:
+        utils.save_json({"results":[]}, result_path)
+        results = utils.load_json(result_path)
     
-    # results["results"].append({"datetime": str(datetime.now()),
-    #                            "acc": accuracy, 
-    #                            "config":feats, 
-    #                            "vector_length":f"{len(X_train[0])}"})
-    # utils.save_json(data=results, path=result_path)
+    results["results"].append({"datetime": str(datetime.now()),
+                               "acc": accuracy, 
+                               "config":feats, 
+                               "vector_length":f"{len(X_train[0])}",
+                               "k": f"{args.k_value}"})
+    utils.save_json(data=results, path=result_path)
            
 
 if __name__ == "__main__":

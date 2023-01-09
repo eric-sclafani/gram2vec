@@ -9,4 +9,4 @@ doc_vector=1
 doc_stats=1
 dep_labels=1
 mixed_bigrams=1
-pos_subsequences=1
+pos_subsequences=0

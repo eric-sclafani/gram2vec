@@ -25,7 +25,9 @@ def load_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
 
 def replace_tag(tag:str):
     """
-    FIX: detects a functional tag and returns a different string instead
+    FIX: detects a functional tag and returns a different string instead.
+    
+    This is done so the dependency parser doesn't get tripped up
     """
     
     to_remove = ["<data_extract>", "<data_excerpt>", "<link>", "<line_break>", "<tab>", "<table>", "<image>", "<images>", "<nl>", "<new>", "<figure>", "<susiness>"]
@@ -172,27 +174,31 @@ def train_dev_test_splits(data:dict):
                 train[author_id].append(text)
     return train, dev, test
 
-#! this func is deprecatd and its functionality is due to be moved into a separate script
+
 def save_dev_bins(dev, train):
     """Sort dev by author frequency in train, and split into bins"""
     
-    train_ = sorted(train.items(), key=lambda x: len(x[1]), reverse=True)
-    dev_ = sorted(dev.items(), key=lambda x:len(train[x[0]]), reverse=True)
-    assert [i[0] for i in train_] == [i[0] for i in dev_], "Sorting incorrect"
-
-    # manually checking that dev_ is sorted by frequency in train
-    # for devitems, trainitems in zip(dev_, train_):
-    #     print(f"TRAIN AUTHOR: {trainitems[0]} : {len(trainitems[1])}")
-    #     print(f"DEV AUTHOR:   {devitems[0]}   : {len(devitems[1])}\n")
+    # sort authors in training data by number of documents (high to low)
+    train_sorted = sorted(train.items(), key=lambda x: len(x[1]), reverse=True)
     
-    utils.save_json({k:v for k, v in dev_[0:7]},   "data/dev_bins/dev_bin_1.json")
-    utils.save_json({k:v for k, v in dev_[7:14]},  "data/dev_bins/dev_bin_2.json")
-    utils.save_json({k:v for k, v in dev_[14:21]}, "data/dev_bins/dev_bin_3.json")
-    utils.save_json({k:v for k, v in dev_[21:28]}, "data/dev_bins/dev_bin_4.json")
-    utils.save_json({k:v for k, v in dev_[28:35]}, "data/dev_bins/dev_bin_5.json")
-    utils.save_json({k:v for k, v in dev_[35:42]}, "data/dev_bins/dev_bin_6.json")
-    utils.save_json({k:v for k, v in dev_[42:49]}, "data/dev_bins/dev_bin_7.json")
-    utils.save_json({k:v for k, v in dev_[49:56]}, "data/dev_bins/dev_bin_8.json")
+    # sort authors in dev set by the number of documents in training (high to low)
+    dev_sorted = sorted(dev.items(), key=lambda x:len(train[x[0]]), reverse=True)
+    
+    # assert that dev is sorted correctly
+    assert [i[0] for i in train_sorted] == [i[0] for i in dev_sorted], "Sorting incorrect"
+
+    # another check that they're sorted correctly
+    for devitems, trainitems in zip(dev_sorted, train_sorted):
+        assert trainitems[0] == devitems[0]
+    
+    utils.save_json({k:v for k, v in dev_sorted[0:7]},   "pan/dev_bins/bin_1_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[7:14]},  "pan/dev_bins/bin_2_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[14:21]}, "pan/dev_bins/bin_3_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[21:28]}, "pan/dev_bins/bin_4_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[28:35]}, "pan/dev_bins/bin_5_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[35:42]}, "pan/dev_bins/bin_6_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[42:49]}, "pan/dev_bins/bin_7_dev.json")
+    utils.save_json({k:v for k, v in dev_sorted[49:56]}, "pan/dev_bins/bin_8_dev.json")
         
                                    
 def save_dataset_stats(data:dict):
@@ -213,7 +219,7 @@ def save_dataset_stats(data:dict):
 def main(): 
 
     print("Loading raw data...")
-    id_pairs, text_pairs = load_raw_data("data/pan/raw/pairs.jsonl", "data/pan/raw/truth.jsonl")
+    id_pairs, text_pairs = load_raw_data("pan/raw/pairs.jsonl", "pan/raw/truth.jsonl")
     print("Done!")
     
     print("Sorting and fixing data...")
@@ -221,20 +227,22 @@ def main():
     fixed_sorted_authors = fix_data(sorted_authors)
     print("Done!")
     
-    print("Saving preprocessed datasets...")
-    utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_authors.json")
-    utils.save_json(fixed_sorted_authors, "data/pan/preprocessed/fixed_sorted_author.json")
-    print("Done!")
+    # print("Saving preprocessed datasets...")
+    # utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_authors.json")
+    # utils.save_json(fixed_sorted_authors, "data/pan/preprocessed/fixed_sorted_author.json")
+    # print("Done!")
 
     print("Dividing data into splits...")
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
-    for split, path in [(train, "data/pan/train_dev_test/train.json"), (dev, "data/pan/train_dev_test/dev.json"), (test, "data/pan/train_dev_test/test.json")]:
-        utils.save_json(split, path)
-    print("Done!")
+    # for split, path in [(train, "data/pan/train_dev_test/train.json"), (dev, "data/pan/train_dev_test/dev.json"), (test, "data/pan/train_dev_test/test.json")]:
+    #     utils.save_json(split, path)
+    # print("Done!")
     
-    print("Generating dataset statistics...")
-    save_dataset_stats(sorted_authors)
-    print("Done!")
+    # print("Generating dataset statistics...")
+    # save_dataset_stats(sorted_authors)
+    # print("Done!")
+    
+    save_dev_bins(dev, train)
     
     
     
