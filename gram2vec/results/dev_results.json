@@ -1,123 +1,7 @@
 {
   "results": [
     {
-      "acc": 0.12857142857142856,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters"
-      ]
-    },
-    {
-      "acc": 0.14642857142857144,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters"
-      ]
-    },
-    {
-      "acc": 0.15,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis"
-      ]
-    },
-    {
-      "acc": 0.09285714285714286,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis",
-        "doc_vector"
-      ]
-    },
-    {
-      "acc": 0.15,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis"
-      ]
-    },
-    {
-      "acc": 0.12857142857142856,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis",
-        "word_stats"
-      ]
-    },
-    {
-      "acc": 0.15,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis"
-      ]
-    },
-    {
-      "acc": 0.10714285714285714,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis",
-        "dep_labels"
-      ]
-    },
-    {
-      "acc": 0.17142857142857143,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis",
-        "doc_vector",
-        "word_stats",
-        "dep_labels"
-      ]
-    },
-    {
-      "acc": 0.175,
-      "config": [
-        "pos_unigrams",
-        "pos_bigrams",
-        "func_words",
-        "punc",
-        "letters",
-        "common_emojis",
-        "doc_vector",
-        "doc_stats",
-        "dep_labels"
-      ]
-    },
-    {
+      "datetime": "2023-01-08 17:59:10.656602",
       "acc": 0.175,
       "config": [
         "pos_unigrams",
@@ -130,7 +14,24 @@
         "doc_stats",
         "dep_labels"
       ],
-      "vector_shape": "(657,)"
+      "vector_length": "657"
+    },
+    {
+      "datetime": "2023-01-08 19:13:55.021224",
+      "acc": 0.18928571428571428,
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector",
+        "doc_stats",
+        "dep_labels",
+        "mixed_bigrams"
+      ],
+      "vector_length": "707"
     }
   ]
 }

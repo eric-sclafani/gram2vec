@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
+from datetime import datetime
 
 # project imports
 import utils
@@ -83,8 +84,8 @@ def main():
     
     print(f"Eval set: {eval_set}")
     print(f"Features: {feats}")
-    print(f"Feature vector size: {X_train[0].shape}")
-    print(accuracy)
+    print(f"Feature vector size: {len(X_train[0])}")
+    print(f"Accuracy: {accuracy}")
     
     # try:
     #     results = utils.load_json(result_path)
@@ -92,7 +93,10 @@ def main():
     #     utils.save_json({"results":[]}, result_path)
     #     results = utils.load_json(result_path)
     
-    # results["results"].append({"acc": accuracy, "config":feats, "vector_shape":f"{X_train[0].shape}"})
+    # results["results"].append({"datetime": str(datetime.now()),
+    #                            "acc": accuracy, 
+    #                            "config":feats, 
+    #                            "vector_length":f"{len(X_train[0])}"})
     # utils.save_json(data=results, path=result_path)
            
 

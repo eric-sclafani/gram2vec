@@ -29,6 +29,7 @@ def save_json(data:dict, path, mode="w") -> None:
     with open(path, mode) as fout:
         json.dump(data, fout, ensure_ascii=False, indent=2)
 
+
 def load_spacy(model:str):
     
     try:

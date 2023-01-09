@@ -57,24 +57,7 @@ def get_counts(sample_space:list, features:list) -> list[int]:
         
     return list(count_dict.values()), count_dict
 
-
-def replace_openclass(tokens, pos):
-
-    for i in range(len(tokens)):
-        if pos[i] in OPEN_CLASS:
-            tokens[i] = pos[i]
-    return tokens
-        
-        
-def get_mixed_bigrams(doc) -> Counter:
-    
-    tokens = [token.text for token in doc]
-    pos    = [token.pos_ for token in doc]
-    mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
-    
-    return Counter(mixed_bigrams)
-          
-    
+   
 def insert_boundaries(sent_spans:list[tuple], tokens:list):
     """
     This function inserts sentence boundaries to a list of tokens 
@@ -105,7 +88,35 @@ def get_pos_bigrams(doc) -> Counter:
         del counter[("EOS","BOS")]
     except: pass
     
-    return counter  
+    return counter
+
+
+def replace_openclass(tokens, pos):
+
+    for i in range(len(tokens)):
+        if pos[i] in OPEN_CLASS:
+            tokens[i] = pos[i]
+    return tokens
+        
+        
+def get_mixed_bigrams(doc) -> Counter:
+    
+    tokens = [token.text for token in doc]
+    pos    = [token.pos_ for token in doc]
+    mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
+    
+    return Counter(mixed_bigrams)
+
+
+def get_pos_subsequences(doc):
+    
+    pos = [token.pos_ for token in doc]
+    
+    subseqs = []
+    for i in range(len(pos)-1):
+        subseqs.extend([(pos[i],pos[n]) for n in range(i+1, len(pos))])   
+        
+    return Counter(subseqs)  
 
 # ~~~ Featurizers ~~~
 
@@ -244,13 +255,26 @@ def dep_labels(document):
     return result, doc_features
 
 
-
 def mixed_bigrams(document):
-    pass
+    
+    vocab = utils.load_pkl("resources/pan_mixed_bigrams_vocab.pkl")
+    doc_mixed_bigrams = get_mixed_bigrams(document.doc)
+    counts, doc_features = get_counts(vocab, doc_mixed_bigrams)
+    result = np.array(counts) 
+    assert len(vocab) == len(counts)
+    
+    return result, doc_features
 
 
+def pos_subsequences(document):
+    
+    vocab = utils.load_pkl("resources/pan_pos_subsequences_vocab.pkl")
+    doc_pos_subsuences = get_pos_subsequences(document.doc)
+    counts, doc_features = get_counts(vocab, doc_pos_subsuences)
+    result = np.array(counts) 
+    assert len(vocab) == len(counts)
 
-#? pos subsequences?
+    return result, doc_features
 
 
 # ~~~ Featurizers end ~~~
@@ -279,15 +303,17 @@ class GrammarVectorizer:
         self.nlp = utils.load_spacy("en_core_web_md")
         self.logging = logging
         self.featurizers = {
-            "pos_unigrams"  :pos_unigrams,
-            "pos_bigrams"   :pos_bigrams,
-            "func_words"    :func_words, 
-            "punc"          :punc,
-            "letters"       :letters,
-            "common_emojis" :common_emojis,
-            "doc_vector"    :doc_vector,
-            "doc_stats"     :doc_stats,
-            "dep_labels"    :dep_labels}
+            "pos_unigrams"    :pos_unigrams,
+            "pos_bigrams"     :pos_bigrams,
+            "func_words"      :func_words, 
+            "punc"            :punc,
+            "letters"         :letters,
+            "common_emojis"   :common_emojis,
+            "doc_vector"      :doc_vector,
+            "doc_stats"       :doc_stats,
+            "dep_labels"      :dep_labels,
+            "mixed_bigrams"   :mixed_bigrams,
+            "pos_subsequences":pos_subsequences}
         
         self._generate_vocab(data_path)
         
@@ -332,6 +358,9 @@ class GrammarVectorizer:
                 
                     mixed_bigrams = get_mixed_bigrams(doc)
                     counters["mixed_bigrams"].append(mixed_bigrams)
+                    
+                    pos_subseqs = get_pos_subsequences(doc)
+                    counters["pos_subsequences"].append(pos_subseqs)
         
                 # this line condenses all the counters into one dict, getting the 50 most common elements
                 most_common = dict(sum(counter_list, Counter()).most_common(50)) # most common returns list of tuples, gets converted back to dict
