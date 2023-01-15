@@ -85,7 +85,7 @@ def get_pos_bigrams(doc) -> Counter:
     pos = insert_boundaries(sent_spans, [token.pos_ for token in doc])
     counter = Counter(bigrams(pos))
     try:
-        del counter[("EOS","BOS")]
+        del counter[("EOS","BOS")] # removes artificial bigram
     except: pass
     
     return counter
@@ -129,7 +129,7 @@ def pos_unigrams(document) -> np.ndarray:
     
     return result, doc_features
 
-def pos_bigrams(document): # len = 50
+def pos_bigrams(document) -> np.ndarray : # len = 50
 
     vocab = utils.load_pkl("resources/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
     doc_pos_bigrams = get_pos_bigrams(document.doc)
