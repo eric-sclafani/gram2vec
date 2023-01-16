@@ -38,6 +38,12 @@ def main():
                         help="k value for K-NN", 
                         default=7)
     
+    parser.add_argument("-m", 
+                        "--metric", 
+                        type=str, 
+                        help="distance metric", 
+                        default="cosine")
+    
     parser.add_argument("-train", 
                         "--train_path", 
                         type=str, 
@@ -52,7 +58,7 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(args.train_path, False)
+    g2v = GrammarVectorizer(args.train_path, logging=False)
     le  = LabelEncoder()
     scaler = StandardScaler()
     
@@ -72,7 +78,7 @@ def main():
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.transform(X_eval)
     
-    model = KNeighborsClassifier(n_neighbors=int(args.k_value))
+    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.metric)
     model.fit(X_train, Y_train_encoded)
     
     predictions = model.predict(X_eval)
@@ -86,6 +92,7 @@ def main():
     print(f"Features: {feats}")
     print(f"Feature vector size: {len(X_train[0])}")
     print(f"k: {args.k_value}")
+    print(f"Metric: {args.metric}")
     print(f"Accuracy: {accuracy}")
     
     try:
@@ -96,9 +103,11 @@ def main():
     
     results["results"].append({"datetime": str(datetime.now()),
                                "acc": accuracy, 
-                               "config":feats, 
                                "vector_length":f"{len(X_train[0])}",
-                               "k": f"{args.k_value}"})
+                               "k": f"{args.k_value}",
+                               "Metric": args.metric,
+                               "config":feats})
+    
     utils.save_json(data=results, path=result_path)
            
 

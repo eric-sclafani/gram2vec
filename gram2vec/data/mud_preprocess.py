@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import ijson
-import json
 import re
 from collections import defaultdict
 
