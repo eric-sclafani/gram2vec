@@ -3,6 +3,7 @@ import json
 import re
 from copy import deepcopy
 from nltk.corpus import names
+import numpy as np
 from random import choice, randint
 import re
 from collections import defaultdict
@@ -175,31 +176,36 @@ def train_dev_test_splits(data:dict):
     return train, dev, test
 
 
-def save_dev_bins(dev, train):
-    """Sort dev by author frequency in train, and split into bins"""
+def save_dev_bins(dev:dict, train:dict):
     
-    # sort authors in training data by number of documents (high to low)
-    train_sorted = sorted(train.items(), key=lambda x: len(x[1]), reverse=True)
+    #! put under new func?
+    # train_sorted = sorted(train.items(), key=lambda x: len(x[1]), reverse=True)
+    # dev_sorted = sorted(dev.items(), key=lambda x:len(train[x[0]]), reverse=True)
+    # assert [i[0] for i in train_sorted] == [i[0] for i in dev_sorted], "Sorting incorrect"
+    # for devitems, trainitems in zip(dev_sorted, train_sorted):
+    #     assert trainitems[0] == devitems[0]
     
-    # sort authors in dev set by the number of documents in training (high to low)
-    dev_sorted = sorted(dev.items(), key=lambda x:len(train[x[0]]), reverse=True)
     
-    # assert that dev is sorted correctly
-    assert [i[0] for i in train_sorted] == [i[0] for i in dev_sorted], "Sorting incorrect"
+    author_to_avg_tokens = {}
+    for author_id, documents in train.items():  
+        author_to_avg_tokens[author_id] = np.mean([len(doc.split()) for doc in documents], axis=0)
+    
+    # sort TRAIN by avg num of tokens
+    train_sorted = dict(sorted(author_to_avg_tokens.items(),key = lambda x: x[1]))
+    index_map = {v: i for i, v in enumerate(train_sorted.keys())}
+    
+    # sort DEV by avg num of tokens in TRAIN
+    dev_sorted = sorted(dev.items(), key=lambda pair: index_map[pair[0]])
+    
+    i = 0
+    for bin_num in range(1,9):
+        partition = dict(dev_sorted[i:i+7])
+        utils.save_json(data=partition, path=f"pan/dev_bins/sorted_by_avg_tokens/bin_{bin_num}_dev.json")
+        i += 7
+    
+    
 
-    # another check that they're sorted correctly
-    for devitems, trainitems in zip(dev_sorted, train_sorted):
-        assert trainitems[0] == devitems[0]
-    
-    utils.save_json({k:v for k, v in dev_sorted[0:7]},   "pan/dev_bins/bin_1_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[7:14]},  "pan/dev_bins/bin_2_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[14:21]}, "pan/dev_bins/bin_3_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[21:28]}, "pan/dev_bins/bin_4_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[28:35]}, "pan/dev_bins/bin_5_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[35:42]}, "pan/dev_bins/bin_6_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[42:49]}, "pan/dev_bins/bin_7_dev.json")
-    utils.save_json({k:v for k, v in dev_sorted[49:56]}, "pan/dev_bins/bin_8_dev.json")
-        
+
                                    
 def save_dataset_stats(data:dict):
     

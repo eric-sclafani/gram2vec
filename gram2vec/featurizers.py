@@ -18,7 +18,7 @@ import utils
 
 def feature_logger(filename, writable):
     
-    if not os.path.exists("logs"): # make log dir if not exists
+    if not os.path.exists("logs"):
         os.mkdir("logs")
                
     with open(f"logs/{filename}.log", "a") as fout: 

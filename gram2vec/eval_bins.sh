@@ -3,7 +3,7 @@
 # this script evaluates the knn classifier on development bins for PAN 2022
 
 
-for json in data/pan/dev_bins/*; do
+for json in data/pan/dev_bins/sorted_by_avg_tokens/*; do
 
     if [ -f "$json" ]; then
         python3 knn_classifer.py --eval_path "$json"
