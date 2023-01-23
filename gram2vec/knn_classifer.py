@@ -2,6 +2,7 @@
 
 import argparse
 import numpy as np
+import os
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -91,6 +92,8 @@ def main():
     print(f"Metric: {args.metric}")
     print(f"Accuracy: {accuracy}")
     
+    
+    # loads in result file and appents the current run's result
     try:
         results = utils.load_json(result_path)
     except:
