@@ -33,55 +33,55 @@ def replace_tag(tag:str):
     
     to_remove = ["<data_extract>", "<data_excerpt>", "<link>", "<line_break>", "<tab>", "<table>", "<image>", "<images>", "<nl>", "<new>", "<figure>", "<susiness>"]
     if re.search(r"<question(\d)?>", tag) or tag in to_remove: 
-        t = " "
+        new_string = " "
   
     # tags that need to be replaced 
     elif re.search(r"(<addr?(\d+)?_.*>)|(<pers(\d)?.*>)", tag):
-        t = choice(names.words())
+        new_string = choice(names.words())
         
     elif re.search(r"<part_.*>", tag):
-        t = "."
+        new_string = "."
     
     elif re.search(r"<city(\d)?>", tag):
-        t = choice(["New York City", "Seattle", "Los Angelos", "San Fransisco", "Chicago", "Houston", "Pheonix", "Philadelphia", "San Antonio", "San Jose", "Dallas"])
+        new_string = choice(["New York City", "Seattle", "Los Angelos", "San Fransisco", "Chicago", "Houston", "Pheonix", "Philadelphia", "San Antonio", "San Jose", "Dallas"])
     
     elif re.search(r"<condition(\d)?>", tag):
-        t = choice(["hypothermia", "flu", "covid", "cancer", "asthma", "monkey pox"])
+        new_string = choice(["hypothermia", "flu", "covid", "cancer", "asthma", "monkey pox"])
     
     elif re.search(r"(<continent(\d)?_adj>)|(<condition(\d)?_adj>)|(<country(\d)_adj>)", tag):
-        t = choice(["happy", "dense", "loud", "large", "small", "populated", "amazing"])
+        new_string = choice(["happy", "dense", "loud", "large", "small", "populated", "amazing"])
     
     elif re.search(r"(<country(\d)?>)|(<counr?ty>)|(<continent>)", tag):
-        t = choice(["America", "Britain", "Brazil", "Russia", "Mexico", "Iran", "Iraq"])
+        new_string = choice(["America", "Britain", "Brazil", "Russia", "Mexico", "Iran", "Iraq"])
     
     elif re.search(r"<course(\d)>", tag):
-        t = choice(["math", "linguistics", "computer science", "biology", "physics", "chemistry"])
+        new_string = choice(["math", "linguistics", "computer science", "biology", "physics", "chemistry"])
     
     elif re.search(r"(<day(\d)?>)|(<day_abbr>)", tag):
-        t = choice(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+        new_string = choice(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
     
     elif re.search(r"(<month(\d)?>)|(<month_abbr>)", tag):
-        t = choice(["December", "November", "October", "September", "August", "July", "June"])
+        new_string = choice(["December", "November", "October", "September", "August", "July", "June"])
 
     elif re.search(r"(<.*_number(\d)?>)|(<.*code(\d)?>)", tag) or tag in ["<DD>", "<DD_MM_YY>", "<DDth>", "<YY>","<YYYY>", "<age>"]: # NUMBERS
-        t = str(randint(0,10000))
+        new_string = str(randint(0,10000))
 
     elif re.search(r"<language(\d)?>", tag):
-        t = choice(["Spanish", "English", "Arabic", "Russian", "Mandarin", "French", "Hebrew"])
+        new_string = choice(["Spanish", "English", "Arabic", "Russian", "Mandarin", "French", "Hebrew"])
     
     elif re.search(r"<station(\d)?>", tag):
-        t = choice(["Penn Station", "Grand Central Terminal", "Huntington Station", "Port Jefferson Station", "Stony Brook Station"])
+        new_string = choice(["Penn Station", "Grand Central Terminal", "Huntington Station", "Port Jefferson Station", "Stony Brook Station"])
     
     elif re.search(r"<town(\d)?>", tag):
-        t = choice(["Stony Brook", "Port Jefferson", "East Setauket", "Huntington", "Patchogue"])
+        new_string = choice(["Stony Brook", "Port Jefferson", "East Setauket", "Huntington", "Patchogue"])
     
     elif tag == "<band>":
-        t = choice(["Nirvana", "Queen", "Pink Floyd", "The Beatles"])
+        new_string = choice(["Nirvana", "Queen", "Pink Floyd", "The Beatles"])
      
     else: # strip the tag of <> and numbers
-        t = re.sub(r"[<>\d]", "", tag)
+        new_string = re.sub(r"[<>\d]", "", tag)
     
-    return t
+    return new_string
 
 def normalize(text):
     """
@@ -176,6 +176,7 @@ def train_dev_test_splits(data:dict):
     return train, dev, test
 
 
+# function under heavy construction
 def save_dev_bins(dev:dict, train:dict):
     
     #! put under new func?
@@ -204,23 +205,6 @@ def save_dev_bins(dev:dict, train:dict):
         i += 7
     
     
-
-
-                                   
-def save_dataset_stats(data:dict):
-    
-    authors    = []
-    doc_counts = []
-    for author_id in data.keys():
-        if author_id not in authors:
-            authors.append(author_id)
-        doc_counts.append(len(data[author_id]))   
-         
-    with open("resources/stats.tsv", "w") as fout:
-        writer = csv.writer(fout, delimiter="\t")
-        writer.writerow(["author", "num_counts"])
-        for author, count in zip(authors, doc_counts):
-            writer.writerow([author, count])
                                  
 def main(): 
 
@@ -233,8 +217,11 @@ def main():
     fixed_sorted_authors = fix_data(sorted_authors)
     print("Done!")
     
+    # print("Saving sorted datasets...")
+    # utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_author.json")
+    # print("Done!")
+    
     # print("Saving preprocessed datasets...")
-    # utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_authors.json")
     # utils.save_json(fixed_sorted_authors, "data/pan/preprocessed/fixed_sorted_author.json")
     # print("Done!")
 
@@ -242,10 +229,6 @@ def main():
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
     # for split, path in [(train, "data/pan/train_dev_test/train.json"), (dev, "data/pan/train_dev_test/dev.json"), (test, "data/pan/train_dev_test/test.json")]:
     #     utils.save_json(split, path)
-    # print("Done!")
-    
-    # print("Generating dataset statistics...")
-    # save_dataset_stats(sorted_authors)
     # print("Done!")
     
     save_dev_bins(dev, train)

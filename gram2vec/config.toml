@@ -1,4 +1,4 @@
-[Featurizers]
+[Features]
 pos_unigrams=1
 pos_bigrams=1
 func_words=1
@@ -9,4 +9,3 @@ doc_vector=1
 doc_stats=1
 dep_labels=1
 mixed_bigrams=1
-pos_subsequences=0

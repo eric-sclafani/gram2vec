@@ -131,7 +131,7 @@ def pos_unigrams(document) -> np.ndarray:
 
 def pos_bigrams(document) -> np.ndarray : # len = 50
 
-    vocab = utils.load_pkl("resources/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
+    vocab = utils.load_pkl("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
     doc_pos_bigrams = get_pos_bigrams(document.doc)
     counts, doc_features = get_counts(vocab, doc_pos_bigrams)
     result = np.array(counts) #/ len(document.pos_tags)
@@ -143,7 +143,7 @@ def pos_bigrams(document) -> np.ndarray : # len = 50
 def func_words(document) -> np.ndarray:  # len = 145
     
     # modified NLTK stopwords set
-    with open ("resources/function_words.txt", "r") as fin:
+    with open ("vocab/function_words.txt", "r") as fin:
         function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
 
     doc_func_words = [token for token in document.tokens if token in function_words]
@@ -257,7 +257,7 @@ def dep_labels(document):
 
 def mixed_bigrams(document):
     
-    vocab = utils.load_pkl("resources/pan_mixed_bigrams_vocab.pkl")
+    vocab = utils.load_pkl("vocab/pan_mixed_bigrams_vocab.pkl")
     doc_mixed_bigrams = get_mixed_bigrams(document.doc)
     counts, doc_features = get_counts(vocab, doc_mixed_bigrams)
     result = np.array(counts) 
@@ -265,16 +265,16 @@ def mixed_bigrams(document):
     
     return result, doc_features
 
-
-def pos_subsequences(document):
+# Under construction. Keep commented out.
+# def pos_subsequences(document):
     
-    vocab = utils.load_pkl("resources/pan_pos_subsequences_vocab.pkl")
-    doc_pos_subsuences = get_pos_subsequences(document.doc)
-    counts, doc_features = get_counts(vocab, doc_pos_subsuences)
-    result = np.array(counts) 
-    assert len(vocab) == len(counts)
+#     vocab = utils.load_pkl("vocab/pan_pos_subsequences_vocab.pkl")
+#     doc_pos_subsuences = get_pos_subsequences(document.doc)
+#     counts, doc_features = get_counts(vocab, doc_pos_subsuences)
+#     result = np.array(counts) 
+#     assert len(vocab) == len(counts)
 
-    return result, doc_features
+#     return result, doc_features
 
 
 # ~~~ Featurizers end ~~~
@@ -297,29 +297,28 @@ class Document:
         return cls(doc, tokens, words, pos_tags, text)
     
 class GrammarVectorizer:
-    """This constructor houses all featurizers and the means to apply them"""
+    """This class houses all featurizers"""
     
     def __init__(self, data_path, logging=False):
         self.nlp = utils.load_spacy("en_core_web_md")
         self.logging = logging
         self.featurizers = {
-            "pos_unigrams"    :pos_unigrams,
-            "pos_bigrams"     :pos_bigrams,
-            "func_words"      :func_words, 
-            "punc"            :punc,
-            "letters"         :letters,
-            "common_emojis"   :common_emojis,
-            "doc_vector"      :doc_vector,
-            "doc_stats"       :doc_stats,
-            "dep_labels"      :dep_labels,
-            "mixed_bigrams"   :mixed_bigrams,
-            "pos_subsequences":pos_subsequences}
+            "pos_unigrams"  :pos_unigrams,
+            "pos_bigrams"   :pos_bigrams,
+            "func_words"    :func_words, 
+            "punc"          :punc,
+            "letters"       :letters,
+            "common_emojis" :common_emojis,
+            "doc_vector"    :doc_vector,
+            "doc_stats"     :doc_stats,
+            "dep_labels"    :dep_labels,
+            "mixed_bigrams" :mixed_bigrams}
         
         self._generate_vocab(data_path)
         
     def _config(self):
-        
-        toml_config = toml.load("config.toml")["Featurizers"]
+        """Reads 'config.toml' to retrieve which features to apply. 0 = deactivated, 1 = activated"""
+        toml_config = toml.load("config.toml")["Features"]
         config = []
         for name, feat in self.featurizers.items():
             try:
@@ -347,7 +346,7 @@ class GrammarVectorizer:
         
         all_text_docs = [entry for id in data.keys() for entry in data[id]]
         for feature, counter_list in counters.items():
-            out_path = f"resources/{dataset}_{feature}_vocab.pkl"
+            out_path = f"vocab/{dataset}_{feature}_vocab.pkl"
             
             if not os.path.exists(out_path):
                 for text in all_text_docs:
@@ -370,7 +369,6 @@ class GrammarVectorizer:
     
     def vectorize(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
-        
         
         text_demojified = demoji.replace(text, "") # dep parser hates emojis 
         doc = self.nlp(text_demojified)

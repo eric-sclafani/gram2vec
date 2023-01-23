@@ -23,7 +23,6 @@ def vectorize_data(data, g2v) -> np.ndarray:
             vectors.append(grammar_vector)
             authors.append(id)
     
-    
     return np.stack(vectors), authors
 
 
@@ -58,20 +57,17 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(args.train_path, logging=False)
+    g2v = GrammarVectorizer(args.train_path, logging=True)
     le  = LabelEncoder()
     scaler = StandardScaler()
     
     
-    # load train and eval
-    train  = utils.load_json(args.train_path)
-    eval   = utils.load_json(args.eval_path)
+    train = utils.load_json(args.train_path)
+    eval  = utils.load_json(args.eval_path)
     
-    # vectorize
     X_train, Y_train = vectorize_data(train, g2v) 
     X_eval,  Y_eval  = vectorize_data(eval, g2v)
     
-    # encode the labels
     Y_train_encoded = le.fit_transform(Y_train)
     Y_eval_encoded  = le.transform(Y_eval)
     
