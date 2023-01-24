@@ -3,7 +3,6 @@
 import spacy
 import toml
 import numpy as np
-np.seterr(invalid="ignore")
 from nltk import bigrams
 from nltk import FreqDist
 import os
@@ -23,7 +22,8 @@ def feature_logger(filename, writable):
                
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
-        
+      
+np.seterr(invalid="ignore")  
 OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
 
 
@@ -92,7 +92,7 @@ def get_pos_bigrams(doc) -> Counter:
 
 
 def replace_openclass(tokens, pos):
-
+    
     for i in range(len(tokens)):
         if pos[i] in OPEN_CLASS:
             tokens[i] = pos[i]
@@ -108,22 +108,13 @@ def get_mixed_bigrams(doc) -> Counter:
     return Counter(mixed_bigrams)
 
 
-def get_pos_subsequences(doc):
-    
-    pos = [token.pos_ for token in doc]
-    
-    subseqs = []
-    for i in range(len(pos)-1):
-        subseqs.extend([(pos[i],pos[n]) for n in range(i+1, len(pos))])   
-        
-    return Counter(subseqs)  
-
 # ~~~ Featurizers ~~~
 
 def pos_unigrams(document) -> np.ndarray: 
     
     tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
-    counts, doc_features = get_counts(tags, document.pos_tags)
+    doc_pos_tags = [token.pos_ for token in document]   
+    counts, doc_features = get_counts(tags, doc_pos_tags)
     result = np.array(counts) #/ len(document.pos_tags)
     assert len(tags) == len(counts)
     
@@ -132,7 +123,7 @@ def pos_unigrams(document) -> np.ndarray:
 def pos_bigrams(document) -> np.ndarray : # len = 50
 
     vocab = utils.load_pkl("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
-    doc_pos_bigrams = get_pos_bigrams(document.doc)
+    doc_pos_bigrams = get_pos_bigrams(document)
     counts, doc_features = get_counts(vocab, doc_pos_bigrams)
     result = np.array(counts) #/ len(document.pos_tags)
     assert len(vocab) == len(counts)
@@ -146,7 +137,8 @@ def func_words(document) -> np.ndarray:  # len = 145
     with open ("vocab/function_words.txt", "r") as fin:
         function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
 
-    doc_func_words = [token for token in document.tokens if token in function_words]
+    tokens = [token.text for token in document] 
+    doc_func_words = [token for token in tokens if token in function_words]
     counts, doc_features = get_counts(function_words, doc_func_words)
     result = np.array(counts) #/ len(document.tokens)
     assert len(function_words) == len(counts)
@@ -157,7 +149,7 @@ def func_words(document) -> np.ndarray:  # len = 145
 def punc(document) -> np.ndarray:
     
     punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’"]
-    doc_punc_marks = [punc for token in document.doc 
+    doc_punc_marks = [punc for token in document 
                            for punc in token.text
                            if punc in punc_marks]
     
@@ -173,7 +165,7 @@ def letters(document) -> np.ndarray:
     letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
                "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý"]
-    doc_letters = [letter for token in document.doc 
+    doc_letters = [letter for token in document
                           for letter in token.text 
                           if letter in letters]
     
@@ -202,7 +194,7 @@ def doc_vector(document):
 
 def doc_stats(document):
     
-    words = document.words
+    words = [token.text for token in document if not token.is_punct] 
 
     # num short and large words
     short_words = len([1 for word in words if len(word) < 5])
@@ -214,7 +206,7 @@ def doc_stats(document):
     word_len_std = np.std(word_lens)
     
     # avg, std sentence length
-    sent_lens = [len(sent) for sent in document.doc.sents]
+    sent_lens = [len(sent) for sent in document.sents]
     sent_len_avg = np.mean(sent_lens)
     sent_len_std = np.std(sent_lens)
     
@@ -247,7 +239,7 @@ def dep_labels(document):
               'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 
               'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp']
     
-    document_dep_labels = [token.dep_ for token in document.doc]
+    document_dep_labels = [token.dep_ for token in document]
     counts, doc_features = get_counts(labels, document_dep_labels)
     result = np.array(counts) / len(document_dep_labels)
     assert len(counts) == len(labels)
@@ -258,43 +250,24 @@ def dep_labels(document):
 def mixed_bigrams(document):
     
     vocab = utils.load_pkl("vocab/pan_mixed_bigrams_vocab.pkl")
-    doc_mixed_bigrams = get_mixed_bigrams(document.doc)
+    doc_mixed_bigrams = get_mixed_bigrams(document)
     counts, doc_features = get_counts(vocab, doc_mixed_bigrams)
     result = np.array(counts) 
     assert len(vocab) == len(counts)
     
     return result, doc_features
 
-# Under construction. Keep commented out.
-# def pos_subsequences(document):
-    
-#     vocab = utils.load_pkl("vocab/pan_pos_subsequences_vocab.pkl")
-#     doc_pos_subsuences = get_pos_subsequences(document.doc)
-#     counts, doc_features = get_counts(vocab, doc_pos_subsuences)
-#     result = np.array(counts) 
-#     assert len(vocab) == len(counts)
-
-#     return result, doc_features
-
 
 # ~~~ Featurizers end ~~~
+   
+class FeatureVector:
+    
+    def __init__(self, text:str):
+        pass
 
 
-@dataclass
-class Document:
-    doc      :spacy.tokens.doc.Doc
-    tokens   :list[str]
-    words    :list[str]   
-    pos_tags :list[str]
-    text     :str
-    
-    
-    @classmethod
-    def from_nlp(cls, doc, text):
-        tokens   = [token.text for token in doc]                   
-        pos_tags = [token.pos_ for token in doc]    
-        words    = [token.text for token in doc if not token.is_punct]              
-        return cls(doc, tokens, words, pos_tags, text)
+
+
     
 class GrammarVectorizer:
     """This class houses all featurizers"""
@@ -339,9 +312,8 @@ class GrammarVectorizer:
         data = utils.load_json(data_path)
         dataset = "pan" if "pan" in data_path else "mud" # will need to be changed based on data set
         counters = {
-            "pos_bigrams"     : [],
-            "pos_subsequences": [],
-            "mixed_bigrams"   : []
+            "pos_bigrams"   : [],
+            "mixed_bigrams" : []
         } 
         
         all_text_docs = [entry for id in data.keys() for entry in data[id]]
@@ -357,9 +329,6 @@ class GrammarVectorizer:
                 
                     mixed_bigrams = get_mixed_bigrams(doc)
                     counters["mixed_bigrams"].append(mixed_bigrams)
-                    
-                    pos_subseqs = get_pos_subsequences(doc)
-                    counters["pos_subsequences"].append(pos_subseqs)
         
                 # this line condenses all the counters into one dict, getting the 50 most common elements
                 most_common = dict(sum(counter_list, Counter()).most_common(50)) # most common returns list of tuples, gets converted back to dict
@@ -371,8 +340,7 @@ class GrammarVectorizer:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
         text_demojified = demoji.replace(text, "") # dep parser hates emojis 
-        doc = self.nlp(text_demojified)
-        document = Document.from_nlp(doc, text)
+        document = self.nlp(text_demojified)
         
         vectors = []
         for feat in self._config():

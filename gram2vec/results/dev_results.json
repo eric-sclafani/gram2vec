@@ -89,6 +89,93 @@
         "dep_labels",
         "mixed_bigrams"
       ]
+    },
+    {
+      "datetime": "2023-01-24 16:19:49.249792",
+      "acc": 0.2,
+      "vector_length": "707",
+      "k": "7",
+      "Metric": "cosine",
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector",
+        "doc_stats",
+        "dep_labels",
+        "mixed_bigrams"
+      ]
+    },
+    {
+      "datetime": "2023-01-24 16:46:29.908300",
+      "acc": 0.2,
+      "vector_length": "700",
+      "k": "7",
+      "Metric": "cosine",
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector",
+        "dep_labels",
+        "mixed_bigrams"
+      ]
+    },
+    {
+      "datetime": "2023-01-24 16:47:02.423980",
+      "acc": 0.16428571428571428,
+      "vector_length": "605",
+      "k": "7",
+      "Metric": "cosine",
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector"
+      ]
+    },
+    {
+      "datetime": "2023-01-24 16:47:30.960444",
+      "acc": 0.19285714285714287,
+      "vector_length": "655",
+      "k": "7",
+      "Metric": "cosine",
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "doc_vector",
+        "mixed_bigrams"
+      ]
+    },
+    {
+      "datetime": "2023-01-24 16:47:53.183062",
+      "acc": 0.18571428571428572,
+      "vector_length": "400",
+      "k": "7",
+      "Metric": "cosine",
+      "config": [
+        "pos_unigrams",
+        "pos_bigrams",
+        "func_words",
+        "punc",
+        "letters",
+        "common_emojis",
+        "dep_labels",
+        "mixed_bigrams"
+      ]
     }
   ]
 }

@@ -14,6 +14,9 @@ import utils
 from featurizers import GrammarVectorizer
 
 
+class KNNDataLoader:
+    pass
+
 def vectorize_data(data, g2v) -> np.ndarray:
     """Vectorizes a dict of documents. Returns a matrix from all documents"""
     vectors = []
@@ -58,7 +61,7 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(args.train_path, logging=True)
+    g2v = GrammarVectorizer(args.train_path, logging=False)
     le  = LabelEncoder()
     scaler = StandardScaler()
     
