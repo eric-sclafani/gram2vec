@@ -31,13 +31,8 @@ def save_json(data:dict, path, mode="w") -> None:
 
 
 def load_spacy(model:str):
-    
-    try:
-        nlp = spacy.load(model)
-    except OSError:
-        print(f"{model} not detected. Downloading now...")
-        subprocess.run(f"python -m spacy download {model}") # untested
-        
+
+    nlp = spacy.load(model)
     for name in ["lemmatizer", "ner"]:
         nlp.remove_pipe(name)
     return nlp

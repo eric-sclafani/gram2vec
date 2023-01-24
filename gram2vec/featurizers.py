@@ -29,7 +29,7 @@ OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
 
 # ~~~ Helper functions ~~~
 
-def get_counts(sample_space:list, features:list) -> list[int]:
+def get_counts(feature_space:list, features:list) -> list[int]:
     """
     Counts the frequency of items in 'sample_space' that occur in 'features'.
     When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
@@ -37,23 +37,23 @@ def get_counts(sample_space:list, features:list) -> list[int]:
     the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
     
     Params:
-        sample_space(list) = list of set features to count. Each feature is initially mapped to 0
-        doc_features(list) = list of features from a document to count. 
+        feature_space(list) = list of features to count. Each feature is initially mapped to 0
+        features(list) = list of features from a document to count. 
     Returns:
         list: list of feature counts
     
     """
-    feat_dict = {feat:0 for feat in sample_space}
+    feature_to_zero_dict = {feat:0 for feat in feature_space}
     doc_features = Counter(features)
     
     count_dict = {}
-    for feature in feat_dict.keys():
+    for feature in feature_to_zero_dict.keys():
         if feature in doc_features:
-            to_add = doc_features[feature]
+            count = doc_features[feature] # retrieve count from document feature count if it exists
         else:
-            to_add = feat_dict[feature]
+            count = feature_to_zero_dict[feature] # retrieve 0 count
         
-        count_dict[feature] = to_add
+        count_dict[feature] = count
         
     return list(count_dict.values()), count_dict
 
