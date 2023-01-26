@@ -5,6 +5,7 @@ from nltk import bigrams
 from nltk import FreqDist
 import os
 from dataclasses import dataclass
+from copy import deepcopy
 import demoji
 from collections import Counter
 import spacy
@@ -28,13 +29,44 @@ OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
 
 # ~~~ Type aliases ~~~
 
-Document = spacy.tokens.doc.Doc
 Counts = list[int]
 SentenceSpan = tuple[int,int]
 
+# ~~~ Document representation ~~~
 
+@dataclass
+class Document:
+    """
+    Class representing certain elements from a spaCy Doc object
+
+        @param raw_text: text data before being processed by spaCy
+        @param doc: spaCy's document object
+        @param tokens = list of tokens
+        @param pos_tags: list of pos tags
+        @param dep_labels: list of dependency parse labels
+        @param sentences: list of spaCy-sentencized sentences   
+"""
+    raw_text   :str
+    doc        :spacy.tokens.doc.Doc
+    tokens     :list[str]
+    pos_tags   :list[str]
+    dep_labels :list[str]
+    sentences  :list[spacy.tokens.span.Span]
+    
+def make_document(text:str, nlp:spacy.lang.en.English) -> Document:
+    """Converts raw text into a Document object"""
+    raw_text = deepcopy(text)
+    doc = nlp(demojify_text(text)) # dep parser hates emojis
+    tokens     = [token.text for token in doc]
+    pos_tags   = [token.pos_ for token in doc]
+    dep_labels = [token.dep_ for token in doc]
+    sentences  = list(doc.sents)
+    return Document(raw_text, doc, tokens, pos_tags, dep_labels, sentences)
+    
 # ~~~ Helper functions ~~~
 
+def demojify_text(text:str):
+    return demoji.replace(text, "") # dep parser hates emojis 
 
 def get_counts(vocab:list, features:list) -> Counts:
     """
@@ -65,17 +97,18 @@ def get_counts(vocab:list, features:list) -> Counts:
     return list(count_dict.values()), count_dict
 
    
-def insert_boundaries(sent_spans:list[tuple], tokens:list):
-    """
-    This function inserts sentence boundaries to a list of tokens 
-    according to a list of (START, END) sentence index markers
-    
-    Works by enumerating the tokens and checking if each position 
-    is the start or end of a sentence, inserting the appropriate tag when
-    """
+def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
+    return [(sent.start, sent.end) for sent in doc.sents]
+   
+   
+def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
+    """Inserts sentence boundaries into a list of POS tags extracted from a spacey document"""
+    spans = get_sentence_spans(doc)
+    doc_tokens = [token.pos_ for token in doc]
     new_tokens = []
-    for i, item in enumerate(tokens):
-        for start, end in sent_spans:
+    
+    for i, item in enumerate(doc_tokens):
+        for start, end in spans:
             if i == start:
                 new_tokens.append("BOS")
             elif i == end:
@@ -89,13 +122,15 @@ def insert_boundaries(sent_spans:list[tuple], tokens:list):
 
 
 
-def replace_openclass(tokens:list[str], pos:list[str]):
+def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
     """Replaces all open class tokens with corresponding POS tags"""
+    tokens = deepcopy(tokens)
     for i in range(len(tokens)):
         if pos[i] in OPEN_CLASS:
             tokens[i] = pos[i]
     return tokens
-        
+
+
         
 # ~~~ Counter functions ~~~
 
@@ -103,16 +138,15 @@ def count_document_pos_unigrams(doc:Document) -> Counter:
     return Counter([token.pos_ for token in doc])
 
 def count_document_pos_bigrams(doc:Document) -> Counter:
-    spans: list[SentenceSpan] = [(sent.start, sent.end) for sent in doc.sents]
-    pos = insert_boundaries(spans, [token.pos_ for token in doc])
-    counter = Counter(bigrams(pos))
+    pos_tags_with_boundaries = insert_pos_sentence_boundaries(doc)
+    counter = Counter(bigrams(pos_tags_with_boundaries))
     try:
         del counter[("EOS","BOS")] # removes artificial bigram
     except: pass
     
     return counter
 
-def count_document_func_words(doc:Document):
+def count_document_func_words(doc:Document, vocab):
     return 
 
 def count_document_punctuation(doc:Document):
@@ -279,20 +313,16 @@ class FeatureVector:
 
 class CountBasedFeaturizer:
     
-    def __init__(self, name:str, vocab:Iterable, counter, counter_requires_vocab=False):
+    def __init__(self, name:str, vocab:Iterable, counter):
         self.name = name
         self.vocab = vocab
         self.counter = counter
-        self.counter_requires_vocab = counter_requires_vocab
     
-    def apply(self, count_function, document) -> np.ndarray:
-        
-        if self.counter_requires_vocab:
-            document_counts = count_function(document, self.vocab)
-        else:
-            document_counts = count_function(document)
-        
+    def apply(self, document) -> np.ndarray:
+    
+        document_counts = self.counter(document)
 
+        
 
 
 
@@ -306,6 +336,9 @@ mixed_bigrams = CountBasedFeaturizer(
 
 
 
+
+    
+    
    
    
 
