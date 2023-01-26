@@ -96,22 +96,23 @@ def main():
     print(f"Accuracy: {accuracy}")
     
     
+
     # loads in result file and appents the current run's result
-    try:
-        results = utils.load_json(result_path)
-    except:
-        utils.save_json({"results":[]}, result_path)
-        results = utils.load_json(result_path)
+    # try:
+    #     results = utils.load_json(result_path)
+    # except:
+    #     utils.save_json({"results":[]}, result_path)
+    #     results = utils.load_json(result_path)
     
-    results["results"].append({"datetime": str(datetime.now()),
-                               "acc": accuracy, 
-                               "vector_length":f"{len(X_train[0])}",
-                               "k": f"{args.k_value}",
-                               "Metric": args.metric,
-                               "config":feats})
+    # results["results"].append({"datetime": str(datetime.now()),
+    #                         "acc": accuracy, 
+    #                         "vector_length":f"{len(X_train[0])}",
+    #                         "k": f"{args.k_value}",
+    #                         "Metric": args.metric,
+    #                         "config":feats})
     
-    utils.save_json(data=results, path=result_path)
-           
+    # utils.save_json(data=results, path=result_path)
+            
 
 if __name__ == "__main__":
     main()
