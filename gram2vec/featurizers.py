@@ -1,14 +1,14 @@
-import toml
-import numpy as np
-#np.seterr(invalid="ignore")  
+
+from collections import Counter
+from copy import deepcopy
+from dataclasses import dataclass
+import demoji
 from nltk import bigrams
 from nltk import FreqDist
+import numpy as np 
 import os
-from dataclasses import dataclass
-from copy import deepcopy
-import demoji
-from collections import Counter
 import spacy
+import toml
 from typing import Iterable
 
 # project imports 
@@ -53,10 +53,10 @@ class Document:
     dep_labels :list[str]
     sentences  :list[spacy.tokens.span.Span]
     
-def make_document(text:str, nlp:spacy.lang.en.English) -> Document:
+def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
-    raw_text = deepcopy(text)
-    doc = nlp(demojify_text(text)) # dep parser hates emojis
+    raw_text   = deepcopy(text)
+    doc        = nlp(demojify_text(text)) # dep parser hates emojis
     tokens     = [token.text for token in doc]
     pos_tags   = [token.pos_ for token in doc]
     dep_labels = [token.dep_ for token in doc]
@@ -68,7 +68,7 @@ def make_document(text:str, nlp:spacy.lang.en.English) -> Document:
 def demojify_text(text:str):
     return demoji.replace(text, "") # dep parser hates emojis 
 
-def get_counts(vocab:list, features:list) -> Counts:
+def get_counts(vocab:list, doc_features:list) -> Counts:
     """
     Counts the frequency of items in 'sample_space' that occur in 'features'.
     When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
@@ -83,7 +83,6 @@ def get_counts(vocab:list, features:list) -> Counts:
     
     """
     vocab_to_zero_dict = {feat:0 for feat in vocab}
-    doc_features = Counter(features)
     
     count_dict = {}
     for feature in vocab_to_zero_dict.keys():
@@ -94,20 +93,17 @@ def get_counts(vocab:list, features:list) -> Counts:
         
         count_dict[feature] = count
         
-    return list(count_dict.values()), count_dict
-
+    return count_dict
    
 def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
-    return [(sent.start, sent.end) for sent in doc.sents]
-   
+    return [(sent.start, sent.end) for sent in doc.sentences]
    
 def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
     """Inserts sentence boundaries into a list of POS tags extracted from a spacey document"""
     spans = get_sentence_spans(doc)
-    doc_tokens = [token.pos_ for token in doc]
     new_tokens = []
     
-    for i, item in enumerate(doc_tokens):
+    for i, item in enumerate(doc.tokens):
         for start, end in spans:
             if i == start:
                 new_tokens.append("BOS")
@@ -118,10 +114,6 @@ def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
         
     return new_tokens
 
-
-
-
-
 def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
     """Replaces all open class tokens with corresponding POS tags"""
     tokens = deepcopy(tokens)
@@ -130,12 +122,11 @@ def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
             tokens[i] = pos[i]
     return tokens
 
-
-        
+   
 # ~~~ Counter functions ~~~
 
 def count_document_pos_unigrams(doc:Document) -> Counter:
-    return Counter([token.pos_ for token in doc])
+    return Counter(doc.pos_tags)
 
 def count_document_pos_bigrams(doc:Document) -> Counter:
     pos_tags_with_boundaries = insert_pos_sentence_boundaries(doc)
@@ -162,11 +153,7 @@ def count_document_dep_labels(doc:Document):
     return 
 
 def count_document_mixed_bigrams(doc:Document) -> Counter:
-    
-    tokens = [token.text for token in doc]
-    pos    = [token.pos_ for token in doc]
-    mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
-    
+    mixed_bigrams = list(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     return Counter(mixed_bigrams)
     
 
@@ -189,7 +176,7 @@ def pos_unigrams(document) -> np.ndarray:
 
 def pos_bigrams(document) -> np.ndarray : # len = 50
 
-    vocab = utils.load_pkl("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
+    vocab = utils.load_vocab("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
     
     doc_pos_bigrams = get_pos_bigrams(document)
     
@@ -204,6 +191,7 @@ def pos_bigrams(document) -> np.ndarray : # len = 50
 def func_words(document) -> np.ndarray:
     
     # modified NLTK stopwords set
+    #! use pkl file for vocab
     with open ("vocab/function_words.txt", "r") as fin:
         function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
 
@@ -299,15 +287,7 @@ def mixed_bigrams(document):
 # ~~~ Featurizers end ~~~
    
 
-class FeatureVector:
-    """
-    Each feature vector object should have access to :
-        - all individual feature vectors, as well as the concatenated one
-        - the raw text
-        - author?
-    """
-    def __init__(self, text:str):
-        pass
+
     
 
 
@@ -337,7 +317,15 @@ mixed_bigrams = CountBasedFeaturizer(
 
 
 
-    
+class FeatureVector:
+    """
+    Each feature vector object should have access to :
+        - all individual feature vectors, as well as the concatenated one
+        - the raw text
+        - author?
+    """
+    def __init__(self, text:str):
+        pass 
     
    
    
@@ -374,6 +362,7 @@ class GrammarVectorizer:
                 raise KeyError(f"Feature '{name}' does not exist in config.toml")
         return config
     
+
     def _generate_vocab(self, data_path):
         """
         Generates vocab files required by some featurizers. Assumes the following input data format:
@@ -412,13 +401,12 @@ class GrammarVectorizer:
     def vectorize(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
-        text_demojified = demoji.replace(text, "") # dep parser hates emojis 
-        document = self.nlp(text_demojified)
+        doc = make_document(text, self.nlp)
         
         vectors = []
         for feat in self._config():
             
-            vector, doc_features = feat(document)
+            vector, doc_features = feat(doc)
             assert not np.isnan(vector).any() 
             vectors.append(vector)
             

@@ -16,10 +16,10 @@ This file contains ideas for future additions/improvements
 - KNN vs NN (1 vector/document VS 1 vector/author k=1)
 
 
-## Code rework
-- create a DEV branch for these modifications
-- make FeatureVector class?
-- make a class such that a document gets vectors for each featurizer, and one overall feature vector?
+## Code rework next steps (1/26)
+- figure out vocab generation and streamline the process
+- Get FeatureVector working
+- Remake GrammarVectorizer and config file handling
 
 ## To check out
 - https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm
