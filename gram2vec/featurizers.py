@@ -10,7 +10,6 @@ import spacy
 import toml
 from typing import Iterable
 
-
 # project imports 
 import utils
 
@@ -39,12 +38,13 @@ class Document:
     """
     Class representing certain elements from a spaCy Doc object
 
-        @param raw_text: text data before being processed by spaCy
+        @param raw_text: text before being processed by spaCy
         @param doc: spaCy's document object
         @param tokens = list of tokens
         @param pos_tags: list of pos tags
         @param dep_labels: list of dependency parse labels
-        @param sentences: list of spaCy-sentencized sentences   
+        @param sentences: list of spaCy-sentencized sentences  
+    Note: instances should only be created using the 'make_document' function 
 """
     raw_text   :str
     doc        :spacy.tokens.doc.Doc
@@ -99,7 +99,7 @@ def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
     return [(sent.start, sent.end) for sent in doc.sentences]
    
 def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
-    """Inserts sentence boundaries into a list of POS tags extracted from a spacey document"""
+    """Inserts sentence boundaries into a list of POS tags extracted from a spaCy document"""
     spans = get_sentence_spans(doc)
     new_tokens = []
     
@@ -124,37 +124,36 @@ def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
 
    
 # ~~~ Counter functions ~~~
+# These functions are used to count certain text elements from documents
 
-def count_document_pos_unigrams(doc:Document) -> Counter:
+def count_pos_unigrams(doc:Document) -> Counter:
     return Counter(doc.pos_tags)
 
-def count_document_pos_bigrams(doc:Document) -> Counter:
-    pos_tags_with_boundaries = insert_pos_sentence_boundaries(doc)
+def count_pos_bigrams(doc:Document) -> Counter:
+    pos_tags_with_boundaries:list[str] = insert_pos_sentence_boundaries(doc)
     counter = Counter(bigrams(pos_tags_with_boundaries))
     try:
-        del counter[("EOS","BOS")] # removes artificial bigram
+        del counter[("EOS","BOS")] # removes artificial bigram #! move this to pos sentence boundary function
     except: pass
     
     return counter
 
-def count_document_func_words(doc:Document, vocab):
+def count_func_words(doc:Document):
     return 
 
-def count_document_punctuation(doc:Document):
+def count_punctuation(doc:Document):
     return 
 
-def count_document_letters(doc:Document):
+def count_letters(doc:Document):
     return 
 
-def count_document_emojis(doc:Document):
+def count_emojis(doc:Document):
     return
 
-def count_document_dep_labels(doc:Document):
+def count_dep_labels(doc:Document):
     return 
 
-def count_document_mixed_bigrams(doc:Document) -> Counter:
-    mixed_bigrams = list(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
-    return Counter(mixed_bigrams)
+
     
 
 
@@ -165,7 +164,7 @@ def pos_unigrams(document) -> np.ndarray:
     
     tags = {"ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"}
     
-    doc_pos_tags = [token.pos_ for token in document]   
+    doc_pos_tags = [token.pos_ for token in document]   # Document.pos_tags 
     
     counts, doc_features = get_counts(tags, doc_pos_tags)
     
@@ -174,7 +173,7 @@ def pos_unigrams(document) -> np.ndarray:
     
     return result, doc_features
 
-def pos_bigrams(document) -> np.ndarray : # len = 50
+def most_common_pos_bigrams(document) -> np.ndarray : # len = 50
 
     vocab = utils.load_vocab("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
     
@@ -297,24 +296,31 @@ class CountBasedFeaturizer:
         self.name = name
         self.vocab = vocab
         self.counter = counter
-    
+        
     def apply(self, document) -> np.ndarray:
     
         document_counts = self.counter(document)
 
-        
 
 
 
+
+
+ 
+def count_mixed_bigrams(doc:Document) -> Counter:
+    return Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
 
 mixed_bigrams = CountBasedFeaturizer(
-     name = "mixed_bigrams",
-     vocab = [("hi", "NOUN")],
-     counter=count_document_mixed_bigrams
- )
+    name = "mixed_bigrams",
+    vocab = [("hi", "NOUN")],
+    counter=count_mixed_bigrams
+    )
 
 
 
+
+def config(path_to_config:str):
+    pass
 
 
 class FeatureVector:
