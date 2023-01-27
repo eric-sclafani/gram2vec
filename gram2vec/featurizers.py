@@ -4,7 +4,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 import demoji
 from nltk import bigrams
-from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
