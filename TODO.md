@@ -17,12 +17,18 @@ This file contains ideas for future additions/improvements
 
 
 ## Code rework next steps (1/26)
+- Get counting functions functioning the same 
 - figure out vocab generation and streamline the process
 - Get FeatureVector working
 - Remake GrammarVectorizer and config file handling
 
 ## To check out
+
+### Corpora
 - https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm
 - https://huggingface.co/datasets/guardian_authorship
 - https://www.jmlr.org/papers/volume21/19-678/19-678.pdf
+### Metric learning
 - More metric learning stuff: https://www.semanticscholar.org/paper/Metric-Learning%3A-A-Support-Vector-Approach-Nguyen-Guo/51d8dabeb6d4aad285f5f5765de8baff771f5693
+### Other
+- https://www.cs.waikato.ac.nz/ml/weka/index.html
