@@ -146,8 +146,8 @@ def main():
     dataset_name = get_dataset_name(train_path)
     all_documents = get_all_documents_from_data(train_path, nlp)
     
-    POS_BIGRAMS = generate_most_common(all_documents, 50, feats.count_pos_bigrams)
-    import ipdb;ipdb.set_trace()
+    POS_BIGRAMS   = generate_most_common(all_documents, 50, feats.count_pos_bigrams)
+    MIXED_BIGRAMS = generate_most_common(all_documents, 50, feats.count_mixed_bigrams)
     
 
  
