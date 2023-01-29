@@ -27,6 +27,10 @@ def save_json(data:dict, path, mode="w"):
     """Saves a dict as a JSON"""
     with open(path, mode) as fout:
         json.dump(data, fout, ensure_ascii=False, indent=2)
+        
+def load_txt(path) -> tuple[str]:
+    with open (path, "r") as fin:
+        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 
 def load_spacy(model:str):
 
@@ -39,7 +43,7 @@ def save_pkl(data, path):
     with open (path, "ab") as fout:
         pickle.dump(data, fout)
         
-def load_vocab(path):
+def load_pkl(path):
     with open (path, "rb") as fin:
         return pickle.load(fin)
 

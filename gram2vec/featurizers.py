@@ -195,7 +195,7 @@ def func_words(document) -> np.ndarray:
     # modified NLTK stopwords set
     #! use pkl file for vocab
     with open ("vocab/function_words.txt", "r") as fin:
-        function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
+        function_words = tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 
     tokens = [token.text for token in document] 
     doc_func_words = [token for token in tokens if token in function_words]
