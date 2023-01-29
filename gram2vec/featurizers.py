@@ -268,22 +268,6 @@ def mixed_bigrams(document):
 
 # ~~~ Featurizers end ~~~
    
-
-class FeatureVector:
-    """
-    Each feature vector object should have access to :
-        - all individual feature vectors, as well as the concatenated one
-
-    """
-    def __init__(self,):
-        pass 
-    
-    def __add__(self, other):
-        pass
-    
-    
-
-
 class CountBasedFeaturizer:
     
     def __init__(self, name:str, vocab:tuple, counter):
@@ -294,7 +278,7 @@ class CountBasedFeaturizer:
     def __repr__(self):
         return self.name
         
-    def _get_all_feature_counts(self, counted_doc_features:Counter) -> dict:
+    def _add_zero_vocab_counts(self, counted_doc_features:Counter) -> dict:
         """
         Combines vocab and counted_document_features into one dictionary such that
         any feature in vocab counted 0 times in counted_document_features is preserved in the feature vector. 
@@ -321,28 +305,27 @@ class CountBasedFeaturizer:
             count_dict[feature] = count
         return count_dict
         
-    def get_counts(self, document:Document) -> dict:
+    def get_all_feature_counts(self, document:Document) -> dict:
         """
-        Applies counter function to document to get all feature counts
+        Applies counter function to get document counts and 
+        combines the result with 0 count vocab entries
         
+        :param document: document to extract counts from
+        :returns: dictionary of counts
         """
         counted_doc_features = self.counter(document)
-        return self._get_all_feature_counts(counted_doc_features)
+        return self._add_zero_vocab_counts(counted_doc_features)
 
-    def vectorize(self, document:Document):
-        # normalization here
-        counts = self.get_counts(document).values()
+    def vectorize(self, document:Document) -> np.array:
+        """"""
+        counts = self.get_all_feature_counts(document).values()
+        #! normalization goes here
         return np.array(counts)
         
 
 
 
 
-
-
-
-
- 
 def count_mixed_bigrams(doc:Document) -> Counter:
     return Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
 
@@ -353,6 +336,19 @@ mixed_bigrams = CountBasedFeaturizer(
     )
 
 
+class FeatureVector:
+    """
+    Each feature vector object should have access to :
+        - all individual feature vectors, as well as the concatenated one
+
+    """
+    def __init__(self,):
+        pass 
+    
+    def __add__(self, other):
+        pass
+    
+    
 
 
 def config(path_to_config:str):
