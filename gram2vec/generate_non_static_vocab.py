@@ -2,13 +2,17 @@
 
 import argparse
 from collections import Counter
+from dataclasses import dataclass
 import featurizers as feats
 from featurizers import Document
+from nltk.corpus import stopwords
 import os
 import utils
 
-
-# ~~~ Helper functions ~~~
+@dataclass
+class Vocab:
+    name:str
+    features:tuple[str]
 
 def get_dataset_name(train_path:str) -> str:
     """
@@ -70,28 +74,17 @@ def save_vocab_to_txt_file(vocab:tuple, path:str):
         for entry in vocab:
             fout.write(f"{entry}\n")
             
-def save_vocab(dataset_name:str, vocab:tuple[str,tuple]):
-    """Saves a vocabulary to a pickle and txt file"""
+def save_vocab(dataset_name:str, vocab:tuple[str]):
     
-    vocab_name, vocab_features = vocab
-    os.makedirs(f"vocab/{dataset_name}/{vocab_name}")
+    vocab_name = vocab.name
+    vocab_features = vocab.features
+    path = f"vocab/non_static/{vocab_name}/{dataset_name}/"
     
-    save_vocab_to_pickle(vocab_features, f"vocab/{dataset_name}/{vocab_name}/{vocab_name}.pkl")
-    save_vocab_to_txt_file(vocab_features, f"vocab/{dataset_name}/{vocab_name}/{vocab_name}.txt")
+    os.makedirs(path)
+    save_vocab_to_txt_file(vocab_features, f"{path}/{vocab_name}.txt")
+    save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
+        
     
-# ~~~ STATIC VOCABULARIES ~~~
-# Static: non-changing sets of elements to count
-
-POS_UNIGRAMS   = ("ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE")
-PUNC_MARKS     = (".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’")
-LETTERS        = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý")
-EMOJIS         = ("😅", "😂", "😊", "❤️", "😭", "👍", "👌", "😍", "💕", "🥰")
-DEP_LABELS     = ('ROOT', 'acl', 'acomp', 'advcl', 'advmod', 'agent', 'amod', 'appos', 'attr', 'aux', 'auxpass', 'case', 'cc', 'ccomp', 'compound', 'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp')
-# FUNCTION WORDS - uses a manually modified NLTK stopwords file
-
-# ~~~ NON-STATIC VOCABULARIES ~~~
-# Non-static: sets of elements that change depending on the dataset (generated under 'main' using the following two functions)
-
 def combine_counters(counters:list[Counter]) -> Counter:
     """Adds a list of Counter objects into one"""
     return sum(counters, Counter())
@@ -105,8 +98,7 @@ def generate_most_common(documents:list[Document], n:int, count_function) -> tup
         
     n_most_common = dict(combine_counters(counters).most_common(n))
     return tuple(n_most_common.keys())
-
-
+ 
 def main():
     
     nlp = utils.load_spacy("en_core_web_md")
@@ -126,27 +118,17 @@ def main():
     all_documents = get_all_documents_from_data(train_path, nlp)
     print("Done!")
     
-    print("Generating most common bigrams...")
-    POS_BIGRAMS = generate_most_common(all_documents, 50, feats.count_pos_bigrams)
-    print("Done!")
-    print("Generating most common mixed bigrams...")
-    MIXED_BIGRAMS = generate_most_common(all_documents, 50, feats.count_mixed_bigrams)
-    print("Done!")
+    print("Generating non-static vocabularies...")
+
+    POS_BIGRAMS   = Vocab(name="pos_bigrams", features=generate_most_common(all_documents, 50, feats.count_pos_bigrams))
+    MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, feats.count_mixed_bigrams))
+    VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
     
-    ALL_VOCABS = {"pos_unigrams" :POS_UNIGRAMS, 
-                  "pos_bigrams"  :POS_BIGRAMS,
-                  "mixed_bigrams":MIXED_BIGRAMS, 
-                  "punc_marks"   :PUNC_MARKS,
-                  "letters"      :LETTERS, 
-                  "dep_labels"   :DEP_LABELS,
-                  "emojis"       :EMOJIS}
-    
-    print("Saving all vocabs...")
-    for vocab in ALL_VOCABS.items():
-        save_vocab(dataset_name, vocab)
+    print("Done!")
         
-    FUNCTION_WORDS = utils.load_txt("vocab/function_words/function_words.txt")
-    utils.save_pkl(FUNCTION_WORDS, "vocab/function_words/function_words.pkl")
+    for vocab in VOCABS:
+        print(f"Saving vocabulary '{vocab.name}'...")
+        save_vocab(dataset_name, vocab)
     print("Done!") 
     
     
