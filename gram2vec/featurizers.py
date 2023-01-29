@@ -13,7 +13,11 @@ from typing import Iterable
 # project imports 
 import utils
 
-# ~~~ Logging and global variables ~~~
+
+# ~~~ Logging and type aliases~~~
+
+Counts = list[int]
+SentenceSpan = tuple[int,int]
 
 def feature_logger(filename, writable):
     
@@ -22,14 +26,19 @@ def feature_logger(filename, writable):
                
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
-      
+    
+# ~~~ Static vocabularies ~~~
+pos_unigram_vocab    = utils.load_vocab("vocab/static/pos_unigrams.txt")
+function_words_vocab = utils.load_vocab("vocab/static/function_words.txt")
+dep_labels_vocab     = utils.load_vocab("vocab/static/dep_labels.txt")
+punc_marks_vocab     = utils.load_vocab("vocab/static/punc_marks.txt")
+letters_vocab        = utils.load_vocab("vocab/static/letters.txt")
+common_emojis_vocab  = utils.load_vocab("vocab/static/common_emojis.txt")
 
-OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
-
-# ~~~ Type aliases ~~~
-
-Counts = list[int]
-SentenceSpan = tuple[int,int]
+# ~~~ Non-static vocabularies ~~~
+#NOTE: the path needs to change be manually changed to matched appropriate dataset
+pos_bigrams_vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+mixed_bigrams_vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
 
 # ~~~ Document representation ~~~
 
@@ -37,13 +46,12 @@ SentenceSpan = tuple[int,int]
 class Document:
     """
     Class representing elements from a spaCy Doc object
-
-        @param raw_text: text before being processed by spaCy
-        @param doc: spaCy's document object
-        @param tokens = list of tokens
-        @param pos_tags: list of pos tags
-        @param dep_labels: list of dependency parse labels
-        @param sentences: list of spaCy-sentencized sentences  
+        :param raw_text: text before being processed by spaCy
+        :param doc: spaCy's document object
+        :param tokens = list of tokens
+        :param pos_tags: list of pos tags
+        :param dep_labels: list of dependency parse labels
+        :param sentences: list of spaCy-sentencized sentences
     Note: instances should only be created using the 'make_document' function 
 """
     raw_text   :str
@@ -71,33 +79,6 @@ def make_document(text:str, nlp) -> Document:
 def demojify_text(text:str):
     return demoji.replace(text, "") # dep parser hates emojis 
 
-def get_counts(vocab:list, doc_features:list) -> Counts:
-    """
-    Counts the frequency of items in 'sample_space' that occur in 'features'.
-    When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
-    get overwritten by the counts in 'doc_features'. When features are not found in 'doc_features', 
-    the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
-    
-    Params:
-        feature_space(list) = list of features to count. Each feature is initially mapped to 0
-        features(list) = list of features from a document to count. 
-    Returns:
-        list: list of feature counts
-    
-    """
-    vocab_to_zero_dict = {feat:0 for feat in vocab}
-    
-    count_dict = {}
-    for feature in vocab_to_zero_dict.keys():
-        if feature in doc_features:
-            count = doc_features[feature] # retrieve count from document feature count if it exists
-        else:
-            count = vocab_to_zero_dict[feature] # retrieve 0 count
-        
-        count_dict[feature] = count
-        
-    return count_dict
-   
 def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
     return [(sent.start, sent.end) for sent in doc.sentences]
    
@@ -119,6 +100,7 @@ def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
 
 def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
     """Replaces all open class tokens with corresponding POS tags"""
+    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
     tokens = deepcopy(tokens)
     for i in range(len(tokens)):
         if pos[i] in OPEN_CLASS:
@@ -141,23 +123,21 @@ def count_pos_bigrams(doc:Document) -> Counter:
     
     return counter
 
-def count_func_words(doc:Document):
-    return 
+def count_func_words(doc:Document) -> Counter:
+    return Counter([token for token in doc.tokens if token in function_words_vocab])
 
-def count_punctuation(doc:Document):
-    return 
+def count_punctuation(doc:Document) -> Counter:
+    return Counter([punc for token in doc.tokens for punc in token.text if punc in punc_marks_vocab])
 
-def count_letters(doc:Document):
-    return 
+def count_letters(doc:Document) -> Counter:
+    return Counter([letter for token in doc.tokens for letter in token.text if letter in letters_vocab])
 
-def count_emojis(doc:Document):
-    return
+def count_emojis(doc:Document) -> Counter:
+    extract_emojis = demoji.findall_list(doc.text, desc=False)
+    return Counter(filter(lambda x: x in common_emojis_vocab, extract_emojis))
 
-def count_dep_labels(doc:Document):
-    return 
-
-
-    
+def count_dep_labels(doc:Document) -> Counter:
+    return Counter([dep for dep in doc.dep_labels])
 
 
 # ~~~ Featurizers ~~~
@@ -289,20 +269,73 @@ def mixed_bigrams(document):
 # ~~~ Featurizers end ~~~
    
 
+class FeatureVector:
+    """
+    Each feature vector object should have access to :
+        - all individual feature vectors, as well as the concatenated one
 
+    """
+    def __init__(self,):
+        pass 
+    
+    def __add__(self, other):
+        pass
+    
     
 
 
 class CountBasedFeaturizer:
     
-    def __init__(self, name:str, vocab:Iterable, counter):
+    def __init__(self, name:str, vocab:tuple, counter):
         self.name = name
         self.vocab = vocab
         self.counter = counter
         
-    def apply(self, document) -> np.ndarray:
-    
-        document_counts = self.counter(document)
+    def __repr__(self):
+        return self.name
+        
+    def _get_all_feature_counts(self, counted_doc_features:Counter) -> dict:
+        """
+        Combines vocab and counted_document_features into one dictionary such that
+        any feature in vocab counted 0 times in counted_document_features is preserved in the feature vector. 
+        
+        :param document_counts: features counted from document
+        :returns: counts of every element in vocab with 0 counts preserved
+        :rtype: dict
+        
+        Example:
+                >> self.vocab = ("a", "b", "c", "d")
+                
+                >> counted_doc_features = Counter({"a":5, "c":2})
+                
+                >> self._get_all_feature_counts(vocab, counted_doc_features)
+                
+                    '{"a": 5, "b" : 0, "c" : 2, "d" : 0}'
+        """
+        count_dict = {}
+        for feature in self.vocab:
+            if feature in counted_doc_features:
+                count = counted_doc_features[feature] 
+            else:
+                count = 0
+            count_dict[feature] = count
+        return count_dict
+        
+    def get_counts(self, document:Document) -> dict:
+        """
+        Applies counter function to document to get all feature counts
+        
+        """
+        counted_doc_features = self.counter(document)
+        return self._get_all_feature_counts(counted_doc_features)
+
+    def vectorize(self, document:Document):
+        # normalization here
+        counts = self.get_counts(document).values()
+        return np.array(counts)
+        
+
+
 
 
 
@@ -326,16 +359,7 @@ def config(path_to_config:str):
     pass
 
 
-class FeatureVector:
-    """
-    Each feature vector object should have access to :
-        - all individual feature vectors, as well as the concatenated one
-        - the raw text
-        - author?
-    """
-    def __init__(self, text:str):
-        pass 
-    
+
    
    
 

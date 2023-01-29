@@ -28,7 +28,7 @@ def save_json(data:dict, path, mode="w"):
     with open(path, mode) as fout:
         json.dump(data, fout, ensure_ascii=False, indent=2)
         
-def load_txt(path) -> tuple[str]:
+def load_vocab(path) -> tuple[str]:
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 

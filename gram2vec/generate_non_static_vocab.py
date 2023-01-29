@@ -75,7 +75,10 @@ def save_vocab_to_txt_file(vocab:tuple, path:str):
             fout.write(f"{entry}\n")
             
 def save_vocab(dataset_name:str, vocab:tuple[str]):
-    
+    """
+    Saves non-static vocabs as both a pickle and text file.
+    The text file is purely for debugging purposes
+    """
     vocab_name = vocab.name
     vocab_features = vocab.features
     path = f"vocab/non_static/{vocab_name}/{dataset_name}/"
@@ -84,7 +87,6 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     save_vocab_to_txt_file(vocab_features, f"{path}/{vocab_name}.txt")
     save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
         
-    
 def combine_counters(counters:list[Counter]) -> Counter:
     """Adds a list of Counter objects into one"""
     return sum(counters, Counter())
@@ -120,6 +122,7 @@ def main():
     
     print("Generating non-static vocabularies...")
 
+    # any new non-static vocabs can be added here
     POS_BIGRAMS   = Vocab(name="pos_bigrams", features=generate_most_common(all_documents, 50, feats.count_pos_bigrams))
     MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, feats.count_mixed_bigrams))
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
@@ -130,8 +133,6 @@ def main():
         print(f"Saving vocabulary '{vocab.name}'...")
         save_vocab(dataset_name, vocab)
     print("Done!") 
-    
-    
     
 if __name__ == "__main__":
     main()
