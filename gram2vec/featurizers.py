@@ -36,7 +36,7 @@ SentenceSpan = tuple[int,int]
 @dataclass
 class Document:
     """
-    Class representing certain elements from a spaCy Doc object
+    Class representing elements from a spaCy Doc object
 
         @param raw_text: text before being processed by spaCy
         @param doc: spaCy's document object
@@ -52,6 +52,9 @@ class Document:
     pos_tags   :list[str]
     dep_labels :list[str]
     sentences  :list[spacy.tokens.span.Span]
+    
+    def __repr__(self):
+        return f"Document({self.tokens[0:10]}..)"
     
 def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
@@ -99,11 +102,11 @@ def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
     return [(sent.start, sent.end) for sent in doc.sentences]
    
 def insert_pos_sentence_boundaries(doc:Document) -> list[str]:
-    """Inserts sentence boundaries into a list of POS tags extracted from a spaCy document"""
+    """Inserts sentence boundaries into a list of POS tags"""
     spans = get_sentence_spans(doc)
     new_tokens = []
     
-    for i, item in enumerate(doc.tokens):
+    for i, item in enumerate(doc.pos_tags):
         for start, end in spans:
             if i == start:
                 new_tokens.append("BOS")
@@ -130,7 +133,7 @@ def count_pos_unigrams(doc:Document) -> Counter:
     return Counter(doc.pos_tags)
 
 def count_pos_bigrams(doc:Document) -> Counter:
-    pos_tags_with_boundaries:list[str] = insert_pos_sentence_boundaries(doc)
+    pos_tags_with_boundaries = insert_pos_sentence_boundaries(doc)
     counter = Counter(bigrams(pos_tags_with_boundaries))
     try:
         del counter[("EOS","BOS")] # removes artificial bigram #! move this to pos sentence boundary function
@@ -367,41 +370,6 @@ class GrammarVectorizer:
             except KeyError:
                 raise KeyError(f"Feature '{name}' does not exist in config.toml")
         return config
-    
-
-    def _generate_vocab(self, data_path):
-        """
-        Generates vocab files required by some featurizers. Assumes the following input data format:
-                            {
-                             author_id : [doc1, doc2,...docn],
-                             author_id : [...]
-                             }
-        """
-        data = utils.load_json(data_path)
-        dataset = "pan" if "pan" in data_path else "mud" # will need to be changed based on data set
-        counters = {
-            "pos_bigrams"   : [],
-            "mixed_bigrams" : []
-        } 
-        
-        all_text_docs = [entry for id in data.keys() for entry in data[id]]
-        for feature, counter_list in counters.items():
-            out_path = f"vocab/{dataset}_{feature}_vocab.pkl"
-            
-            if not os.path.exists(out_path):
-                for text in all_text_docs:
-                    doc = self.nlp(text)
-                    
-                    pos_counts = get_pos_bigrams(doc)
-                    counters["pos_bigrams"].append(pos_counts)
-                
-                    mixed_bigrams = get_mixed_bigrams(doc)
-                    counters["mixed_bigrams"].append(mixed_bigrams)
-        
-                # this line condenses all the counters into one dict, getting the 50 most common elements
-                most_common = dict(sum(counter_list, Counter()).most_common(50)) # most common returns list of tuples, gets converted back to dict
-                utils.save_pkl(set(most_common.keys()), out_path)
-        
         
     
     def vectorize(self, text:str) -> np.ndarray:

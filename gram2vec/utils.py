@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 from time import time
 
+# this module is due for cleanup
 
 def timer_func(func):
     # This function shows the execution time of the function object passed
@@ -16,13 +17,13 @@ def timer_func(func):
         return result
     return wrap_func
 
-def load_json(path) -> dict:
+def load_json(path) -> dict[str, list[str]]:
     """Loads a JSON as a dict"""
     with open (path, "r") as fin:
         data = json.load(fin)
         return data
     
-def save_json(data:dict, path, mode="w") -> None:
+def save_json(data:dict, path, mode="w"):
     """Saves a dict as a JSON"""
     with open(path, mode) as fout:
         json.dump(data, fout, ensure_ascii=False, indent=2)

@@ -3,6 +3,7 @@
 import argparse
 from collections import Counter
 import featurizers as feats
+from featurizers import Document
 import os
 import utils
 from pathlib import Path
@@ -26,13 +27,16 @@ def get_dataset_name(train_path:str) -> str:
     return dataset_name
 
 # This function will likely change when integrated into Delip's system
-def dataset_has_valid_format(train_path:str) -> bool:
+def check_for_valid_format(train_path:str) -> bool:
     """
-    Validates training data for the following format:
+    Validates training set JSON for the following format:
     {
-        author_id (str) : [doc1, doc2,...doc_n] (array),
+        author_id : [doc1, doc2,...doc_n],
         author_id : [...],
     }
+    WHERE:
+        type(author_id) = str
+        type([doc1, doc2,...doc_n]) = array[str]
     """
     try:
         data = utils.load_json(train_path)
@@ -46,18 +50,17 @@ def dataset_has_valid_format(train_path:str) -> bool:
         raise Exception("Data format incorrect :(. Check documentation for expected format.")
     return True
 
+def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
+    """Retrieves all training documents in training data"""
+    check_for_valid_format(train_path)
+    data = utils.load_json(train_path)
+    documents = []
+    for author_docs in data.values():
+        documents.extend(list(map(lambda doc: feats.make_document(doc,nlp), author_docs)))
+    return documents  
 
-def get_all_documents_from_data(train_path:str) -> str:
-    """Iterator for all training documents in training data"""
-    if dataset_has_valid_format(train_path):
-        data = utils.load_json(train_path)
-        for author_documents in data.values():
-            for document in author_documents:
-                yield document
 
-
-
-def generate_dataset_directory(dataset_name:str):
+def write_dataset_directory(dataset_name:str):
     pass
 
 
@@ -68,38 +71,36 @@ def write_vocab_to_pickle():
 def write_vocab_to_txt_file():
     pass
 
+def combine_counters(counters:list[Counter]) -> Counter:
+    """Adds a list of Counter objects into one"""
+    return sum(counters, Counter())
+
 # ~~~ STATIC VOCABULARIES ~~~
 # Static: non-changing sets of elements to count
-POS_TAGS   = {"ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"}
-PUNC_MARKS = {".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’"}
-LETTERS    = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý"}
-EMOJIS     = {"😅", "😂", "😊", "❤️", "😭", "👍", "👌", "😍", "💕", "🥰"}
-DEP_LABELS = {'ROOT', 'acl', 'acomp', 'advcl', 'advmod', 'agent', 'amod', 'appos', 'attr', 'aux', 'auxpass', 'case', 'cc', 'ccomp', 'compound', 'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp'}
+POS_TAGS   = ("ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE")
+PUNC_MARKS = (".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’")
+LETTERS    = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý")
+EMOJIS     = ("😅", "😂", "😊", "❤️", "😭", "👍", "👌", "😍", "💕", "🥰")
+DEP_LABELS = ('ROOT', 'acl', 'acomp', 'advcl', 'advmod', 'agent', 'amod', 'appos', 'attr', 'aux', 'auxpass', 'case', 'cc', 'ccomp', 'compound', 'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp')
 
 # ~~~ NON-STATIC VOCABULARIES ~~~
-# Non-static: sets of elements that change depending on the dataset
+# Non-static: sets of elements that change depending on the dataset 
+# (generated under 'main' function)
 
-def generate_most_common_POS_bigrams_vocab(documents:list[str]) -> set:
-    pass
-    
-
-
-def generate_most_common_mixed_bigrams_vocab(documents:list[str]) -> set:
-    pass
-
+def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
+    """Generates n most common elements according to count_function"""
+    counters = []
+    for document in documents:
+        counter = count_function(document)
+        counters.append(counter)
+        
+    n_most_common = dict(combine_counters(counters).most_common(n))
+    return tuple(n_most_common.keys())
 
 
 
 def _generate_vocab(self, data_path):
-    """
-    Generates vocab files required by some featurizers. Assumes the following input data format:
-                        {
-                        author_id : [doc1, doc2,...docn],
-                        author_id : [...]
-                        }
-    """
-    data = utils.load_json(data_path)
-    dataset = "pan" if "pan" in data_path else "mud" # will need to be changed based on data set
+    
     counters = {
         "pos_bigrams"   : [],
         "mixed_bigrams" : []
@@ -128,24 +129,25 @@ def _generate_vocab(self, data_path):
 
 def main():
     
+    
+    
+    nlp = utils.load_spacy("en_core_web_md")
     parser = argparse.ArgumentParser()
     
-    # NOTE: the train path (and get_dataset_name function) will need to be altered when this code is integrated into Delip's system
     parser.add_argument("-train",
                         "--train_path",
                         type=str,
                         help="Path to train data",
                         default="data/pan/train_dev_test/train.json")
     
-  
     args = parser.parse_args()
     train_path = args.train_path
     
     dataset_name = get_dataset_name(train_path)
+    all_documents = get_all_documents_from_data(train_path, nlp)
     
-    for document in get_all_documents_from_data(train_path):
-        pass
-    
+    POS_BIGRAMS = generate_most_common(all_documents, 50, feats.count_pos_bigrams)
+    import ipdb;ipdb.set_trace()
     
 
  
