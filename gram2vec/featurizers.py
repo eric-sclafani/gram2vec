@@ -15,7 +15,6 @@ import utils
 
 # ~~~ Logging and type aliases~~~
 
-Counts = list[int]
 SentenceSpan = tuple[int,int]
 Vocab = tuple[str]
 
@@ -41,6 +40,8 @@ common_emojis_vocab  :Vocab = utils.load_vocab("vocab/static/common_emojis.txt")
 pos_bigrams_vocab   :Vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
 mixed_bigrams_vocab :Vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
 
+
+# ~~~ Document and CountBasedFeaturizer representations
 @dataclass
 class Document:
     """
@@ -115,9 +116,9 @@ class CountBasedFeaturizer:
             count_dict[feature] = count
         return count_dict
         
-    def get_all_feature_counts(self, document:Document) -> dict:
+    def get_all_feature_counts(self, document:Document) -> dict[str,int]:
         """
-        Applies counter function to get document counts and 
+        Applies counter function to get document feature counts and 
         combines the result with 0 count vocab entries
         
         :param document: document to extract counts from
@@ -163,7 +164,6 @@ def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
             tokens[i] = pos[i]
     return tokens
 
-   
 # ~~~ Counter functions ~~~
 # These functions are used to count certain text elements from documents
 
@@ -265,17 +265,35 @@ def read_config(register:tuple[CountBasedFeaturizer], path="config.toml") -> lis
             raise KeyError(f"Feature '{feature}' does not exist in config.toml")
     return config
 
+
 class FeatureVector:
     """
-    Each feature vector object should have access to :
-        - all individual feature vectors, as well as the concatenated one
 
     """
-    def __init__(self,):
-        pass 
+
+    def __init__(self):
+        self._features:dict[str, np.ndarray] = {}
+        
+    def vector(self) -> np.ndarray:
+        
+        vectors = []
+        for vector in self._features.values():
+            vectors.append()
+        
+        
+        
+    def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
+        """
+        Accesses an individual feature vector by name
+        :param feature_name: name of feature to get vector from
+        :returns: vector for specified feature
+        """
+        if feature_name in self._features:
+            return self._features[feature_name]
+        else:
+            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
     
-    def __add__(self, other):
-        pass
+
     
 
 class GrammarVectorizer:
@@ -295,8 +313,7 @@ class GrammarVectorizer:
         
         self.config = read_config(self.register)
 
-        
-    def vectorize(self, text:str) -> np.ndarray:
+    def apply_features(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
         doc = make_document(text, self.nlp)
@@ -304,10 +321,9 @@ class GrammarVectorizer:
             
             feature_counts = feature.get_all_feature_counts(doc)
             vector = feature.vectorize(doc)
-            
-            
-            
             assert not np.isnan(vector).any()
+            
+            
                     
     
     

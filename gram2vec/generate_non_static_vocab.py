@@ -111,6 +111,7 @@ def main():
     # any new non-static vocabs can be added here
     POS_BIGRAMS   = Vocab(name="pos_bigrams", features=generate_most_common(all_documents, 50, feats.count_pos_bigrams))
     MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, feats.count_mixed_bigrams))
+    
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
     
     print("Done!")
