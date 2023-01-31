@@ -28,17 +28,17 @@ def feature_logger(filename, writable):
         fout.write(writable)
     
 # ~~~ Static vocabularies ~~~
-pos_unigram_vocab:Vocab    = utils.load_vocab("vocab/static/pos_unigrams.txt")
-function_words_vocab:Vocab = utils.load_vocab("vocab/static/function_words.txt")
-dep_labels_vocab:Vocab     = utils.load_vocab("vocab/static/dep_labels.txt")
-punc_marks_vocab:Vocab     = utils.load_vocab("vocab/static/punc_marks.txt")
-letters_vocab:Vocab        = utils.load_vocab("vocab/static/letters.txt")
-common_emojis_vocab:Vocab  = utils.load_vocab("vocab/static/common_emojis.txt")
+pos_unigram_vocab    :Vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
+function_words_vocab :Vocab = utils.load_vocab("vocab/static/function_words.txt")
+dep_labels_vocab     :Vocab = utils.load_vocab("vocab/static/dep_labels.txt")
+punc_marks_vocab     :Vocab = utils.load_vocab("vocab/static/punc_marks.txt")
+letters_vocab        :Vocab = utils.load_vocab("vocab/static/letters.txt")
+common_emojis_vocab  :Vocab = utils.load_vocab("vocab/static/common_emojis.txt")
 
 # ~~~ Non-static vocabularies ~~~
-#NOTE: the path needs to change be manually changed to matched appropriate dataset
-pos_bigrams_vocab:Vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
-mixed_bigrams_vocab:Vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+#NOTE: the path needs to change be manually changed to match appropriate dataset
+pos_bigrams_vocab   :Vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+mixed_bigrams_vocab :Vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
 
 @dataclass
 class Document:
@@ -73,8 +73,14 @@ def make_document(text:str, nlp) -> Document:
     return Document(raw_text, doc, tokens, pos_tags, dep_labels, sentences)
 
 class CountBasedFeaturizer:
+    """
+    Class for representing frequency-based feature extractors
     
-    def __init__(self, name:str, vocab:tuple, counter):
+    :param name: name of featurizer. Has to be the same name as in config.toml
+    :param vocab: tuple of elements to look for in a document
+    :param counter: function used to count elements
+    """
+    def __init__(self, name:str, vocab:tuple[str], counter):
         self.name = name
         self.vocab = vocab
         self.counter = counter
@@ -121,7 +127,7 @@ class CountBasedFeaturizer:
         return self._add_zero_vocab_counts(counted_doc_features)
 
     def vectorize(self, document:Document) -> np.array:
-        """"""
+        """Converts the feature counts into a numpy array"""
         counts = self.get_all_feature_counts(document).values()
         return np.array(counts)
     
@@ -244,6 +250,21 @@ mixed_bigrams = CountBasedFeaturizer(
 
 # ~~~ Featurizers end ~~~
 
+def read_config(register:tuple[CountBasedFeaturizer], path="config.toml") -> list[CountBasedFeaturizer]:
+    """
+    Reads config.toml to see which features to activate
+    :param register: tuple of featurizers 
+    """
+    toml_config = toml.load(path)["Features"]
+    config = []
+    for feature in register:
+        try:
+            if toml_config[feature.name] == 1:
+                config.append(feature)
+        except KeyError:
+            raise KeyError(f"Feature '{feature}' does not exist in config.toml")
+    return config
+
 class FeatureVector:
     """
     Each feature vector object should have access to :
@@ -256,50 +277,25 @@ class FeatureVector:
     def __add__(self, other):
         pass
     
-    
 
-
-def config(path_to_config:str):
-    pass
-
-
-
-   
-   
-
-    
 class GrammarVectorizer:
     """This class houses all featurizers"""
     
-    def __init__(self, data_path, logging=False):
+    def __init__(self, logging=False):
         self.nlp = utils.load_spacy("en_core_web_md")
         self.logging = logging
-        self.featurizers = {
-            "pos_unigrams"  :pos_unigrams,
-            "pos_bigrams"   :pos_bigrams,
-            "func_words"    :func_words, 
-            "punc"          :punc,
-            "letters"       :letters,
-            "common_emojis" :common_emojis,
-            "doc_vector"    :doc_vector,
-            "dep_labels"    :dep_labels,
-            "mixed_bigrams" :mixed_bigrams}
+        self.register = (pos_unigrams,
+                         pos_bigrams,
+                         func_words,
+                         punc,
+                         letters,
+                         common_emojis,
+                         dep_labels,
+                         mixed_bigrams)
         
-        self._generate_vocab(data_path)
+        self.config = read_config(self.register)
+
         
-    def _config(self):
-        """Reads 'config.toml' to retrieve which features to apply. 0 = deactivated, 1 = activated"""
-        toml_config = toml.load("config.toml")["Features"]
-        config = []
-        for name, feat in self.featurizers.items():
-            try:
-                if toml_config[name] == 1:
-                    config.append(feat)
-            except KeyError:
-                raise KeyError(f"Feature '{name}' does not exist in config.toml")
-        return config
-        
-    
     def vectorize(self, text:str) -> np.ndarray:
         """Applies featurizers to an input text. Returns a 1-D array."""
         

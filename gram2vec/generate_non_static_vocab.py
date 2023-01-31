@@ -5,7 +5,6 @@ from collections import Counter
 from dataclasses import dataclass
 import featurizers as feats
 from featurizers import Document
-from nltk.corpus import stopwords
 import os
 import utils
 

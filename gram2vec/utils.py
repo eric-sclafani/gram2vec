@@ -29,6 +29,7 @@ def save_json(data:dict, path, mode="w"):
         json.dump(data, fout, ensure_ascii=False, indent=2)
         
 def load_vocab(path) -> tuple[str]:
+    """Loads in a txt file delimited by newlines as a tuple of strings"""
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 
