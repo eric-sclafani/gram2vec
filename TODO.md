@@ -9,7 +9,6 @@ This file contains ideas for future additions/improvements
 - prosody: do people have a stress (melodic) preference?
 - NEED TO LOOK AT NORMALIZING AGAIN
 - emojis: look for ASCII emojis
-- add detailed doc strings to funcs
 
 ## Ideas
 - k-NN: if no majority vote, switch k value??
@@ -17,9 +16,8 @@ This file contains ideas for future additions/improvements
 - look into adding special rules for dep parser for PAN data (so I dont have to do information injection)
 
 
-## Code rework next steps (1/26)
-- Get counting functions functioning the same 
-- figure out vocab generation and streamline the process
+## Code rework next steps
+- move counter functions to own module?
 - Get FeatureVector working
 - Remake GrammarVectorizer and config file handling
 
