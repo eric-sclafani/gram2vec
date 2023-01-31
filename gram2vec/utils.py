@@ -56,5 +56,17 @@ def remove_dupes(iterable):
             checked.append(n)
     return checked
 
-
-    
+def get_dataset_name(train_path:str) -> str:
+    """
+    Gets the dataset name from training data path.  
+    Needed to generate path for vocab per dataset
+    NOTE: This function needs to be manually updated when new datasets are used.
+    """
+    if "pan" in train_path:
+        dataset_name = "pan"
+    elif "mud" in train_path:
+        dataset_name = "mud"
+    # add other dataset names here following the same condition-checking format
+    else:
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
+    return dataset_name 

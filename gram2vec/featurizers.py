@@ -21,6 +21,7 @@ Vocab = tuple[str]
 
 def feature_logger(filename, writable):
     
+    #! account for dataset in logging path
     if not os.path.exists("logs"):
         os.mkdir("logs")
                
@@ -95,7 +96,6 @@ class CountBasedFeaturizer:
         
         :param document_counts: features counted from document
         :returns: counts of every element in vocab with 0 counts preserved
-        :rtype: dict
         
         Example:
                 >> self.vocab = ("a", "b", "c", "d")
@@ -126,7 +126,7 @@ class CountBasedFeaturizer:
         counted_doc_features = self.counter(document)
         return self._add_zero_vocab_counts(counted_doc_features)
 
-    def vectorize(self, document:Document) -> np.array:
+    def vectorize(self, document:Document) -> np.ndarray:
         """Converts the feature counts into a numpy array"""
         counts = self.get_all_feature_counts(document).values()
         return np.array(counts)
@@ -300,18 +300,15 @@ class GrammarVectorizer:
         """Applies featurizers to an input text. Returns a 1-D array."""
         
         doc = make_document(text, self.nlp)
-        
-        vectors = []
-        for feat in self._config():
+        for feature in self.config:
             
-            vector, doc_features = feat(doc)
-            assert not np.isnan(vector).any() 
-            vectors.append(vector)
+            feature_counts = feature.get_all_feature_counts(doc)
+            vector = feature.vectorize(doc)
             
-            if self.logging:
-                feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
+            
+            
+            assert not np.isnan(vector).any()
                     
-        return np.concatenate(vectors)
     
     
 # debugging
