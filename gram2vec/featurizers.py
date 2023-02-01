@@ -20,7 +20,6 @@ Vocab = tuple[str]
 
 def feature_logger(filename, writable):
     
-    #! account for dataset in logging path
     if not os.path.exists("logs"):
         os.mkdir("logs")
                
@@ -92,7 +91,7 @@ class CountBasedFeaturizer:
         
     def _add_zero_vocab_counts(self, counted_doc_features:Counter) -> dict:
         """
-        Combines vocab and counted_document_features into one dictionary such that
+        Combines self.vocab and counted_document_features into one dictionary such that
         any feature in vocab counted 0 times in counted_document_features is preserved in the feature vector. 
         
         :param document_counts: features counted from document
@@ -266,21 +265,29 @@ def read_config(register:tuple[CountBasedFeaturizer], path="config.toml") -> lis
     return config
 
 
-class FeatureVector:
+class DocumentVector:
     """
-
+    This class represents a DocumentVector, which contains each individual 
+    feature vector, as well as the concatenated one. 
     """
-
-    def __init__(self):
-        self._features:dict[str, np.ndarray] = {}
+    def __init__(self, doc:Document):
+        self.doc = doc
+        self._vector_map :dict[CountBasedFeaturizer, np.ndarray] = {} 
         
     def vector(self) -> np.ndarray:
+        """Concatenates all feature vectors into one larger 1D vector"""
+        vectors = [vector for vector in self._vector_map.values()]
+        return np.concatenate(vectors)
+    
+    def add_feature(self, feature:CountBasedFeaturizer, vector:np.ndarray):
+        """Adds a feature mapped to that feature's vector to self._vector_map"""
+        if feature.name not in self._vector_map:
+            self._vector_map[feature.name] = vector
+        else:
+            raise Exception(f"Feature {feature} already in this instance")
         
-        vectors = []
-        for vector in self._features.values():
-            vectors.append()
-        
-        
+    def get_vector_map(self) -> dict:
+        return self._vector_map()
         
     def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
         """
@@ -289,12 +296,10 @@ class FeatureVector:
         :returns: vector for specified feature
         """
         if feature_name in self._features:
-            return self._features[feature_name]
+            return self._vector_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
-    
 
-    
 
 class GrammarVectorizer:
     """This class houses all featurizers"""
@@ -313,17 +318,26 @@ class GrammarVectorizer:
         
         self.config = read_config(self.register)
 
-    def apply_features(self, text:str) -> np.ndarray:
-        """Applies featurizers to an input text. Returns a 1-D array."""
+    def apply_features(self, text:str) -> DocumentVector:
+        """Applies featurizers to an input text and returns a DocumentVector"""
         
         doc = make_document(text, self.nlp)
+        document_vector = DocumentVector(doc)
         for feature in self.config:
             
             feature_counts = feature.get_all_feature_counts(doc)
-            vector = feature.vectorize(doc)
-            assert not np.isnan(vector).any()
+            feature_vector = feature.vectorize(doc)
             
+            if self.logging:
+                feature_logger(feature.name, f"{feature_counts}\n{feature_vector}\n\n")
             
+            assert not np.isnan(feature_vector).any()
+            document_vector.add_feature(feature, feature_vector)
+            
+        return document_vector
+   
+                   
+# write a function for apply grammarvectorizer to list of documents            
                     
     
     
