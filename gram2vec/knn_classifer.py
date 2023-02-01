@@ -29,7 +29,9 @@ def vectorize_data(data, g2v) -> np.ndarray:
     
     return np.stack(vectors), authors
 
-
+def get_authors():
+    """Get all instances of authors in data set"""
+    pass
 
 @utils.timer_func
 def main():

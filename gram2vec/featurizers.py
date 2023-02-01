@@ -126,7 +126,7 @@ class CountBasedFeaturizer:
         counted_doc_features = self.counter(document)
         return self._add_zero_vocab_counts(counted_doc_features)
 
-    def vectorize(self, document:Document) -> np.ndarray:
+    def to_vector(self, document:Document) -> np.ndarray:
         """Converts the feature counts into a numpy array"""
         counts = self.get_all_feature_counts(document).values()
         return np.array(counts)
@@ -304,9 +304,8 @@ class DocumentVector:
 class GrammarVectorizer:
     """This class houses all featurizers"""
     
-    def __init__(self, logging=False):
+    def __init__(self):
         self.nlp = utils.load_spacy("en_core_web_md")
-        self.logging = logging
         self.register = (pos_unigrams,
                          pos_bigrams,
                          func_words,
@@ -318,27 +317,32 @@ class GrammarVectorizer:
         
         self.config = read_config(self.register)
 
-    def apply_features(self, text:str) -> DocumentVector:
-        """Applies featurizers to an input text and returns a DocumentVector"""
+    def vectorize(self, text:str, to_array=True) -> DocumentVector:
+        """
+        Applies featurizers to an input text and returns with either a numpy array
+        or DocumentVector object depending on the to_array flag"""
         
         doc = make_document(text, self.nlp)
         document_vector = DocumentVector(doc)
         for feature in self.config:
             
             feature_counts = feature.get_all_feature_counts(doc)
-            feature_vector = feature.vectorize(doc)
-            
-            if self.logging:
-                feature_logger(feature.name, f"{feature_counts}\n{feature_vector}\n\n")
+            feature_vector = feature.to_vector(doc)
+        
+            feature_logger(feature.name, f"{feature_counts}\n{feature_vector}\n\n")
             
             assert not np.isnan(feature_vector).any()
             document_vector.add_feature(feature, feature_vector)
-            
-        return document_vector
+        
+        if to_array:
+            return document_vector.vector
+        else:
+            return document_vector
    
                    
-# write a function for apply grammarvectorizer to list of documents            
-                    
+
+    
+    
     
     
 # debugging
