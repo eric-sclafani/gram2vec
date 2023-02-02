@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import demoji
 from nltk import bigrams
+from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
@@ -186,13 +187,13 @@ def count_func_words(doc:Document) -> Counter:
     return Counter([token for token in doc.tokens if token in function_words_vocab])
 
 def count_punctuation(doc:Document) -> Counter:
-    return Counter([punc for token in doc.tokens for punc in token.text if punc in punc_marks_vocab])
+    return Counter([punc for token in doc.tokens for punc in token if punc in punc_marks_vocab])
 
 def count_letters(doc:Document) -> Counter:
-    return Counter([letter for token in doc.tokens for letter in token.text if letter in letters_vocab])
+    return Counter([letter for token in doc.tokens for letter in token if letter in letters_vocab])
 
 def count_emojis(doc:Document) -> Counter:
-    extract_emojis = demoji.findall_list(doc.text, desc=False)
+    extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
     return Counter(filter(lambda x: x in common_emojis_vocab, extract_emojis))
 
 def count_dep_labels(doc:Document) -> Counter:
