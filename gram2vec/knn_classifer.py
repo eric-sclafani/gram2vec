@@ -30,8 +30,6 @@ def get_authors(data:dict) -> list[int]:
             authors.append(author_id)
     return authors
     
-    
-
 @utils.timer_func
 def main():
     
@@ -79,9 +77,13 @@ def main():
     Y_train_encoded = le.fit_transform(Y_train)
     Y_eval_encoded  = le.transform(Y_eval)
     
-    X_train = scaler.fit_transform(X_train)
-    X_eval = scaler.transform(X_eval)
+    #import ipdb;ipdb.set_trace()
     
+    
+    X_train = scaler.fit_transform(X_train)
+    X_eval = scaler.fit_transform(X_eval)
+    
+   
     model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.metric)
     model.fit(X_train, Y_train_encoded)
     

@@ -13,8 +13,6 @@ class Vocab:
     name:str
     features:tuple[str]
 
-
-
 # This function will likely change when integrated into Delip's system
 def check_for_valid_format(train_path:str) -> bool:
     """

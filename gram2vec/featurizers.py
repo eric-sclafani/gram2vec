@@ -178,19 +178,7 @@ def common_emojis(doc:Document) -> dict[str,int]:
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     return add_zero_vocab_counts(vocab, doc_emoji_counts)
 
-def dep_labels(doc:Document) -> dict[str,int]:
-
-    vocab = utils.load_vocab("vocab/static/dep_labels.txt")
-    doc_dep_labels = Counter([dep for dep in doc.dep_labels])
-    return add_zero_vocab_counts(vocab, doc_dep_labels)
-
-def mixed_bigrams(doc:Document) -> dict[str,int]:
-    
-    vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
-    doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
-    return add_zero_vocab_counts(vocab, doc_mixed_bigrams)
-
-def embedding_vector(doc:Document) -> dict[str,int]:
+def embedding_vector(doc:Document) -> dict[str,np.ndarray]:
     """spaCy word2vec document embedding"""
     return {"embedding_vector" : doc.spacy_doc.vector}
 
@@ -204,6 +192,18 @@ def document_stats(doc:Document) -> dict[str,int]:
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
                       "hapaxes"     : len(FreqDist(words).hapaxes())}
     return doc_statistics
+
+def dep_labels(doc:Document) -> dict[str,int]:
+
+    vocab = utils.load_vocab("vocab/static/dep_labels.txt")
+    doc_dep_labels = Counter([dep for dep in doc.dep_labels])
+    return add_zero_vocab_counts(vocab, doc_dep_labels)
+
+def mixed_bigrams(doc:Document) -> dict[str,int]:
+    
+    vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+    doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
+    return add_zero_vocab_counts(vocab, doc_mixed_bigrams)
 
 # ~~~ Featurizers end ~~~
 
@@ -283,7 +283,7 @@ class GrammarVectorizer:
         or DocumentVector object depending on the return_vector flag
         
         :param text: string to be vectorized
-        :param return_vector: Defaults to True. Option to return DocumentVector instead of numpy array
+        :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
         """
         doc = make_document(text, self.nlp)
         document_vector = DocumentVector(doc)
