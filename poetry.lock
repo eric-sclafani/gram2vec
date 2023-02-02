@@ -1097,6 +1097,28 @@ files = [
 traitlets = "*"
 
 [[package]]
+name = "metric-learn"
+version = "0.6.2"
+description = "Python implementations of metric learning algorithms"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "metric-learn-0.6.2.tar.gz", hash = "sha256:36cbfc691d66d099c817694265d75fbd4ede57a90f2bf05b28dd7f0b4d22a1db"},
+    {file = "metric_learn-0.6.2-py2.py3-none-any.whl", hash = "sha256:033c3f48711be37c2bca8c44875662665c0283cb544707b77003d21f1564ef85"},
+]
+
+[package.dependencies]
+numpy = "*"
+scikit-learn = ">=0.20.3"
+scipy = "*"
+
+[package.extras]
+demo = ["matplotlib"]
+docs = ["numpydoc", "shinx-rtd-theme", "sphinx"]
+sdml = ["skggm (>=0.2.9)"]
+
+[[package]]
 name = "more-itertools"
 version = "9.0.0"
 description = "More routines for operating on iterables, beyond itertools"
@@ -2648,4 +2670,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "64d0d7c30b29e35840759f8611cd4cd0f15aa3d35599fc5ffa50adf486a64ca2"
+content-hash = "e29556ac9f3c0c1200c77bfad97c6dc5b23700d069819e05462cdd9c69075f23"

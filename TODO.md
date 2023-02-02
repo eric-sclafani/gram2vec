@@ -11,15 +11,20 @@ This file contains ideas for future additions/improvements
 - emojis: look for ASCII emojis
 
 ## Ideas
-- k-NN: if no majority vote, switch k value??
-- KNN vs NN (1 vector/document VS 1 vector/author k=1)
-- look into adding special rules for dep parser for PAN data (so I dont have to do information injection)
+- `NEW EVAL PLAN`:
+    - Regarding making the document pairs, I should just create them from my already existing train, dev, test splits instead of using the raw data. Why? Because of the information injection actually.
+
+    - Because the texts in my splits are modified (from the injection), it’ll actually be more involved to check if the document in the RAW data is in train, dev or test. The strings won't be the same because of the modification.
+
+
 
 
 ## Code rework next steps
-- move counter functions to own module?
-- Get FeatureVector working
-- Remake GrammarVectorizer and config file handling
+- debug feaurizers.py
+- KNN:
+    - revisit vectorize_data
+    - new function for getting labels
+    - make result file output better
 
 ## To check out
 

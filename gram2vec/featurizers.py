@@ -128,8 +128,12 @@ class CountBasedFeaturizer:
 
     def to_vector(self, document:Document) -> np.ndarray:
         """Converts the feature counts into a numpy array"""
-        counts = self.get_all_feature_counts(document).values()
+        counts = list(self.get_all_feature_counts(document).values())
         return np.array(counts)
+    
+class NonCountBasedFeaturizer:
+    
+    pass
     
 # ~~~ Helper functions ~~~
 
@@ -273,7 +277,8 @@ class DocumentVector:
     def __init__(self, doc:Document):
         self.doc = doc
         self._vector_map :dict[CountBasedFeaturizer, np.ndarray] = {} 
-        
+    
+    @property
     def vector(self) -> np.ndarray:
         """Concatenates all feature vectors into one larger 1D vector"""
         vectors = [vector for vector in self._vector_map.values()]
@@ -331,7 +336,9 @@ class GrammarVectorizer:
         
             feature_logger(feature.name, f"{feature_counts}\n{feature_vector}\n\n")
             
+            #import ipdb;ipdb.set_trace()
             assert not np.isnan(feature_vector).any()
+            
             document_vector.add_feature(feature, feature_vector)
         
         if to_array:
@@ -347,4 +354,8 @@ class GrammarVectorizer:
     
 # debugging
 if __name__ == "__main__":
-    pass
+    
+   pass
+
+
+

@@ -14,24 +14,24 @@ import utils
 from featurizers import GrammarVectorizer
 
 
-class KNNDataLoader:
-    pass
-
-def vectorize_data(data, g2v) -> np.ndarray:
+def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
     """Vectorizes a dict of documents. Returns a matrix from all documents"""
     vectors = []
-    authors = []
-    for id in data.keys():
-        for text in data[id]:
+    for author_id in data.keys():
+        for text in data[author_id]:
             grammar_vector = g2v.vectorize(text)
             vectors.append(grammar_vector)
-            authors.append(id)
-    
-    return np.stack(vectors), authors
+    return np.stack(vectors)
 
-def get_authors():
+def get_authors(data:dict) -> list[int]:
     """Get all instances of authors in data set"""
-    pass
+    authors = []
+    for author_id in data.keys():
+        for _ in data[author_id]:
+            authors.append(author_id)
+    return authors
+    
+    
 
 @utils.timer_func
 def main():
@@ -63,7 +63,7 @@ def main():
     
     args = parser.parse_args()
     
-    g2v = GrammarVectorizer(args.train_path, logging=False)
+    g2v = GrammarVectorizer()
     le  = LabelEncoder()
     scaler = StandardScaler()
     
@@ -71,8 +71,11 @@ def main():
     train = utils.load_json(args.train_path)
     eval  = utils.load_json(args.eval_path)
     
-    X_train, Y_train = vectorize_data(train, g2v) 
-    X_eval,  Y_eval  = vectorize_data(eval, g2v)
+    X_train = vectorize_all_data(train, g2v) 
+    Y_train = get_authors(train)
+    
+    X_eval = vectorize_all_data(eval, g2v)
+    Y_eval = get_authors(eval)
     
     Y_train_encoded = le.fit_transform(Y_train)
     Y_eval_encoded  = le.transform(Y_eval)
@@ -86,7 +89,7 @@ def main():
     predictions = model.predict(X_eval)
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
 
-    feats = [feat.__name__ for feat in g2v._config()]
+    feats = [feat.name for feat in g2v.config]
     eval_set = "dev" if args.eval_path.endswith("dev.json") else "test"
     result_path = f"results/{eval_set}_results.json" if "bin" not in args.eval_path else f"results/{eval_set}_bin_results.json"
     

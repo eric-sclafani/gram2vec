@@ -23,6 +23,7 @@ ipdb = "^0.13.11"
 ijson = "^3.1.4"
 plotly = "5.11.0"
 nbformat = "^5.7.1"
+metric-learn = "^0.6.2"
 
 
 [build-system]
