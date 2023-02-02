@@ -13,7 +13,6 @@ from datetime import datetime
 import utils
 from featurizers import GrammarVectorizer
 
-
 def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
     """Vectorizes a dict of documents. Returns a matrix from all documents"""
     vectors = []
@@ -89,7 +88,7 @@ def main():
     predictions = model.predict(X_eval)
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
 
-    feats = [feat.name for feat in g2v.config]
+    feats = [feat.__name__ for feat in g2v.config]
     eval_set = "dev" if args.eval_path.endswith("dev.json") else "test"
     result_path = f"results/{eval_set}_results.json" if "bin" not in args.eval_path else f"results/{eval_set}_bin_results.json"
     
