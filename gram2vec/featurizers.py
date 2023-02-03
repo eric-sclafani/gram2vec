@@ -28,8 +28,6 @@ def feature_logger(filename, writable):
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
         
-
-
 # ~~~ Document representation ~~~
 @dataclass
 class Document:
@@ -134,55 +132,68 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
         count_dict[feature] = count
     return count_dict
               
-def counts_to_vector(counts:dict[str,int]) -> np.ndarray:
-    """Converts a dictionary of counts into a numpy array"""
-    counts = list(counts.values())
-    return np.array(counts).flatten()
-
 # ~~~ FEATURIZERS ~~~
 
-def pos_unigrams(doc:Document) -> dict[str,int]:
+@dataclass
+class Feature:
+    feature_counts:dict
+    normalize_by:int = 1
+    
+    def counts_to_vector(self) -> np.ndarray:
+        """Converts a dictionary of counts into a numpy array"""
+        counts = list(self.feature_counts.values())
+        return np.array(counts).flatten() / self.normalize_by
+    
+    
+def pos_unigrams(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
     doc_pos_tag_counts = Counter(doc.pos_tags)
-    return add_zero_vocab_counts(vocab, doc_pos_tag_counts)
+    all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
+    return Feature(all_pos_tag_counts)
 
-def pos_bigrams(doc:Document) -> dict[str,int]:
+def pos_bigrams(doc:Document) -> Feature:
     
     vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
-    return add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
+    all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
+    return Feature(all_pos_bigram_counts)
 
-def func_words(doc:Document) -> dict[str,int]:
+def func_words(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/function_words.txt")
-    doc_func_words = Counter([token for token in doc.tokens if token in vocab])
-    return add_zero_vocab_counts(vocab, doc_func_words)
+    doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
+    all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
+    return Feature(all_func_word_counts)
 
-def punc(doc:Document) -> dict[str,int]:
+def punc(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/punc_marks.txt")
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
-    return add_zero_vocab_counts(vocab, doc_punc_counts)
+    all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
+    return Feature(all_punc_counts)
 
-def letters(doc:Document) -> dict[str,int]:
+def letters(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/letters.txt")
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
-    return add_zero_vocab_counts(vocab, doc_letter_counts)
+    all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
+    return Feature(all_letter_counts)
 
-def common_emojis(doc:Document) -> dict[str,int]:
+def common_emojis(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/common_emojis.txt")
     extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
-    return add_zero_vocab_counts(vocab, doc_emoji_counts)
+    all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
+    return Feature(all_emoji_counts)
 
-def embedding_vector(doc:Document) -> dict[str,np.ndarray]:
+def embedding_vector(doc:Document) -> Feature:
     """spaCy word2vec document embedding"""
-    return {"embedding_vector" : doc.spacy_doc.vector}
+    embedding = {"embedding_vector" : doc.spacy_doc.vector}
+    return Feature(embedding)
 
-def document_stats(doc:Document) -> dict[str,int]:
+def document_stats(doc:Document) -> Feature:
     words = doc.words
     doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5]), 
                       "large_words" : len([1 for word in words if len(word) > 4]),
@@ -191,19 +202,21 @@ def document_stats(doc:Document) -> dict[str,int]:
                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
                       "hapaxes"     : len(FreqDist(words).hapaxes())}
-    return doc_statistics
+    return Feature(doc_statistics)
 
-def dep_labels(doc:Document) -> dict[str,int]:
+def dep_labels(doc:Document) -> Feature:
 
     vocab = utils.load_vocab("vocab/static/dep_labels.txt")
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
-    return add_zero_vocab_counts(vocab, doc_dep_labels)
+    all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
+    return Feature(all_dep_labels)
 
-def mixed_bigrams(doc:Document) -> dict[str,int]:
+def mixed_bigrams(doc:Document) -> Feature:
     
     vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
-    return add_zero_vocab_counts(vocab, doc_mixed_bigrams)
+    all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
+    return Feature(all_mixed_bigrams)
 
 # ~~~ Featurizers end ~~~
 
@@ -289,8 +302,9 @@ class GrammarVectorizer:
         document_vector = DocumentVector(doc)
         for featurizer in self.config:
             
-            feature_counts = featurizer(doc)
-            feature_vector = counts_to_vector(feature_counts)
+            feature = featurizer(doc)
+            feature_vector = feature.counts_to_vector()
+            feature_counts = feature.feature_counts
             feature_logger(featurizer.__name__, f"{feature_counts}\n{feature_vector}\n\n") 
         
             assert not np.isnan(feature_vector).any()
