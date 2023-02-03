@@ -32,7 +32,7 @@ def feature_logger(filename, writable):
 @dataclass
 class Document:
     """
-    Class representing elements from a spaCy Doc object
+    This class represents elements from a spaCy Doc object
         :param raw_text: text before being processed by spaCy
         :param spacy_doc: spaCy's document object
         :param tokens = list of tokens
@@ -131,11 +131,25 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
             count = 0
         count_dict[feature] = count
     return count_dict
+
+def sum_of_counts(counts:dict) -> int:
+    """
+    Sums the counts of a count dictionary
+    Returns 1 if counts sum to 0
+    """
+    count_sum = sum(counts.values())
+    return count_sum if count_sum > 0 else 1
               
 # ~~~ FEATURIZERS ~~~
 
 @dataclass
 class Feature:
+    """
+    This class represents the output of each feature extractor
+    
+    :param feature_counts: dictionary of counts
+    :normalize_by: option to normalize. Defaults to 1
+    """
     feature_counts:dict
     normalize_by:int = 1
     
@@ -150,35 +164,40 @@ def pos_unigrams(doc:Document) -> Feature:
     vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
     doc_pos_tag_counts = Counter(doc.pos_tags)
     all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
-    return Feature(all_pos_tag_counts)
+    
+    return Feature(all_pos_tag_counts, normalize_by=len(doc.pos_tags))
 
 def pos_bigrams(doc:Document) -> Feature:
     
     vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
-    return Feature(all_pos_bigram_counts)
+    
+    return Feature(all_pos_bigram_counts, normalize_by=sum_of_counts(doc_pos_bigram_counts))
 
 def func_words(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/function_words.txt")
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
     all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
-    return Feature(all_func_word_counts)
+    
+    return Feature(all_func_word_counts, normalize_by=sum_of_counts(doc_func_word_counts))
 
 def punc(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/punc_marks.txt")
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
     all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
-    return Feature(all_punc_counts)
+    
+    return Feature(all_punc_counts, normalize_by=sum_of_counts(doc_punc_counts))
 
 def letters(doc:Document) -> Feature:
     
     vocab = utils.load_vocab("vocab/static/letters.txt")
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
     all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
-    return Feature(all_letter_counts)
+    
+    return Feature(all_letter_counts, normalize_by=sum_of_counts(doc_letter_counts))
 
 def common_emojis(doc:Document) -> Feature:
     
@@ -186,7 +205,8 @@ def common_emojis(doc:Document) -> Feature:
     extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
-    return Feature(all_emoji_counts)
+    
+    return Feature(all_emoji_counts, normalize_by=len(doc.tokens))
 
 def embedding_vector(doc:Document) -> Feature:
     """spaCy word2vec document embedding"""
@@ -209,14 +229,16 @@ def dep_labels(doc:Document) -> Feature:
     vocab = utils.load_vocab("vocab/static/dep_labels.txt")
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
     all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
-    return Feature(all_dep_labels)
+    
+    return Feature(all_dep_labels, normalize_by=sum_of_counts(doc_dep_labels))
 
 def mixed_bigrams(doc:Document) -> Feature:
     
     vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
-    return Feature(all_mixed_bigrams)
+    
+    return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
 # ~~~ Featurizers end ~~~
 
@@ -307,7 +329,11 @@ class GrammarVectorizer:
             feature_counts = feature.feature_counts
             feature_logger(featurizer.__name__, f"{feature_counts}\n{feature_vector}\n\n") 
         
-            assert not np.isnan(feature_vector).any()
+            try:
+                assert not np.isnan(feature_vector).any()
+            except AssertionError:
+                import ipdb;ipdb.set_trace()
+                
             document_vector.add_feature(featurizer.__name__, feature_vector)
         
         if return_vector:

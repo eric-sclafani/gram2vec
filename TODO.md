@@ -17,13 +17,13 @@ This file contains ideas for future additions/improvements
     - Because the texts in my splits are modified (from the injection), it’ll actually be more involved to check if the document in the RAW data is in train, dev or test. The strings won't be the same because of the modification.
 
 
+## When changing data sets, the following need to be altered manually:
+- POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file
 
 
 ## Code rework next steps
 - debug feaurizers.py
 - KNN:
-    - revisit vectorize_data
-    - new function for getting labels
     - make result file output better
 
 ## To check out
