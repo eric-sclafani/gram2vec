@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import os
+import csv
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -29,6 +30,32 @@ def get_authors(data:dict) -> list[int]:
         for _ in data[author_id]:
             authors.append(author_id)
     return authors
+
+def get_result_path(eval_path, dataset_name, dev_or_test):
+
+    if "bin" in eval_path:
+        result_path = f"results/{dataset_name}_{dev_or_test}_bin_results.csv"
+    else:
+        result_path = f"results/{dataset_name}_{dev_or_test}_results.csv"
+    return result_path
+
+def write_results_entry(path, to_write:list):
+    
+    if not os.path.exists(path):
+        with open(path, "w") as fout:
+            writer = csv.writer(fout)
+            writer.writerow(["Datetime", 
+                             "Accuracy",
+                             "Vector_length",
+                             "k",
+                             "Metric",
+                             "config"])
+    
+    with open(path, "a") as fout:
+        writer = csv.writer(fout)
+        writer.writerow(to_write)
+      
+        
     
 @utils.timer_func
 def main():
@@ -64,7 +91,6 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-    
     train = utils.load_json(args.train_path)
     eval  = utils.load_json(args.eval_path)
     
@@ -77,46 +103,33 @@ def main():
     Y_train_encoded = le.fit_transform(Y_train)
     Y_eval_encoded  = le.transform(Y_eval)
     
-
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.fit_transform(X_eval)
     
-   
     model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.metric)
     model.fit(X_train, Y_train_encoded)
     
     predictions = model.predict(X_eval)
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
-
-    feats = [feat.__name__ for feat in g2v.config]
-    eval_set = "dev" if args.eval_path.endswith("dev.json") else "test"
-    result_path = f"results/{eval_set}_results.json" if "bin" not in args.eval_path else f"results/{eval_set}_bin_results.json"
+    activated_feats = [feat.__name__ for feat in g2v.config]
     
-    print(f"Eval set: {eval_set}")
-    print(f"Features: {feats}")
+    dev_or_test = "dev" if args.eval_path.endswith("dev.json") else "test"
+    dataset_name = utils.get_dataset_name(args.train_path)
+    result_path = get_result_path(args.eval_path, dataset_name, dev_or_test)
+    
+    print(f"Eval set: {dev_or_test}")
+    print(f"Features: {activated_feats}")
     print(f"Feature vector size: {len(X_train[0])}")
     print(f"k: {args.k_value}")
     print(f"Metric: {args.metric}")
     print(f"Accuracy: {accuracy}")
     
-    
-
-    # loads in result file and appents the current run's result
-    # try:
-    #     results = utils.load_json(result_path)
-    # except:
-    #     utils.save_json({"results":[]}, result_path)
-    #     results = utils.load_json(result_path)
-    
-    # results["results"].append({"datetime": str(datetime.now()),
-    #                         "acc": accuracy, 
-    #                         "vector_length":f"{len(X_train[0])}",
-    #                         "k": f"{args.k_value}",
-    #                         "Metric": args.metric,
-    #                         "config":feats})
-    
-    # utils.save_json(data=results, path=result_path)
-            
-
+    write_results_entry(result_path, [datetime.now().strftime("%c"),
+                                      accuracy,
+                                      len(X_train[0]),
+                                      args.k_value,
+                                      args.metric,
+                                      str(activated_feats)])
+ 
 if __name__ == "__main__":
     main()

@@ -3,7 +3,7 @@
 # this script evaluates the knn classifier on development bins for PAN 2022
 
 # clear the current eight results
-rm results/dev_bin_results.json
+rm results/pan_dev_bin_results.csv
 
 for json in data/pan/dev_bins/sorted_by_docfreq/*; do
 

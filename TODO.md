@@ -10,6 +10,9 @@ This file contains ideas for future additions/improvements
 - NEED TO LOOK AT NORMALIZING AGAIN
 - emojis: look for ASCII emojis
 
+## Issues:
+- odd crash when turning certain features off while using cosine metric
+
 ## Ideas
 - `NEW EVAL PLAN`:
     - Regarding making the document pairs, I should just create them from my already existing train, dev, test splits instead of using the raw data. Why? Because of the information injection actually.
@@ -18,7 +21,9 @@ This file contains ideas for future additions/improvements
 
 
 ## When changing data sets, the following need to be altered manually:
-- POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file
+- get_dataset_name in `utils.py` has to be updated with a new dataset name conditional
+- After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file generated for the new dataset
+- 
 
 
 ## Code rework next steps
@@ -36,3 +41,6 @@ This file contains ideas for future additions/improvements
 - More metric learning stuff: https://www.semanticscholar.org/paper/Metric-Learning%3A-A-Support-Vector-Approach-Nguyen-Guo/51d8dabeb6d4aad285f5f5765de8baff771f5693
 ### Other
 - https://www.cs.waikato.ac.nz/ml/weka/index.html
+
+## Before I gradiate:
+- add very detailed documentation of project
