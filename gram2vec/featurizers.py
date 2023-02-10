@@ -14,7 +14,6 @@ from typing import Union
 # project imports 
 import utils
 
-
 # ~~~ Logging and type aliases~~~
 
 SentenceSpan = tuple[int,int]
@@ -272,7 +271,7 @@ class DocumentVector:
         """Concatenates all feature vectors into one larger 1D vector"""
         return np.concatenate(list(self._vector_map.values()))
     
-    def add_feature(self, feature_name:str, vector:np.ndarray):
+    def _add_feature(self, feature_name:str, vector:np.ndarray):
         """Adds a feature mapped to that feature's vector to self._vector_map"""
         if feature_name not in self._vector_map:
             self._vector_map[feature_name] = vector
@@ -334,7 +333,7 @@ class GrammarVectorizer:
             except AssertionError:
                 import ipdb;ipdb.set_trace()
                 
-            document_vector.add_feature(featurizer.__name__, feature_vector)
+            document_vector._add_feature(featurizer.__name__, feature_vector)
         
         if return_vector:
             return document_vector.vector

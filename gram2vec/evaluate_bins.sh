@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 # this script evaluates the knn classifier on development bins for PAN 2022
 
