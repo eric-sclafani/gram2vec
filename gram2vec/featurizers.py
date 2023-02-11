@@ -151,7 +151,7 @@ class Feature:
     def counts_to_vector(self) -> np.ndarray:
         """Converts a dictionary of counts into a numpy array"""
         counts = list(self.feature_counts.values())
-        return np.array(counts).flatten() #/ self.normalize_by
+        return np.array(counts).flatten() / self.normalize_by
     
     
 def pos_unigrams(doc:Document) -> Feature:
