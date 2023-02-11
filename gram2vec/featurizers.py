@@ -49,9 +49,6 @@ class Document:
     dep_labels :list[str]
     sentences  :list[spacy.tokens.span.Span]
     
-    def __repr__(self):
-        return f"Document({self.tokens[0:10]}..)"
-    
 def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
     raw_text   = deepcopy(text)
@@ -64,7 +61,6 @@ def make_document(text:str, nlp) -> Document:
     return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
  
 # ~~~ Helper functions ~~~
-
 
 def demojify_text(text:str):
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
@@ -147,7 +143,7 @@ class Feature:
     This class represents the output of each feature extractor
     
     :param feature_counts: dictionary of counts
-    :normalize_by: option to normalize. Defaults to 1
+    :param normalize_by: option to normalize. Defaults to 1
     """
     feature_counts:dict
     normalize_by:int = 1
@@ -264,35 +260,50 @@ class DocumentVector:
     """
     def __init__(self, doc:Document):
         self.doc = doc
-        self._vector_map : dict[str, np.ndarray] = {} 
+        self._vector_map : dict[str, np.ndarray] = {} # feature name mapped to its vector
+        self._count_map  : dict[str, dict] = {} # feature name mapped to its dict counts
     
     @property
     def vector(self) -> np.ndarray:
         """Concatenates all feature vectors into one larger 1D vector"""
         return np.concatenate(list(self._vector_map.values()))
     
-    def _add_feature(self, feature_name:str, vector:np.ndarray):
+    @property
+    def vector_map(self) -> dict[str, np.ndarray]:
+        return self._vector_map
+    
+    @property
+    def count_map(self) -> dict[str, dict]:
+        return self._count_map
+    
+    def get_vector_by_feature(self, feature_name) -> np.ndarray:
+        """Accesses an individual feature vector by name"""
+        if feature_name in self._vector_map:
+            return self._vector_map[feature_name]
+        else:
+            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+        
+    def get_counts_by_feature(self, feature_name) -> dict[str, int]:
+        """Accesses an individual feature counts by name"""
+        if feature_name in self._count_map:
+            return self._count_map[feature_name]
+        else:
+            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+    
+    def _update_vector_map(self, feature_name, vector:np.ndarray):
         """Adds a feature mapped to that feature's vector to self._vector_map"""
         if feature_name not in self._vector_map:
             self._vector_map[feature_name] = vector
         else:
             raise Exception(f"Feature {feature_name} already in this instance")
         
-    def get_vector_map(self) -> dict:
-        return self._vector_map()
-        
-    def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
-        """
-        Accesses an individual feature vector by name
-        :param feature_name: name of feature to get vector from
-        :returns: vector for specified feature
-        """
-        if feature_name in self._features:
-            return self._vector_map[feature_name]
+    def _update_count_map(self, feature_name, counts:dict[str, int]):
+        """Adds a feature mapped to that feature's count dict to self._count_map"""
+        if feature_name not in self._count_map:
+            self._count_map[feature_name] = counts
         else:
-            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
-
-
+            raise Exception(f"Feature {feature_name} already in this instance")
+        
 class GrammarVectorizer:
     """This class houses all featurizers"""
     
@@ -311,7 +322,7 @@ class GrammarVectorizer:
         
         self.config = read_config(self.register)
 
-    def vectorize(self, text:str, return_vector=True) -> Union[DocumentVector, np.ndarray]:
+    def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, DocumentVector]:
         """
         Applies featurizers to an input text and returns with either a numpy array
         or DocumentVector object depending on the return_vector flag
@@ -333,7 +344,8 @@ class GrammarVectorizer:
             except AssertionError:
                 import ipdb;ipdb.set_trace()
                 
-            document_vector._add_feature(featurizer.__name__, feature_vector)
+            document_vector._update_vector_map(featurizer.__name__, feature_vector)
+            document_vector._update_count_map(featurizer.__name__, feature_counts)
         
         if return_vector:
             return document_vector.vector
