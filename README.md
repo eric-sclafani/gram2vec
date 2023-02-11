@@ -1,7 +1,9 @@
 # Gram2Vec
 
-## Note
-This branch is stable. See `dev` branch for most recent changes and updates.
+
+## Note:
+
+README slighttly outdated. Updates to come.
 
 ## Description
 `Gram2Vec` is a feature extraction algorithm that extracts grammatical and syntactic properties from a given document and returns a 1-dimensional vector. This is one part of the PAUSIT team's **Linguistic Indicator Vector** (LIV).
@@ -46,7 +48,6 @@ ijson = "^3.1.4"
 plotly = "5.11.0"
 nbformat = "^5.7.1"
 ```
-(Note: I haven't tested these instructions yet, so please tell me if they're incorrect/unclear!)
 
 ## Package structure
 

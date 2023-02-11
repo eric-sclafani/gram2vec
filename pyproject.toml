@@ -23,7 +23,12 @@ ipdb = "^0.13.11"
 ijson = "^3.1.4"
 plotly = "5.11.0"
 nbformat = "^5.7.1"
+metric-learn = "^0.6.2"
 
+
+[tool.poetry.group.dev.dependencies]
+notebook = "^6.5.2"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -31,5 +36,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 pythonpath = [
-  ".", "gram2vec"
+  ".", "gram2vec", 
 ]

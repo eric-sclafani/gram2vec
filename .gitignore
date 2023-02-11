@@ -134,3 +134,4 @@ dmypy.json
 */data/mud
 */logs/*
 backups/
+.DS_Store

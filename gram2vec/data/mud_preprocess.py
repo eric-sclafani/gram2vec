@@ -36,7 +36,6 @@ def extract_n_authors(raw_path, n) -> dict:
             posts = []
             seen_authors += 1
             
-            
         if seen_authors == n:
             break
         
@@ -45,8 +44,7 @@ def extract_n_authors(raw_path, n) -> dict:
 
 def train_dev_test_splits(data:dict):
     """
-    Splits the fixed_sorted_authors.json into train, dev, test splits.
-    CURRENT SPLITS: 5 for dev and test, the rest for train. These numbers are specific to the PAN22 dataset.
+
     """
     train = defaultdict(list)
     dev   = defaultdict(list)

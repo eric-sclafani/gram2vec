@@ -1,11 +1,10 @@
 import json
 import spacy
-from nltk import Tree
 import numpy as np
 import pickle
 from time import time
-import subprocess
 
+# this module is due for cleanup
 
 def timer_func(func):
     # This function shows the execution time of the function object passed
@@ -18,17 +17,21 @@ def timer_func(func):
         return result
     return wrap_func
 
-def load_json(path) -> dict:
+def load_json(path) -> dict[str, list[str]]:
     """Loads a JSON as a dict"""
     with open (path, "r") as fin:
         data = json.load(fin)
         return data
     
-def save_json(data:dict, path, mode="w") -> None:
+def save_json(data:dict, path, mode="w"):
     """Saves a dict as a JSON"""
     with open(path, mode) as fout:
         json.dump(data, fout, ensure_ascii=False, indent=2)
-
+        
+def load_vocab(path) -> tuple[str]:
+    """Loads in a txt file delimited by newlines as a tuple of strings"""
+    with open (path, "r") as fin:
+        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 
 def load_spacy(model:str):
 
@@ -53,18 +56,17 @@ def remove_dupes(iterable):
             checked.append(n)
     return checked
 
-def _to_nltk_tree(node):
+def get_dataset_name(train_path:str) -> str:
     """
-    Converts a spacy parse tree into nltk Tree (for visualization purposes w/o using displacy)
-    Credits: https://stackoverflow.com/questions/36610179/how-to-get-the-dependency-tree-with-spacy
+    Gets the dataset name from training data path.  
+    Needed to generate path for vocab per dataset
+    NOTE: This function needs to be manually updated when new datasets are used.
     """
-    tok_format = lambda tok: "_".join([tok.orth_, tok.tag_, tok.dep_])      
-    if node.n_lefts + node.n_rights > 0:
-        return Tree(tok_format(node), [_to_nltk_tree(child) for child in node.children])
+    if "pan" in train_path:
+        dataset_name = "pan"
+    elif "mud" in train_path:
+        dataset_name = "mud"
+    # add other dataset names here following the same condition-checking format
     else:
-        return tok_format(node)
-    
-def tree(root):
-    """Print a NLTK style parse tree given the root"""
-    _to_nltk_tree(root).pretty_print()
-    
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
+    return dataset_name 

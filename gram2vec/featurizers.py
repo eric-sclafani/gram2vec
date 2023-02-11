@@ -1,20 +1,23 @@
-#!/usr/bin/env python3
 
-import spacy
-import toml
-import numpy as np
-np.seterr(invalid="ignore")
-from nltk import bigrams
-from nltk import FreqDist
-import os
+from collections import Counter
+from copy import deepcopy
 from dataclasses import dataclass
 import demoji
-from collections import Counter
+from nltk import bigrams
+from nltk import FreqDist
+import numpy as np 
+import os
+import spacy
+import toml
+from typing import Union
 
 # project imports 
 import utils
 
-# ~~~ Logging and global variables ~~~
+# ~~~ Logging and type aliases~~~
+
+SentenceSpan = tuple[int,int]
+Vocab = tuple[str]
 
 def feature_logger(filename, writable):
     
@@ -24,364 +27,327 @@ def feature_logger(filename, writable):
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
         
-OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
-
-
+# ~~~ Document representation ~~~
+@dataclass
+class Document:
+    """
+    This class represents elements from a spaCy Doc object
+        :param raw_text: text before being processed by spaCy
+        :param spacy_doc: spaCy's document object
+        :param tokens = list of tokens
+        :param words = list of words (no punc tokens)
+        :param pos_tags: list of pos tags
+        :param dep_labels: list of dependency parse labels
+        :param sentences: list of spaCy-sentencized sentences
+    Note: instances should only be created using the 'make_document' function 
+"""
+    raw_text   :str
+    spacy_doc  :spacy.tokens.doc.Doc
+    tokens     :list[str]
+    words      :list[str]
+    pos_tags   :list[str]
+    dep_labels :list[str]
+    sentences  :list[spacy.tokens.span.Span]
+    
+def make_document(text:str, nlp) -> Document:
+    """Converts raw text into a Document object"""
+    raw_text   = deepcopy(text)
+    spacy_doc  = nlp(demojify_text(text)) # dep parser hates emojis
+    tokens     = [token.text for token in spacy_doc]
+    words      = [token.text for token in spacy_doc if not token.is_punct]
+    pos_tags   = [token.pos_ for token in spacy_doc]
+    dep_labels = [token.dep_ for token in spacy_doc]
+    sentences  = list(spacy_doc.sents)
+    return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
+ 
 # ~~~ Helper functions ~~~
 
-def get_counts(feature_space:list, features:list) -> list[int]:
-    """
-    Counts the frequency of items in 'sample_space' that occur in 'features'.
-    When 'feat_dict' and 'count_doc_features' are merged, the 0 counts in 'feat_dict' 
-    get overwritten by the counts in 'doc_features'. When features are not found in 'doc_features', 
-    the 0 count in 'feat_dict' is preserved, indicating that the feature is absent in the current document
-    
-    Params:
-        feature_space(list) = list of features to count. Each feature is initially mapped to 0
-        features(list) = list of features from a document to count. 
-    Returns:
-        list: list of feature counts
-    
-    """
-    feature_to_zero_dict = {feat:0 for feat in feature_space}
-    doc_features = Counter(features)
-    
-    count_dict = {}
-    for feature in feature_to_zero_dict.keys():
-        if feature in doc_features:
-            count = doc_features[feature] # retrieve count from document feature count if it exists
-        else:
-            count = feature_to_zero_dict[feature] # retrieve 0 count
-        
-        count_dict[feature] = count
-        
-    return list(count_dict.values()), count_dict
+def demojify_text(text:str):
+    """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
+    return demoji.replace(text, "")
 
+def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
+    """Gets each start and end index of all sentences in a document"""
+    return [(sent.start, sent.end) for sent in doc.sentences]
    
-def insert_boundaries(sent_spans:list[tuple], tokens:list):
-    """
-    This function inserts sentence boundaries to a list of tokens 
-    according to a list of (START, END) sentence index markers
-    
-    Works by enumerating the tokens and checking if each position 
-    is the start or end of a sentence, inserting the appropriate tag when
-    """
+def insert_sentence_boundaries(spans:list[SentenceSpan], tokens:list[str]) -> list[str]:
+    """Inserts sentence boundaries into a list of tokens"""
     new_tokens = []
+    
     for i, item in enumerate(tokens):
-        for start, end in sent_spans:
+        for start, end in spans:
             if i == start:
                 new_tokens.append("BOS")
             elif i == end:
                 new_tokens.append("EOS")    
         new_tokens.append(item)
     new_tokens.append("EOS")  
-        
     return new_tokens
 
+def get_bigrams_with_boundary_syms(doc:Document, tokens:list[str]):
+    """Gets the bigrams from given list of tokens, including sentence boundaries"""
+    sent_spans = get_sentence_spans(doc)
+    tokens_with_boundary_syms = insert_sentence_boundaries(sent_spans, tokens)
+    token_bigrams = bigrams(tokens_with_boundary_syms)
+    return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
 
-def get_pos_bigrams(doc) -> Counter:
-    
-    sent_spans = [(sent.start, sent.end) for sent in doc.sents]
-    pos = insert_boundaries(sent_spans, [token.pos_ for token in doc])
-    counter = Counter(bigrams(pos))
-    try:
-        del counter[("EOS","BOS")] # removes artificial bigram
-    except: pass
-    
-    return counter
-
-
-def replace_openclass(tokens, pos):
-
+def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
+    """Replaces all open class tokens with corresponding POS tags"""
+    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
+    tokens = deepcopy(tokens)
     for i in range(len(tokens)):
         if pos[i] in OPEN_CLASS:
             tokens[i] = pos[i]
     return tokens
-        
-        
-def get_mixed_bigrams(doc) -> Counter:
-    
-    tokens = [token.text for token in doc]
-    pos    = [token.pos_ for token in doc]
-    mixed_bigrams = list(bigrams(replace_openclass(tokens, pos)))
-    
-    return Counter(mixed_bigrams)
 
+def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
+    
+    """
+    Combines vocab and counted_document_features into one dictionary such that
+    any feature in vocab counted 0 times in counted_document_features is preserved in the feature vector
+    
+    :param document_counts: features counted from document
+    :returns: counts of every element in vocab with 0 counts preserved
+    
+    Example:
+            >> vocab = ("a", "b", "c", "d")
+            
+            >> counted_doc_features = Counter({"a":5, "c":2})
+            
+            >> add_zero_vocab_counts(vocab, counted_doc_features)
+            
+                '{"a": 5, "b" : 0, "c" : 2, "d" : 0}'
+    """
+    count_dict = {}
+    for feature in vocab:
+        if feature in counted_doc_features:
+            count = counted_doc_features[feature] 
+        else:
+            count = 0
+        count_dict[feature] = count
+    return count_dict
 
-def get_pos_subsequences(doc):
-    
-    pos = [token.pos_ for token in doc]
-    
-    subseqs = []
-    for i in range(len(pos)-1):
-        subseqs.extend([(pos[i],pos[n]) for n in range(i+1, len(pos))])   
-        
-    return Counter(subseqs)  
+def sum_of_counts(counts:dict) -> int:
+    """
+    Sums the counts of a count dictionary
+    Returns 1 if counts sum to 0
+    """
+    count_sum = sum(counts.values())
+    return count_sum if count_sum > 0 else 1
+              
+# ~~~ FEATURIZERS ~~~
 
-# ~~~ Featurizers ~~~
+@dataclass
+class Feature:
+    """
+    This class represents the output of each feature extractor
+    
+    :param feature_counts: dictionary of counts
+    :param normalize_by: option to normalize. Defaults to 1
+    """
+    feature_counts:dict
+    normalize_by:int = 1
+    
+    def counts_to_vector(self) -> np.ndarray:
+        """Converts a dictionary of counts into a numpy array"""
+        counts = list(self.feature_counts.values())
+        return np.array(counts).flatten() / self.normalize_by
+    
+    
+def pos_unigrams(doc:Document) -> Feature:
+    
+    vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
+    doc_pos_tag_counts = Counter(doc.pos_tags)
+    all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
+    
+    return Feature(all_pos_tag_counts, len(doc.pos_tags))
 
-def pos_unigrams(document) -> np.ndarray: 
+def pos_bigrams(doc:Document) -> Feature:
     
-    tags = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X", "SPACE"]
-    counts, doc_features = get_counts(tags, document.pos_tags)
-    result = np.array(counts) #/ len(document.pos_tags)
-    assert len(tags) == len(counts)
+    vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+    doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
+    all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
-    return result, doc_features
+    return Feature(all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
 
-def pos_bigrams(document) -> np.ndarray : # len = 50
+def func_words(doc:Document) -> Feature:
+    
+    vocab = utils.load_vocab("vocab/static/function_words.txt")
+    doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
+    all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
+    
+    return Feature(all_func_word_counts, sum_of_counts(doc_func_word_counts))
 
-    vocab = utils.load_pkl("vocab/pan_pos_bigrams_vocab.pkl") # path will need to change per dataset 
-    doc_pos_bigrams = get_pos_bigrams(document.doc)
-    counts, doc_features = get_counts(vocab, doc_pos_bigrams)
-    result = np.array(counts) #/ len(document.pos_tags)
-    assert len(vocab) == len(counts)
+def punc(doc:Document) -> Feature:
     
-    return result, doc_features
+    vocab = utils.load_vocab("vocab/static/punc_marks.txt")
+    doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
+    all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
+    
+    return Feature(all_punc_counts, sum_of_counts(doc_punc_counts))
 
+def letters(doc:Document) -> Feature:
+    
+    vocab = utils.load_vocab("vocab/static/letters.txt")
+    doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
+    all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
+    
+    return Feature(all_letter_counts, sum_of_counts(doc_letter_counts))
 
-def func_words(document) -> np.ndarray:  # len = 145
+def common_emojis(doc:Document) -> Feature:
     
-    # modified NLTK stopwords set
-    with open ("vocab/function_words.txt", "r") as fin:
-        function_words = set(map(lambda x: x.strip("\n"), fin.readlines()))
+    vocab = utils.load_vocab("vocab/static/common_emojis.txt")
+    extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
+    doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
+    all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
+    
+    return Feature(all_emoji_counts, len(doc.tokens))
 
-    doc_func_words = [token for token in document.tokens if token in function_words]
-    counts, doc_features = get_counts(function_words, doc_func_words)
-    result = np.array(counts) #/ len(document.tokens)
-    assert len(function_words) == len(counts)
-    
-    return result, doc_features
+def embedding_vector(doc:Document) -> Feature:
+    """spaCy word2vec document embedding"""
+    embedding = {"embedding_vector" : doc.spacy_doc.vector}
+    return Feature(embedding)
 
+def document_stats(doc:Document) -> Feature:
+    words = doc.words
+    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5]), 
+                      "large_words" : len([1 for word in words if len(word) > 4]),
+                      "word_len_avg": np.mean([len(word) for word in words]),
+                      "word_len_std": np.std([len(word) for word in words]),
+                      "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
+                      "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
+                      "hapaxes"     : len(FreqDist(words).hapaxes())}
+    return Feature(doc_statistics)
 
-def punc(document) -> np.ndarray:
-    
-    punc_marks = [".", ",", ":", ";", "\'", "\"", "?", "!", "`", "*", "&", "_", "-", "%", "(", ")", "–", "‘", "’"]
-    doc_punc_marks = [punc for token in document.doc 
-                           for punc in token.text
-                           if punc in punc_marks]
-    
-    counts, doc_features = get_counts(punc_marks, doc_punc_marks)
-    result = np.array(counts) #/ len(document.tokens) 
-    assert len(punc_marks) == len(counts)
-    
-    return result, doc_features
+def dep_labels(doc:Document) -> Feature:
 
+    vocab = utils.load_vocab("vocab/static/dep_labels.txt")
+    doc_dep_labels = Counter([dep for dep in doc.dep_labels])
+    all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
+    
+    return Feature(all_dep_labels, sum_of_counts(doc_dep_labels))
 
-def letters(document) -> np.ndarray: 
-
-    letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-               "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-               "à", "è", "ì", "ò", "ù", "á", "é", "í", "ó", "ú", "ý"]
-    doc_letters = [letter for token in document.doc 
-                          for letter in token.text 
-                          if letter in letters]
+def mixed_bigrams(doc:Document) -> Feature:
     
-    counts, doc_features = get_counts(letters, doc_letters)
-    result = np.array(counts) #/ len(doc_letters)
-    assert len(letters) == len(counts)
+    vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+    doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
+    all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
-    return result, doc_features
-
-
-def common_emojis(document):
-    
-    vocab = ["😅", "😂", "😊", "❤️", "😭", "👍", "👌", "😍", "💕", "🥰"]
-    extract_emojis = demoji.findall_list(document.text, desc=False)
-    emojis = list(filter(lambda x: x in vocab, extract_emojis))
-    
-    counts, doc_features = get_counts(vocab, emojis)
-    result = np.array(counts) #/ len(document.tokens)
-    
-    return result, doc_features
-
-def doc_vector(document):
-    result = document.doc.vector
-    return result, None
-
-
-def doc_stats(document):
-    
-    words = document.words
-
-    # num short and large words
-    short_words = len([1 for word in words if len(word) < 5])
-    large_words = len([1 for word in words if len(word) > 4])
-    
-    # avg, std word length
-    word_lens = [len(word) for word in words] 
-    word_len_avg = np.mean(word_lens)
-    word_len_std = np.std(word_lens)
-    
-    # avg, std sentence length
-    sent_lens = [len(sent) for sent in document.doc.sents]
-    sent_len_avg = np.mean(sent_lens)
-    sent_len_std = np.std(sent_lens)
-    
-    # hapax legomena ratio (vocabulary richness - how many words only occur once)
-    fd = FreqDist(words)
-    hapax = len(fd.hapaxes())
-    
-    doc_features = {"short_words": short_words, 
-                    "large_words": large_words,
-                    "word_len_avg": word_len_avg,
-                    "word_len_std": word_len_std,
-                    "sent_len_avg": sent_len_avg,
-                    "sent_len_std": sent_len_std,
-                    "hapaxes": hapax}
-    
-    array = np.array([short_words, 
-                      large_words,
-                      word_len_avg,
-                      word_len_std,
-                      sent_len_avg,
-                      sent_len_std,
-                      hapax,])
-    
-    return array, doc_features
-    
-    
-def dep_labels(document):
-    
-    labels = ['ROOT', 'acl', 'acomp', 'advcl', 'advmod', 'agent', 'amod', 'appos', 'attr', 'aux', 'auxpass', 'case', 'cc', 'ccomp', 'compound', 
-              'conj', 'csubj', 'csubjpass', 'dative', 'dep', 'det', 'dobj', 'expl', 'intj', 'mark', 'meta', 'neg', 'nmod', 'npadvmod', 'nsubj', 
-              'nsubjpass', 'nummod', 'oprd', 'parataxis', 'pcomp', 'pobj', 'poss', 'preconj', 'predet', 'prep', 'prt', 'punct', 'quantmod', 'relcl', 'xcomp']
-    
-    document_dep_labels = [token.dep_ for token in document.doc]
-    counts, doc_features = get_counts(labels, document_dep_labels)
-    result = np.array(counts) / len(document_dep_labels)
-    assert len(counts) == len(labels)
-    
-    return result, doc_features
-
-
-def mixed_bigrams(document):
-    
-    vocab = utils.load_pkl("vocab/pan_mixed_bigrams_vocab.pkl")
-    doc_mixed_bigrams = get_mixed_bigrams(document.doc)
-    counts, doc_features = get_counts(vocab, doc_mixed_bigrams)
-    result = np.array(counts) 
-    assert len(vocab) == len(counts)
-    
-    return result, doc_features
-
-# Under construction. Keep commented out.
-# def pos_subsequences(document):
-    
-#     vocab = utils.load_pkl("vocab/pan_pos_subsequences_vocab.pkl")
-#     doc_pos_subsuences = get_pos_subsequences(document.doc)
-#     counts, doc_features = get_counts(vocab, doc_pos_subsuences)
-#     result = np.array(counts) 
-#     assert len(vocab) == len(counts)
-
-#     return result, doc_features
-
+    return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
 # ~~~ Featurizers end ~~~
 
+def read_config(register:tuple, path="config.toml") -> list:
+    """
+    Reads config.toml to see which features to activate
+    :param register: tuple of featurizer functions
+    """
+    toml_config = toml.load(path)["Features"]
+    config = []
+    for feature in register:
+        try:
+            if toml_config[feature.__name__] == 1:
+                config.append(feature)
+        except KeyError:
+            raise KeyError(f"Feature '{feature.__name__}' does not exist in config.toml")
+    return config
 
-@dataclass
-class Document:
-    doc      :spacy.tokens.doc.Doc
-    tokens   :list[str]
-    words    :list[str]   
-    pos_tags :list[str]
-    text     :str
+
+class DocumentVector:
+    """
+    This class represents a DocumentVector, which contains each individual 
+    feature vector, as well as the concatenated one. 
+    """
+    def __init__(self, doc:Document):
+        self.doc = doc
+        self._vector_map : dict[str, np.ndarray] = {} # feature name mapped to its vector
+        self._count_map  : dict[str, dict] = {} # feature name mapped to its dict counts
     
+    @property
+    def vector(self) -> np.ndarray:
+        """Concatenates all feature vectors into one larger 1D vector"""
+        return np.concatenate(list(self._vector_map.values()))
     
-    @classmethod
-    def from_nlp(cls, doc, text):
-        tokens   = [token.text for token in doc]                   
-        pos_tags = [token.pos_ for token in doc]    
-        words    = [token.text for token in doc if not token.is_punct]              
-        return cls(doc, tokens, words, pos_tags, text)
+    @property
+    def vector_map(self) -> dict[str, np.ndarray]:
+        return self._vector_map
     
+    @property
+    def count_map(self) -> dict[str, dict]:
+        return self._count_map
+    
+    def get_vector_by_feature(self, feature_name) -> np.ndarray:
+        """Accesses an individual feature vector by name"""
+        if feature_name in self._vector_map:
+            return self._vector_map[feature_name]
+        else:
+            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+        
+    def get_counts_by_feature(self, feature_name) -> dict[str, int]:
+        """Accesses an individual feature counts by name"""
+        if feature_name in self._count_map:
+            return self._count_map[feature_name]
+        else:
+            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+    
+    def _update_vector_map(self, feature_name, vector:np.ndarray):
+        """Adds a feature mapped to that feature's vector to self._vector_map"""
+        if feature_name not in self._vector_map:
+            self._vector_map[feature_name] = vector
+        else:
+            raise Exception(f"Feature {feature_name} already in this instance")
+        
+    def _update_count_map(self, feature_name, counts:dict[str, int]):
+        """Adds a feature mapped to that feature's count dict to self._count_map"""
+        if feature_name not in self._count_map:
+            self._count_map[feature_name] = counts
+        else:
+            raise Exception(f"Feature {feature_name} already in this instance")
+        
 class GrammarVectorizer:
     """This class houses all featurizers"""
     
-    def __init__(self, data_path, logging=False):
+    def __init__(self):
         self.nlp = utils.load_spacy("en_core_web_md")
-        self.logging = logging
-        self.featurizers = {
-            "pos_unigrams"  :pos_unigrams,
-            "pos_bigrams"   :pos_bigrams,
-            "func_words"    :func_words, 
-            "punc"          :punc,
-            "letters"       :letters,
-            "common_emojis" :common_emojis,
-            "doc_vector"    :doc_vector,
-            "doc_stats"     :doc_stats,
-            "dep_labels"    :dep_labels,
-            "mixed_bigrams" :mixed_bigrams}
+        self.register = (pos_unigrams,
+                         pos_bigrams,
+                         func_words,
+                         punc,
+                         letters,
+                         common_emojis,
+                         embedding_vector,
+                         document_stats,
+                         dep_labels,
+                         mixed_bigrams)
         
-        self._generate_vocab(data_path)
+        self.config = read_config(self.register)
+
+    def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, DocumentVector]:
+        """
+        Applies featurizers to an input text and returns with either a numpy array
+        or DocumentVector object depending on the return_vector flag
         
-    def _config(self):
-        """Reads 'config.toml' to retrieve which features to apply. 0 = deactivated, 1 = activated"""
-        toml_config = toml.load("config.toml")["Features"]
-        config = []
-        for name, feat in self.featurizers.items():
+        :param text: string to be vectorized
+        :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
+        """
+        doc = make_document(text, self.nlp)
+        document_vector = DocumentVector(doc)
+        for featurizer in self.config:
+            
+            feature = featurizer(doc)
+            feature_vector = feature.counts_to_vector()
+            feature_counts = feature.feature_counts
+            feature_logger(featurizer.__name__, f"{feature_counts}\n{feature_vector}\n\n") 
+        
             try:
-                if toml_config[name] == 1:
-                    config.append(feat)
-            except KeyError:
-                raise KeyError(f"Feature '{name}' does not exist in config.toml")
-        return config
-    
-    def _generate_vocab(self, data_path):
-        """
-        Generates vocab files required by some featurizers. Assumes the following input data format:
-                            {
-                             author_id : [doc1, doc2,...docn],
-                             author_id : [...]
-                             }
-        """
-        data = utils.load_json(data_path)
-        dataset = "pan" if "pan" in data_path else "mud" # will need to be changed based on data set
-        counters = {
-            "pos_bigrams"     : [],
-            "pos_subsequences": [],
-            "mixed_bigrams"   : []
-        } 
-        
-        all_text_docs = [entry for id in data.keys() for entry in data[id]]
-        for feature, counter_list in counters.items():
-            out_path = f"vocab/{dataset}_{feature}_vocab.pkl"
-            
-            if not os.path.exists(out_path):
-                for text in all_text_docs:
-                    doc = self.nlp(text)
-                    
-                    pos_counts = get_pos_bigrams(doc)
-                    counters["pos_bigrams"].append(pos_counts)
+                assert not np.isnan(feature_vector).any()
+            except AssertionError:
+                import ipdb;ipdb.set_trace()
                 
-                    mixed_bigrams = get_mixed_bigrams(doc)
-                    counters["mixed_bigrams"].append(mixed_bigrams)
-                    
-                    pos_subseqs = get_pos_subsequences(doc)
-                    counters["pos_subsequences"].append(pos_subseqs)
+            document_vector._update_vector_map(featurizer.__name__, feature_vector)
+            document_vector._update_count_map(featurizer.__name__, feature_counts)
         
-                # this line condenses all the counters into one dict, getting the 50 most common elements
-                most_common = dict(sum(counter_list, Counter()).most_common(50)) # most common returns list of tuples, gets converted back to dict
-                utils.save_pkl(list(most_common.keys()), out_path)
-        
-        
-    
-    def vectorize(self, text:str) -> np.ndarray:
-        """Applies featurizers to an input text. Returns a 1-D array."""
-        
-        text_demojified = demoji.replace(text, "") # dep parser hates emojis 
-        doc = self.nlp(text_demojified)
-        document = Document.from_nlp(doc, text)
-        
-        vectors = []
-        for feat in self._config():
-            
-            vector, doc_features = feat(document)
-            assert not np.isnan(vector).any() 
-            vectors.append(vector)
-            
-            if self.logging:
-                feature_logger(f"{feat.__name__}", f"{doc_features}\n{vector}\n\n")
-                    
-        return np.concatenate(vectors)
+        if return_vector:
+            return document_vector.vector
+        else:
+            return document_vector
