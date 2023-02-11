@@ -119,10 +119,6 @@ Running `python3 knn_classifier.py` will give you the overall accuracy score, wh
 Instead of overall accuracy, you can run `./evaluate_bins.sh` to evaluate the bins. The script just loops through the dev bins in the `data/pan/dev_bins/sorted_by_docfreq/` directory and applies K-NN classification. You can modify the arguments inside the script if desired. 
 
 
-## Normalization
-
-The issue of normalization came up in my presentation. I have not addressed this issue yet. Currently, I am just using `sklearn's StandardScaler` to normalize before plugging everything into K-NN. Whether this is the right thing to do, I'm not sure. 
-
 ## Slides
 https://drive.google.com/file/d/1BQ0vffPEvFJsoAR_lO3oZ-YvOCpo596E/view
 
