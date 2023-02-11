@@ -151,7 +151,7 @@ class Feature:
     def counts_to_vector(self) -> np.ndarray:
         """Converts a dictionary of counts into a numpy array"""
         counts = list(self.feature_counts.values())
-        return np.array(counts).flatten() / self.normalize_by
+        return np.array(counts).flatten() #/ self.normalize_by
     
     
 def pos_unigrams(doc:Document) -> Feature:
@@ -160,7 +160,7 @@ def pos_unigrams(doc:Document) -> Feature:
     doc_pos_tag_counts = Counter(doc.pos_tags)
     all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
     
-    return Feature(all_pos_tag_counts, normalize_by=len(doc.pos_tags))
+    return Feature(all_pos_tag_counts, len(doc.pos_tags))
 
 def pos_bigrams(doc:Document) -> Feature:
     
@@ -168,7 +168,7 @@ def pos_bigrams(doc:Document) -> Feature:
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
-    return Feature(all_pos_bigram_counts, normalize_by=sum_of_counts(doc_pos_bigram_counts))
+    return Feature(all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
 
 def func_words(doc:Document) -> Feature:
     
@@ -176,7 +176,7 @@ def func_words(doc:Document) -> Feature:
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
     all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
     
-    return Feature(all_func_word_counts, normalize_by=sum_of_counts(doc_func_word_counts))
+    return Feature(all_func_word_counts, sum_of_counts(doc_func_word_counts))
 
 def punc(doc:Document) -> Feature:
     
@@ -184,7 +184,7 @@ def punc(doc:Document) -> Feature:
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
     all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
     
-    return Feature(all_punc_counts, normalize_by=sum_of_counts(doc_punc_counts))
+    return Feature(all_punc_counts, sum_of_counts(doc_punc_counts))
 
 def letters(doc:Document) -> Feature:
     
@@ -192,7 +192,7 @@ def letters(doc:Document) -> Feature:
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
     all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
     
-    return Feature(all_letter_counts, normalize_by=sum_of_counts(doc_letter_counts))
+    return Feature(all_letter_counts, sum_of_counts(doc_letter_counts))
 
 def common_emojis(doc:Document) -> Feature:
     
@@ -201,7 +201,7 @@ def common_emojis(doc:Document) -> Feature:
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
     
-    return Feature(all_emoji_counts, normalize_by=len(doc.tokens))
+    return Feature(all_emoji_counts, len(doc.tokens))
 
 def embedding_vector(doc:Document) -> Feature:
     """spaCy word2vec document embedding"""
@@ -225,7 +225,7 @@ def dep_labels(doc:Document) -> Feature:
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
     all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
     
-    return Feature(all_dep_labels, normalize_by=sum_of_counts(doc_dep_labels))
+    return Feature(all_dep_labels, sum_of_counts(doc_dep_labels))
 
 def mixed_bigrams(doc:Document) -> Feature:
     

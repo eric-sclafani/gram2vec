@@ -24,7 +24,7 @@ def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
     return np.stack(vectors)
 
 def get_authors(data:dict) -> list[int]:
-    """Get all instances of authors in data set"""
+    """Get all instances of authors from data"""
     authors = []
     for author_id in data.keys():
         for _ in data[author_id]:
@@ -44,19 +44,13 @@ def write_results_entry(path, to_write:list):
     if not os.path.exists(path):
         with open(path, "w") as fout:
             writer = csv.writer(fout)
-            writer.writerow(["Datetime", 
-                             "Accuracy",
-                             "Vector_length",
-                             "k",
-                             "Metric",
-                             "config"])
-    
+            writer.writerow(["Datetime", "Accuracy","Vector_length","k","Metric","config"])
+            
     with open(path, "a") as fout:
         writer = csv.writer(fout)
         writer.writerow(to_write)
       
-        
-    
+      
 @utils.timer_func
 def main():
     
@@ -104,7 +98,7 @@ def main():
     Y_eval_encoded  = le.transform(Y_eval)
     
     X_train = scaler.fit_transform(X_train)
-    X_eval = scaler.fit_transform(X_eval)
+    X_eval = scaler.transform(X_eval)
     
     model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.metric)
     model.fit(X_train, Y_train_encoded)
