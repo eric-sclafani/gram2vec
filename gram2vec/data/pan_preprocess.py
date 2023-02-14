@@ -172,24 +172,6 @@ def fix_data(data):
             data[id][idx] = text
     return data
 
-def train_dev_test_splits(data:dict):
-    """
-    Splits the fixed_sorted_authors.json into train, dev, test splits.
-    CURRENT SPLITS: 5 for dev and test, the rest for train. These numbers are specific to the PAN22 dataset.
-    """
-    train = defaultdict(list)
-    dev   = defaultdict(list)
-    test  = defaultdict(list)
-    for author_id in data.keys():
-        for idx, text in enumerate(data[author_id]):
-            if idx <= 4:  
-                test[author_id].append(text)
-            elif idx <= 9: 
-                dev[author_id].append(text)
-            else:         
-                train[author_id].append(text)
-    return train, dev, test
-
 def sort_authors_by_avg_tokens(dev:dict, train:dict) -> list[tuple]:
     """Sorts the authors in DEV by average token count in TRAIN"""
     author_to_avg_tokens = {}
@@ -226,6 +208,45 @@ def save_dev_bins(sorted_data:list[tuple]):
         partition = dict(sorted_data[i:i+7])
         utils.save_json(data=partition, path=f"pan/dev_bins/sorted_by_docfreq/bin_{bin_num}_dev.json")
         i += 7
+
+def train_dev_test_splits(data:dict):
+    """
+    Splits the fixed_sorted_authors.json into train, dev, test splits.
+    CURRENT SPLITS: 5 for dev and test, the rest for train. These numbers are specific to the PAN22 dataset.
+    """
+    train = defaultdict(list)
+    dev   = defaultdict(list)
+    test  = defaultdict(list)
+    for author_id in data.keys():
+        for idx, text in enumerate(data[author_id]):
+            if idx <= 4:  
+                test[author_id].append(text)
+            elif idx <= 9: 
+                dev[author_id].append(text)
+            else:         
+                train[author_id].append(text)
+    return train, dev, test
+
+def get_raw_document_splits(sorted_authors_path):
+    """
+    Retrieves the pre-fixed versions (raw) of the documents sorted into train, test, dev
+    """
+    data = utils.load_json(sorted_authors_path)
+    
+    train, dev, test = [],[],[]
+    for author_id in data.keys():
+        for idx, text in enumerate(data[author_id]):
+            if idx <= 4:  
+                test.append(text)
+            elif idx <= 9: 
+                dev.append(text)
+            else:         
+                train.append(text)
+    return train, dev, test
+
+def make_metric_learn_eval_splits():
+    pass
+    
     
     
                                  
@@ -241,22 +262,24 @@ def main():
     print("Done!")
     
     # print("Saving sorted datasets...")
-    # utils.save_json(sorted_authors, "data/pan/preprocessed/sorted_author.json")
+    # utils.save_json(sorted_authors, "pan/preprocessed/sorted_authors.json")
     # print("Done!")
     
     # print("Saving preprocessed datasets...")
-    # utils.save_json(fixed_sorted_authors, "data/pan/preprocessed/fixed_sorted_author.json")
+    # utils.save_json(fixed_sorted_authors, "pan/preprocessed/fixed_sorted_author.json")
     # print("Done!")
 
     print("Dividing data into splits...")
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
-    # for split, path in [(train, "data/pan/train_dev_test/train.json"), (dev, "data/pan/train_dev_test/dev.json"), (test, "data/pan/train_dev_test/test.json")]:
-    #     utils.save_json(split, path)
+    for split, path in [(train, "pan/train_dev_test/train.json"), (dev, "pan/train_dev_test/dev.json"), (test, "pan/train_dev_test/test.json")]:
+        utils.save_json(split, path)
+    print("Done!")
+    
+    # print("Saving development bins...")
+    # save_dev_bins(sort_authors_by_doc_freq(dev, train))
     # print("Done!")
     
-    print("Saving development bins...")
-    save_dev_bins(sort_authors_by_doc_freq(dev, train))
-    print("Done!")
+    get_raw_document_splits("pan/preprocessed/sorted_authors.json")
     
     
     

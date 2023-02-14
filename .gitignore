@@ -133,5 +133,5 @@ dmypy.json
 */data/pan
 */data/mud
 */logs/*
-backups/
+backup*/
 .DS_Store
