@@ -4,13 +4,28 @@ import re
 from copy import deepcopy
 from nltk.corpus import names
 import numpy as np
-from random import choice, randint
+from random import choice, randint, seed
 import re
 from collections import defaultdict
 import csv
 
+seed(80085)
+
 # project import
 from gram2vec import utils
+
+AuthorToDocsMapping = tuple[str,list[str]]
+
+def sort_by_token_avg(author_to_avg_tokens:dict[str, float]) -> dict[str, int]:
+    """Sorts a dictionary of author id to average token count mappings"""
+    author_avg_token_pairs = author_to_avg_tokens.items()
+    sorted_pairs:tuple[str,int] = sorted(author_avg_token_pairs, key=lambda x: x[1])
+    return dict(sorted_pairs)
+
+def sort_by_doc_freq(train:dict) -> list[tuple]:
+    """Sorts a dictionary by the amount of documents of each author"""
+    author_docs_pairs:list[AuthorToDocsMapping] = train.items()
+    return sorted(author_docs_pairs, key=lambda pairs: len(pairs[1]))
 
 def load_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
     """This function loads the raw json data as a list of dicts and extracts each pair"""
@@ -175,33 +190,41 @@ def train_dev_test_splits(data:dict):
                 train[author_id].append(text)
     return train, dev, test
 
-
-# function under heavy construction
-def save_dev_bins(dev:dict, train:dict):
-    
-    #! put under new func?
-    # train_sorted = sorted(train.items(), key=lambda x: len(x[1]), reverse=True)
-    # dev_sorted = sorted(dev.items(), key=lambda x:len(train[x[0]]), reverse=True)
-    # assert [i[0] for i in train_sorted] == [i[0] for i in dev_sorted], "Sorting incorrect"
-    # for devitems, trainitems in zip(dev_sorted, train_sorted):
-    #     assert trainitems[0] == devitems[0]
-    
-    
+def sort_authors_by_avg_tokens(dev:dict, train:dict) -> list[tuple]:
+    """Sorts the authors in DEV by average token count in TRAIN"""
     author_to_avg_tokens = {}
-    for author_id, documents in train.items():  
-        author_to_avg_tokens[author_id] = np.mean([len(doc.split()) for doc in documents], axis=0)
+    for author_id, documents in train.items():
+        token_count = lambda x: len(x.split())  
+        author_to_avg_tokens[author_id] = np.mean([token_count(doc) for doc in documents], axis=0)
     
-    # sort TRAIN by avg num of tokens
-    train_sorted = dict(sorted(author_to_avg_tokens.items(),key = lambda x: x[1]))
-    index_map = {v: i for i, v in enumerate(train_sorted.keys())}
+    train_sorted = sort_by_token_avg(author_to_avg_tokens) # (low -> high)
+    train_sorted_authors = train_sorted.keys()
     
-    # sort DEV by avg num of tokens in TRAIN
+    # https://stackoverflow.com/questions/21773866/how-to-sort-a-dictionary-based-on-a-list-in-python
+    # sorting DEV by sorted list of authors in TRAIN
+    index_map = {author_id: i for i, author_id in enumerate(train_sorted_authors)}
     dev_sorted = sorted(dev.items(), key=lambda pair: index_map[pair[0]])
+    return dev_sorted
+
+def sort_authors_by_doc_freq(dev:dict, train:dict):
+    """Sorts the authors in DEV by document frequency in TRAIN"""
+    train_sorted = sort_by_doc_freq(train)
     
+    # sorts dev by document occurence in train
+    dev_sorted = sorted(dev.items(), key=lambda x:len(train[x[0]]))
+    
+    assert [i[0] for i in train_sorted] == [i[0] for i in dev_sorted], "Sorting incorrect"
+    for devitems, trainitems in zip(dev_sorted, train_sorted):
+        assert trainitems[0] == devitems[0]
+    
+    return dev_sorted
+        
+def save_dev_bins(sorted_data:list[tuple]):
+    """Saves dev bins to directory"""
     i = 0
     for bin_num in range(1,9):
-        partition = dict(dev_sorted[i:i+7])
-        utils.save_json(data=partition, path=f"pan/dev_bins/sorted_by_avg_tokens/bin_{bin_num}_dev.json")
+        partition = dict(sorted_data[i:i+7])
+        utils.save_json(data=partition, path=f"pan/dev_bins/sorted_by_docfreq/bin_{bin_num}_dev.json")
         i += 7
     
     
@@ -231,8 +254,9 @@ def main():
     #     utils.save_json(split, path)
     # print("Done!")
     
-    save_dev_bins(dev, train)
-    
+    print("Saving development bins...")
+    save_dev_bins(sort_authors_by_doc_freq(dev, train))
+    print("Done!")
     
     
     

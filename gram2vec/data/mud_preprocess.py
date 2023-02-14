@@ -15,7 +15,6 @@ def clean_doc(doc:str):
         doc = re.sub(pattern, "", doc)
         
     doc = doc.replace("&gt;", ">").replace("&lt;", "<").replace("\'", "'").replace("&amp;", "&")
-    
     return doc
 
 def extract_n_authors(raw_path, n) -> dict:
@@ -38,14 +37,10 @@ def extract_n_authors(raw_path, n) -> dict:
             
         if seen_authors == n:
             break
-        
     return data
 
 
 def train_dev_test_splits(data:dict):
-    """
-
-    """
     train = defaultdict(list)
     dev   = defaultdict(list)
     test  = defaultdict(list)
@@ -59,7 +54,6 @@ def train_dev_test_splits(data:dict):
             else:         
                 train[author_id].append(text)
     
-             
     for author_id in data.keys():
         assert len(test[author_id]) == 100, f"{len(test[author_id])} =! 100"
         assert len(dev[author_id]) == 100, f"{len(dev[author_id])} =! 100"
