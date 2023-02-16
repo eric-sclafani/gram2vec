@@ -7,29 +7,26 @@ This file contains ideas for future additions/improvements
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prosody: do people have a stress (melodic) preference?
-- NEED TO LOOK AT NORMALIZING AGAIN
 - emojis: look for ASCII emojis
+
+## Improvements:
+
+- Overhaul `pan_preprocess.py`
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric
 
 ## Ideas
-- `NEW EVAL PLAN`:
-    - Regarding making the document pairs, I should just create them from my already existing train, dev, test splits instead of using the raw data. Why? Because of the information injection actually.
-
-    - Because the texts in my splits are modified (from the injection), it’ll actually be more involved to check if the document in the RAW data is in train, dev or test. The strings won't be the same because of the modification.
-
+- NEW EVAL: 
+    1. Iterate over pairs, check which split each pair item belongs to
+    2. Sort based off screenshot
+    3. Apply fixes to raw pairs
+    4. save it
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name in `utils.py` has to be updated with a new dataset name conditional
 - After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file generated for the new dataset
 - 
-
-
-## Code rework next steps
-- debug feaurizers.py
-- KNN:
-    - make result file output better
 
 ## To check out
 

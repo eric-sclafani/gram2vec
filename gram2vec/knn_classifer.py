@@ -71,13 +71,13 @@ def main():
                         "--train_path", 
                         type=str, 
                         help="Path to train data",
-                        default="data/pan/train_dev_test/train.json") 
+                        default="data/pan/train_dev_test/author_splits/train.json") 
     
     parser.add_argument("-eval", 
                         "--eval_path", 
                         type=str,
                         help="Path to eval data",
-                        default="data/pan/train_dev_test/dev.json") 
+                        default="data/pan/train_dev_test/author_splits/dev.json") 
     
     args = parser.parse_args()
     

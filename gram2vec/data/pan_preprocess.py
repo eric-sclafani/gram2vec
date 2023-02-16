@@ -27,9 +27,12 @@ def sort_by_doc_freq(train:dict) -> list[tuple]:
     author_docs_pairs:list[AuthorToDocsMapping] = train.items()
     return sorted(author_docs_pairs, key=lambda pairs: len(pairs[1]))
 
+def get_data(path) -> list[dict]:
+    """Reads a series of JSON objects into a list"""
+    return [json.loads(line) for line in open(path, "r")]
+
 def load_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
     """This function loads the raw json data as a list of dicts and extracts each pair"""
-    get_data = lambda x: [json.loads(line) for line in open(x, "r")]
     pairs = get_data(pairs_path) 
     truths = get_data(truths_path)
      
@@ -135,6 +138,11 @@ def fix_html(text):
 
 def remove_parenthesis(text):
     return re.sub(r"\(.*\)", "", text)  
+
+def get_tags(text):
+    """Gets list of redaction tags from a text document"""
+    return list(map(lambda x: f"<{x}>", re.findall(r"<(.*?)>", text))) # regex doesnt include the <> in the tags for findall, so they need to be re-added
+    
     
 def sort_data(id_pairs, text_pairs) -> dict:
     """This function maps authors or discourses to their texts."""
@@ -149,8 +157,7 @@ def sort_data(id_pairs, text_pairs) -> dict:
     return data 
 
 def fix_data(data):
-    
-    get_tags = lambda text: list(map(lambda x: f"<{x}>", re.findall(r"<(.*?)>", text))) # regex doesnt include the <> in the tags for findall, so they need to be re-added
+    """Applies the data fixes to the vanilla PAN22 data"""
     data = deepcopy(data) # prevent data mutation
     
     for id in data.keys(): 
@@ -227,9 +234,9 @@ def train_dev_test_splits(data:dict):
                 train[author_id].append(text)
     return train, dev, test
 
-def get_raw_document_splits(sorted_authors_path):
+def get_raw_document_splits(sorted_authors_path) -> tuple[list,list,list]:
     """
-    Retrieves the pre-fixed versions (raw) of the documents sorted into train, test, dev
+    Retrieves the pre-fixed versions (raw) of the documents sorted into train, dev, test
     """
     data = utils.load_json(sorted_authors_path)
     
@@ -244,8 +251,87 @@ def get_raw_document_splits(sorted_authors_path):
                 train.append(text)
     return train, dev, test
 
-def make_metric_learn_eval_splits():
+
+def fix_pair(pair:tuple[str, str]) -> tuple[str, str]:
+    """Applies the same changes as the fix_data() function, except to pairs of texts"""
+
+    fixed_pair = []
+    for text in pair:
+        
+        text = fix_html(text)
+        text = remove_parenthesis(text)
+        for tag in get_tags(text):
+            text = re.sub(tag, replace_tag(tag), text, count=1)  
+        text = normalize(text)
+        
+        fixed_pair.append(text)
+        
+    return tuple(fixed_pair)
+
+
+def prepare_metric_learn_eval_splits(raw_train, raw_dev, raw_test) -> tuple[list, list, list]:
+    
+    doc_pairs = get_data("pan/raw/pairs.jsonl")
+    doc_truths = get_data("pan/raw/truth.jsonl")
+    assert len(doc_pairs) == len(doc_truths)
+    
+    metric_train, metric_dev, metric_test = [],[],[]
+    
+    for doc_entry, truth_entry in zip(doc_pairs, doc_truths):
+        truth:bool = truth_entry["same"]
+        pair:tuple[str,str] = tuple(doc_entry["pair"])
+        
+        if pair[0] in raw_train and pair[1] in raw_train:
+            pair = fix_pair(pair)
+            metric_train.append((truth, pair))
+            
+        elif pair[0] in raw_train and pair[1] in raw_dev:
+            pair = fix_pair(pair)
+            metric_dev.append((truth, pair))
+            
+        elif pair[0] in raw_dev and pair[1] in raw_train:
+            pair = fix_pair(pair)
+            metric_dev.append((truth, pair))
+            
+        elif pair[0] in raw_train and pair[1] in raw_test:
+            pair = fix_pair(pair)
+            metric_test.append((truth, pair))
+            
+        elif pair[0] in raw_test and pair[1] in raw_train:
+            pair = fix_pair(pair)
+            metric_test.append((truth, pair))
+            
+        elif pair[0] in raw_dev and pair[1] in raw_dev:
+            pair = fix_pair(pair)
+            metric_dev.append((truth, pair))
+            
+        elif pair[0] in raw_test and pair[1] in raw_test:
+            pair = fix_pair(pair)
+            metric_test.append((truth, pair))
+            
+        elif pair[0] in raw_dev and pair[1] in raw_test:
+            pair = fix_pair(pair)
+            metric_dev.append((truth, pair))
+            
+        elif pair[0] in raw_test and pair[1] in raw_dev:
+            pair = fix_pair(pair)
+            metric_test.append((truth, pair)) 
+        else:
+            raise Exception(f"Document unclassified: ({pair[0].split()[0:10]}, {pair[1].split()[0:10]})")
+        
+    return metric_train, metric_dev, metric_test
+    
+def write_metric_eval_to_file(train:list[tuple], dev:list[tuple], test:list[tuple], out_path):
     pass
+
+            
+               
+        
+        
+    
+    
+    
+    
     
     
     
@@ -271,15 +357,18 @@ def main():
 
     print("Dividing data into splits...")
     train, dev, test = train_dev_test_splits(fixed_sorted_authors)
-    for split, path in [(train, "pan/train_dev_test/train.json"), (dev, "pan/train_dev_test/dev.json"), (test, "pan/train_dev_test/test.json")]:
-        utils.save_json(split, path)
+    # for split, path in [(train, "pan/train_dev_test/train.json"), (dev, "pan/train_dev_test/dev.json"), (test, "pan/train_dev_test/test.json")]:
+    #     utils.save_json(split, path)
     print("Done!")
     
     # print("Saving development bins...")
     # save_dev_bins(sort_authors_by_doc_freq(dev, train))
     # print("Done!")
     
-    get_raw_document_splits("pan/preprocessed/sorted_authors.json")
+    print("Creating metric learning evaluation splits...")
+    raw_train, raw_dev, raw_test = get_raw_document_splits("pan/preprocessed/sorted_authors.json")
+    prepare_metric_learn_eval_splits(raw_train, raw_dev, raw_test, "")
+    print("Done!")
     
     
     

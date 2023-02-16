@@ -55,6 +55,8 @@ Below is a list of my files/directories inside of `gram2vec/`:
 
 - `data/` - contains the PAN 2022 data (raw, preprocessed, train/dev/test splits, and dev bins), as well as my proprocessing scripts
 
+  - Note: `pan_preprocess.py` is due to be overhauled, as the code is very messy. Proceed with caution if you use it.
+
 - `logs/` - contains log files for each featurizer. Lets you see what each featurizer is capturing exactly
 
 - `results/` - contains the results in for the form of json files (testing data has not been used yet)
