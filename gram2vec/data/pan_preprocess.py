@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import jsonlines
 import re
 from copy import deepcopy
 from nltk.corpus import names
@@ -269,8 +270,11 @@ def fix_pair(pair:tuple[str, str]) -> tuple[str, str]:
     return tuple(fixed_pair)
 
 
-def prepare_metric_learn_eval_splits(raw_train, raw_dev, raw_test) -> tuple[list, list, list]:
-    
+def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[list, list, list]:
+    """
+    Using the raw train, dev, test splits, sort the raw pairs into their own splits
+    for the metric learning setup. Also applies the same text fixes as done to the regular eval data
+    """
     doc_pairs = get_data("pan/raw/pairs.jsonl")
     doc_truths = get_data("pan/raw/truth.jsonl")
     assert len(doc_pairs) == len(doc_truths)
@@ -280,61 +284,44 @@ def prepare_metric_learn_eval_splits(raw_train, raw_dev, raw_test) -> tuple[list
     for doc_entry, truth_entry in zip(doc_pairs, doc_truths):
         truth:bool = truth_entry["same"]
         pair:tuple[str,str] = tuple(doc_entry["pair"])
+        entry = {"same":truth, "pair":fix_pair(pair)}
         
         if pair[0] in raw_train and pair[1] in raw_train:
-            pair = fix_pair(pair)
-            metric_train.append((truth, pair))
+            metric_train.append(entry)
             
         elif pair[0] in raw_train and pair[1] in raw_dev:
-            pair = fix_pair(pair)
-            metric_dev.append((truth, pair))
+            metric_dev.append(entry)
             
         elif pair[0] in raw_dev and pair[1] in raw_train:
-            pair = fix_pair(pair)
-            metric_dev.append((truth, pair))
+            metric_dev.append(entry)
             
         elif pair[0] in raw_train and pair[1] in raw_test:
-            pair = fix_pair(pair)
-            metric_test.append((truth, pair))
+            metric_test.append(entry)
             
         elif pair[0] in raw_test and pair[1] in raw_train:
-            pair = fix_pair(pair)
-            metric_test.append((truth, pair))
+            metric_test.append(entry)
             
         elif pair[0] in raw_dev and pair[1] in raw_dev:
-            pair = fix_pair(pair)
-            metric_dev.append((truth, pair))
+            metric_dev.append(entry)
             
         elif pair[0] in raw_test and pair[1] in raw_test:
-            pair = fix_pair(pair)
-            metric_test.append((truth, pair))
+            metric_test.append(entry)
             
         elif pair[0] in raw_dev and pair[1] in raw_test:
-            pair = fix_pair(pair)
-            metric_dev.append((truth, pair))
+            metric_dev.append(entry)
             
         elif pair[0] in raw_test and pair[1] in raw_dev:
-            pair = fix_pair(pair)
-            metric_test.append((truth, pair)) 
+            metric_test.append(entry) 
         else:
             raise Exception(f"Document unclassified: ({pair[0].split()[0:10]}, {pair[1].split()[0:10]})")
         
     return metric_train, metric_dev, metric_test
     
-def write_metric_eval_to_file(train:list[tuple], dev:list[tuple], test:list[tuple], out_path):
-    pass
-
-            
-               
-        
-        
-    
-    
-    
-    
-    
-    
-    
+def write_metric_eval_to_file(data:list[dict], out_path):
+    """Write a list of dictionaries to jsonl file"""
+    with jsonlines.open(out_path, "w") as fout:
+        for entry in data:
+            fout.write(entry)
                                  
 def main(): 
 
@@ -367,7 +354,12 @@ def main():
     
     print("Creating metric learning evaluation splits...")
     raw_train, raw_dev, raw_test = get_raw_document_splits("pan/preprocessed/sorted_authors.json")
-    prepare_metric_learn_eval_splits(raw_train, raw_dev, raw_test, "")
+    metric_train, metric_dev, metric_test = prepare_metric_learn_splits(raw_train, raw_dev, raw_test)
+    
+    write_metric_eval_to_file(metric_train, "pan/train_dev_test/pairs/metric_train.jsonl")
+    write_metric_eval_to_file(metric_dev, "pan/train_dev_test/pairs/metric_dev.jsonl")
+    write_metric_eval_to_file(metric_test, "pan/train_dev_test/pairs/metric_test.jsonl")
+    
     print("Done!")
     
     
