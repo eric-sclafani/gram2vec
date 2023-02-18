@@ -8,11 +8,12 @@ from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
+import subprocess
 import toml
 from typing import Union
 
 # project imports 
-from . import utils
+import utils
 
 # ~~~ Logging and type aliases~~~
 
@@ -128,10 +129,7 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
     return count_dict
 
 def sum_of_counts(counts:dict) -> int:
-    """
-    Sums the counts of a count dictionary
-    Returns 1 if counts sum to 0
-    """
+    """Sums the counts of a count dictionary. Returns 1 if counts sum to 0"""
     count_sum = sum(counts.values())
     return count_sum if count_sum > 0 else 1
               
@@ -237,7 +235,7 @@ def mixed_bigrams(doc:Document) -> Feature:
 
 # ~~~ Featurizers end ~~~
 
-def read_config(register:tuple, path="config.toml") -> list:
+def read_config(register:tuple[Feature], path="config.toml") -> list:
     """
     Reads config.toml to see which features to activate
     :param register: tuple of featurizer functions
@@ -321,6 +319,7 @@ class GrammarVectorizer:
                          mixed_bigrams)
         
         self.config = read_config(self.register)
+        os.system("rm ../gram2vec/logs/*")
 
     def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, DocumentVector]:
         """
