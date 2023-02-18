@@ -23,16 +23,34 @@ nltk = "^3.8"
 toml = "^0.10.2"
 ijson = "^3.1.4"
 ```
-
-
 ## Usage
 
 ### `GrammarVectorizer`
 
+Import the **GrammarVectorizer** class and create an instance like so:
 ```python3
-from gram2vec.featurizers import GrammarVectorizer
+>>> from gram2vec.featurizers import GrammarVectorizer
+>>> g2v = GrammarVectorizer()
+```
+From here, use the **g2v.vectorize()** method on an input string. By default, this will return a `numpy array` of all feature vectors concatenated into one:
+```python
+>>> my_vector = g2v.vectorize("""Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live""")
+>>> my_vector
+array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,  
+        4.95049505e-02, 3.96039604e-02,  1.18811881e-01, 
+        0.00000000e+00,  1.78217822e-01, 1.98019802e-02,
+        ...
+      ])
+>>> my_vector.shape
+(707,)
+```
 
-g2v = GrammarVectorizer()
+Additionally, the *return_vector* parameter can be switched to **False** in order to return a **FeatureVector** object, which gives you access to the following methods:
+```python
+
+my_vector = g2v.vectorize("""Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live""", 
+return_vector=False)
+
 
 ```
 

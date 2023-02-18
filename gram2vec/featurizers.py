@@ -8,7 +8,6 @@ from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
-import subprocess
 import toml
 from typing import Union
 
@@ -251,15 +250,16 @@ def read_config(register:tuple[Feature], path="config.toml") -> list:
     return config
 
 
-class DocumentVector:
+class FeatureVector:
     """
-    This class represents a DocumentVector, which contains each individual 
-    feature vector, as well as the concatenated one. 
+    This class provides access to the large concatenated feature vector,
+    as well as each individual smaller one. Additionally, provides access to
+    the exact counts each featurizer extracted from the given document
     """
     def __init__(self, doc:Document):
         self.doc = doc
-        self._vector_map : dict[str, np.ndarray] = {} # feature name mapped to its vector
-        self._count_map  : dict[str, dict] = {} # feature name mapped to its dict counts
+        self._vector_map : dict[str, np.ndarray] = {} 
+        self._count_map  : dict[str, dict] = {} 
     
     @property
     def vector(self) -> np.ndarray:
@@ -268,10 +268,12 @@ class DocumentVector:
     
     @property
     def vector_map(self) -> dict[str, np.ndarray]:
+        """Returns a dict of each feature name mapped to its vector"""
         return self._vector_map
     
     @property
     def count_map(self) -> dict[str, dict]:
+        """Returns a dict of each feature name mapped to its counts"""
         return self._count_map
     
     def get_vector_by_feature(self, feature_name) -> np.ndarray:
@@ -303,7 +305,11 @@ class DocumentVector:
             raise Exception(f"Feature {feature_name} already in this instance")
         
 class GrammarVectorizer:
-    """This class houses all featurizers"""
+    """
+    Houses all featurizers to apply to a text document.
+    
+    Instantiates the spaCy nlp object and activated featurizers
+    """
     
     def __init__(self):
         self.nlp = utils.load_spacy("en_core_web_md")
@@ -319,9 +325,9 @@ class GrammarVectorizer:
                          mixed_bigrams)
         
         self.config = read_config(self.register)
-        os.system("rm ../gram2vec/logs/*")
+        os.system("./clear_logs.sh")
 
-    def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, DocumentVector]:
+    def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
         """
         Applies featurizers to an input text and returns with either a numpy array
         or DocumentVector object depending on the return_vector flag
@@ -330,23 +336,19 @@ class GrammarVectorizer:
         :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
         """
         doc = make_document(text, self.nlp)
-        document_vector = DocumentVector(doc)
+        feature_vector = FeatureVector(doc)
         for featurizer in self.config:
             
             feature = featurizer(doc)
-            feature_vector = feature.counts_to_vector()
-            feature_counts = feature.feature_counts
-            feature_logger(featurizer.__name__, f"{feature_counts}\n{feature_vector}\n\n") 
-        
-            try:
-                assert not np.isnan(feature_vector).any()
-            except AssertionError:
-                import ipdb;ipdb.set_trace()
-                
-            document_vector._update_vector_map(featurizer.__name__, feature_vector)
-            document_vector._update_count_map(featurizer.__name__, feature_counts)
-        
+            counts = feature.feature_counts
+            vector = feature.counts_to_vector()
+            assert not np.isnan(vector).any()
+            
+            feature_vector._update_vector_map(featurizer.__name__, vector)
+            feature_vector._update_count_map(featurizer.__name__, counts)
+            feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
+
         if return_vector:
-            return document_vector.vector
+            return feature_vector.vector
         else:
-            return document_vector
+            return feature_vector
