@@ -27,7 +27,7 @@ ijson = "^3.1.4"
 
 ### `GrammarVectorizer`
 
-Before using the vectorizer, you can disable or enable features from activating. The `config.toml` configuration file maps `activated` features to `1` and deactivated features to `0`.
+Before using the vectorizer, you can disable or enable features from activating. The `config.toml` configuration file maps `activated` features to `1` and `deactivated` features to `0`.
 ```toml
 [Features]
 pos_unigrams=1
@@ -48,7 +48,10 @@ Import the **GrammarVectorizer** class and create an instance like so:
 ```
 From here, use the **g2v.vectorize()** method on an input string. By default, this will return a `numpy array` of all feature vectors concatenated into one:
 ```python
->>> my_vector = g2v.vectorize("""Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live""")
+>>> my_document = """
+Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live
+"""
+>>> my_vector = g2v.vectorize(my_document)
 >>> my_vector
 array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,  
         4.95049505e-02, 3.96039604e-02,  1.18811881e-01, 
@@ -61,7 +64,7 @@ array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,
 
 Optionally, the *return_vector* parameter can be switched to **False** in order to return a **FeatureVector** object instead:
 ```python
->>> my_vector = g2v.vectorize("""Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live""", return_vector=False)
+>>> my_vector = g2v.vectorize(my_document, return_vector=False)
 >>> my_vector
 '<gram2vec.featurizers.FeatureVector object at 0x15aacc6d0>'
 ```
