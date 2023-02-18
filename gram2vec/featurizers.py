@@ -232,12 +232,13 @@ def mixed_bigrams(doc:Document) -> Feature:
     
     return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
-# ~~~ Featurizers end ~~~
+# ~~~ FEATURIZERS END ~~~
 
-def read_config(register:tuple[Feature], path="config.toml") -> list:
+def read_config(register:tuple[Feature], path="config.toml") -> list[Feature]:
     """
     Reads config.toml to see which features to activate
     :param register: tuple of featurizer functions
+    :returns: list of Feature objects to apply to input string
     """
     toml_config = toml.load(path)["Features"]
     config = []
@@ -258,46 +259,49 @@ class FeatureVector:
     """
     def __init__(self, doc:Document):
         self.doc = doc
-        self._vector_map : dict[str, np.ndarray] = {} 
-        self._count_map  : dict[str, dict] = {} 
+        self.vector_map : dict[str, np.ndarray] = {} 
+        self.count_map  : dict[str, dict] = {} 
     
     @property
     def vector(self) -> np.ndarray:
-        """Concatenates all feature vectors into one larger 1D vector"""
+        """
+        Concatenates all individual feature vectors into one
+        :returns: 1D numpy array
+        """
         return np.concatenate(list(self._vector_map.values()))
     
-    @property
-    def vector_map(self) -> dict[str, np.ndarray]:
-        """Returns a dict of each feature name mapped to its vector"""
-        return self._vector_map
-    
-    @property
-    def count_map(self) -> dict[str, dict]:
-        """Returns a dict of each feature name mapped to its counts"""
-        return self._count_map
-    
-    def get_vector_by_feature(self, feature_name) -> np.ndarray:
-        """Accesses an individual feature vector by name"""
-        if feature_name in self._vector_map:
+    def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
+        """
+        Retrieves an individual feature vector by name from self.vector_map
+        :param feature_name: name of the featurizer
+        :returns: the vector created by the 'feature_name' featurizer 
+        :raises KeyError: if feature_name is not in current configuration
+        """
+        if feature_name in self.vector_map:
             return self._vector_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
         
-    def get_counts_by_feature(self, feature_name) -> dict[str, int]:
-        """Accesses an individual feature counts by name"""
+    def get_counts_by_feature(self, feature_name:str) -> dict[str, int]:
+        """
+        Retrieves an individual feature count dict by name from self.count_map
+        :param feature_name: name of the featurizer
+        :returns: the count dict created by the 'feature_name' featurizer 
+        :raises KeyError: if feature_name is not in current configuration
+        """
         if feature_name in self._count_map:
-            return self._count_map[feature_name]
+            return self.count_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
     
-    def _update_vector_map(self, feature_name, vector:np.ndarray):
+    def _update_vector_map(self, feature_name:str, vector:np.ndarray):
         """Adds a feature mapped to that feature's vector to self._vector_map"""
         if feature_name not in self._vector_map:
             self._vector_map[feature_name] = vector
         else:
             raise Exception(f"Feature {feature_name} already in this instance")
         
-    def _update_count_map(self, feature_name, counts:dict[str, int]):
+    def _update_count_map(self, feature_name:str, counts:dict[str, int]):
         """Adds a feature mapped to that feature's count dict to self._count_map"""
         if feature_name not in self._count_map:
             self._count_map[feature_name] = counts
@@ -327,7 +331,7 @@ class GrammarVectorizer:
         self.config = read_config(self.register)
         os.system("./clear_logs.sh")
 
-    def vectorize(self, text:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
+    def vectorize(self, document:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
         """
         Applies featurizers to an input text and returns with either a numpy array
         or DocumentVector object depending on the return_vector flag
@@ -335,7 +339,7 @@ class GrammarVectorizer:
         :param text: string to be vectorized
         :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
         """
-        doc = make_document(text, self.nlp)
+        doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
         for featurizer in self.config:
             
