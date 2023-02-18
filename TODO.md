@@ -11,7 +11,9 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
+- Automatic log clearing
 - Overhaul `pan_preprocess.py`
+- change type annotations to use Typing module (for compatibility purposes)
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric

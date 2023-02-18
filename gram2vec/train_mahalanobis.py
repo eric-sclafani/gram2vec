@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from metric_learn import MMC
 import numpy as np
 import pickle

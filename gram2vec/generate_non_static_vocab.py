@@ -6,7 +6,9 @@ from dataclasses import dataclass
 import featurizers as feats
 from featurizers import Document
 import os
-import utils
+
+# project imports
+from . import utils
 
 @dataclass
 class Vocab:

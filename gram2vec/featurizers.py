@@ -12,7 +12,7 @@ import toml
 from typing import Union
 
 # project imports 
-import utils
+from . import utils
 
 # ~~~ Logging and type aliases~~~
 

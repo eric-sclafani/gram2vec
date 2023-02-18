@@ -11,7 +11,7 @@ from sklearn import metrics
 from datetime import datetime
 
 # project imports
-import utils
+from . import utils
 from featurizers import GrammarVectorizer
 
 def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
