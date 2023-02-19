@@ -11,19 +11,12 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
-- Automatic log clearing
 - Overhaul `pan_preprocess.py`
+- Document preprocessing and vocab scripts
 - change type annotations to use Typing module (for compatibility purposes)
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric
-
-## Ideas
-- NEW EVAL: 
-    1. Iterate over pairs, check which split each pair item belongs to
-    2. Sort based off screenshot
-    3. Apply fixes to raw pairs
-    4. save it
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name in `utils.py` has to be updated with a new dataset name conditional

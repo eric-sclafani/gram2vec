@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import featurizers as feats
 from featurizers import Document
 import os
+import shutil
 
 # project imports
 import utils
@@ -90,6 +91,9 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     vocab_features = vocab.features
     path = f"vocab/non_static/{vocab_name}/{dataset_name}/"
     
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    
     os.makedirs(path)
     save_vocab_to_txt_file(vocab_features, f"{path}/{vocab_name}.txt")
     save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
@@ -125,8 +129,6 @@ def main():
     
     print("Done!")
     
-    print(POS_BIGRAMS.features)
-        
     for vocab in VOCABS:
         print(f"Saving vocabulary '{vocab.name}'...")
         save_vocab(dataset_name, vocab)

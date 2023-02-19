@@ -14,7 +14,7 @@ from typing import Union
 # project imports 
 import utils
 
-# ~~~ Logging and type aliases~~~
+# ~~~ Logging, type aliases~~~
 
 SentenceSpan = tuple[int,int]
 Vocab = tuple[str]
@@ -91,14 +91,26 @@ def get_bigrams_with_boundary_syms(doc:Document, tokens:list[str]):
     token_bigrams = bigrams(tokens_with_boundary_syms)
     return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
 
+def remove_openclass_bigrams(tokens:list[str], OPEN_CLASS:list[str]) -> list[str]:
+    """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
+    filtered = []
+    for pair in bigrams(tokens):
+        if pair[0] not in OPEN_CLASS and pair[1] in OPEN_CLASS:
+            filtered.append(pair[0])
+            
+        if pair[0] in OPEN_CLASS and pair[1] not in OPEN_CLASS:
+            filtered.append(pair[0])
+    return filtered
+    
 def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
     """Replaces all open class tokens with corresponding POS tags"""
     OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
-    tokens = deepcopy(tokens)
-    for i in range(len(tokens)):
+    tokens_replaced = deepcopy(tokens)
+    for i in range(len(tokens_replaced)):
         if pos[i] in OPEN_CLASS:
-            tokens[i] = pos[i]
-    return tokens
+            tokens_replaced[i] = pos[i]
+
+    return remove_openclass_bigrams(tokens_replaced, OPEN_CLASS)
 
 def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
     

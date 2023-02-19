@@ -1,2 +1,3 @@
 Datetime,Accuracy,Vector_length,k,Metric,config
 Sat Feb 18 14:35:52 2023,0.21071428571428572,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+Sun Feb 19 17:25:55 2023,0.22142857142857142,407,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"
