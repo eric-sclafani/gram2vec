@@ -268,7 +268,7 @@ class FeatureVector:
         Concatenates all individual feature vectors into one
         :returns: 1D numpy array
         """
-        return np.concatenate(list(self._vector_map.values()))
+        return np.concatenate(list(self.vector_map.values()))
     
     def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
         """
@@ -278,7 +278,7 @@ class FeatureVector:
         :raises KeyError: if feature_name is not in current configuration
         """
         if feature_name in self.vector_map:
-            return self._vector_map[feature_name]
+            return self.vector_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
         
@@ -289,22 +289,22 @@ class FeatureVector:
         :returns: the count dict created by the 'feature_name' featurizer 
         :raises KeyError: if feature_name is not in current configuration
         """
-        if feature_name in self._count_map:
+        if feature_name in self.count_map:
             return self.count_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
     
     def _update_vector_map(self, feature_name:str, vector:np.ndarray):
-        """Adds a feature mapped to that feature's vector to self._vector_map"""
-        if feature_name not in self._vector_map:
-            self._vector_map[feature_name] = vector
+        """Adds a feature mapped to that feature's vector to self.vector_map"""
+        if feature_name not in self.vector_map:
+            self.vector_map[feature_name] = vector
         else:
             raise Exception(f"Feature {feature_name} already in this instance")
         
     def _update_count_map(self, feature_name:str, counts:dict[str, int]):
-        """Adds a feature mapped to that feature's count dict to self._count_map"""
-        if feature_name not in self._count_map:
-            self._count_map[feature_name] = counts
+        """Adds a feature mapped to that feature's count dict to self.count_map"""
+        if feature_name not in self.count_map:
+            self.count_map[feature_name] = counts
         else:
             raise Exception(f"Feature {feature_name} already in this instance")
         
