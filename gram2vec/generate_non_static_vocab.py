@@ -8,7 +8,7 @@ from featurizers import Document
 import os
 
 # project imports
-from . import utils
+import utils
 
 @dataclass
 class Vocab:
@@ -50,6 +50,27 @@ def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
             documents.append(document)
     return documents  
 
+def count_pos_bigrams(doc:Document):
+    counter = Counter(feats.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
+    return counter
+
+def count_mixed_bigrams(doc:Document):
+    return Counter(feats.bigrams(feats.replace_openclass(doc.tokens, doc.pos_tags)))
+        
+def combine_counters(counters:list[Counter]) -> Counter:
+    """Adds a list of Counter objects into one"""
+    return sum(counters, Counter())
+
+def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
+    """Generates n most common elements according to count_function"""
+    counters = []
+    for document in documents:
+        counter = count_function(document)
+        counters.append(counter)
+        
+    n_most_common = dict(combine_counters(counters).most_common(n))
+    return tuple(n_most_common.keys())
+
 def save_vocab_to_pickle(vocab:tuple, path:str):
     """Writes vocab to pickle to be used by featurizers"""
     utils.save_pkl(vocab, path)
@@ -72,20 +93,8 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     os.makedirs(path)
     save_vocab_to_txt_file(vocab_features, f"{path}/{vocab_name}.txt")
     save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
-        
-def combine_counters(counters:list[Counter]) -> Counter:
-    """Adds a list of Counter objects into one"""
-    return sum(counters, Counter())
+    
 
-def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
-    """Generates n most common elements according to count_function"""
-    counters = []
-    for document in documents:
-        counter = count_function(document)
-        counters.append(counter)
-        
-    n_most_common = dict(combine_counters(counters).most_common(n))
-    return tuple(n_most_common.keys())
  
 def main():
     
@@ -96,7 +105,7 @@ def main():
                         "--train_path",
                         type=str,
                         help="Path to train data",
-                        default="data/pan/train_dev_test/train.json")
+                        default="data/pan/train_dev_test/author_splits/train.json")
     
     args = parser.parse_args()
     train_path = args.train_path
@@ -109,12 +118,14 @@ def main():
     print("Generating non-static vocabularies...")
 
     # any new non-static vocabs can be added here
-    POS_BIGRAMS   = Vocab(name="pos_bigrams", features=generate_most_common(all_documents, 50, feats.count_pos_bigrams))
-    MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, feats.count_mixed_bigrams))
+    POS_BIGRAMS   = Vocab(name="pos_bigrams", features=generate_most_common(all_documents, 50, count_pos_bigrams))
+    MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, count_mixed_bigrams))
     
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
     
     print("Done!")
+    
+    print(POS_BIGRAMS.features)
         
     for vocab in VOCABS:
         print(f"Saving vocabulary '{vocab.name}'...")

@@ -234,11 +234,11 @@ def mixed_bigrams(doc:Document) -> Feature:
 
 # ~~~ FEATURIZERS END ~~~
 
-def read_config(register:tuple[Feature], path="config.toml") -> list[Feature]:
+def read_config(register:tuple, path="config.toml") -> list:
     """
     Reads config.toml to see which features to activate
     :param register: tuple of featurizer functions
-    :returns: list of Feature objects to apply to input string
+    :returns: list of featurizer functions to apply to input strings
     """
     toml_config = toml.load(path)["Features"]
     config = []
