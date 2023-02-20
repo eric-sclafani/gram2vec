@@ -317,7 +317,7 @@ def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[list, lis
         
     return metric_train, metric_dev, metric_test
     
-def write_metric_eval_to_file(data:list[dict], out_path):
+def write_metric_data_to_file(data:list[dict], out_path):
     """Write a list of dictionaries to jsonl file"""
     with jsonlines.open(out_path, "w") as fout:
         for entry in data:
@@ -352,13 +352,15 @@ def main():
     # save_dev_bins(sort_authors_by_doc_freq(dev, train))
     # print("Done!")
     
-    print("Creating metric learning evaluation splits...")
-    raw_train, raw_dev, raw_test = get_raw_document_splits("pan/preprocessed/sorted_authors.json")
-    metric_train, metric_dev, metric_test = prepare_metric_learn_splits(raw_train, raw_dev, raw_test)
+    # print("Creating metric learning evaluation splits...")
+    # raw_train, raw_dev, raw_test = get_raw_document_splits("pan/preprocessed/sorted_authors.json")
+    # metric_train, metric_dev, metric_test = prepare_metric_learn_splits(raw_train, raw_dev, raw_test)
     
-    write_metric_eval_to_file(metric_train, "pan/train_dev_test/pairs/metric_train.jsonl")
-    write_metric_eval_to_file(metric_dev, "pan/train_dev_test/pairs/metric_dev.jsonl")
-    write_metric_eval_to_file(metric_test, "pan/train_dev_test/pairs/metric_test.jsonl")
+    # write_metric_data_to_file(metric_train, "pan/train_dev_test/pairs/metric_train.jsonl")
+    # write_metric_data_to_file(metric_dev, "pan/train_dev_test/pairs/metric_dev.jsonl")
+    # write_metric_data_to_file(metric_test, "pan/train_dev_test/pairs/metric_test.jsonl")
+    
+    
     
     print("Done!")
     

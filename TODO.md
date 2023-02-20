@@ -2,8 +2,18 @@
 This file contains ideas for future additions/improvements
 ------
 
+## `pan_preprocess.py` overhaul:
+- BEFORE OVERHAUL: write a quick script to get all discourse type counts. Then, write a better one later
+- From the raw data, create a new jsonlines file with the following format: 
+```python
+{"author_id": id, "text": document, "discourse_type":discourse_type},
+...             
+```
+- Create a "sorted" and "fixed_sorted" version of the above. This is essentially merging pairs.jsonl and truths.jsonl
+- In `knn_classifier.py`, write a function that sorts by author_id, 
+
+
 ## Additions:
-- Add discourse type evaluation for PAN
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prosody: do people have a stress (melodic) preference?
@@ -11,7 +21,6 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
-- Overhaul `pan_preprocess.py`
 - Document preprocessing and vocab scripts
 - change type annotations to use Typing module (for compatibility purposes)
 
