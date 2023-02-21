@@ -14,10 +14,13 @@ This file contains ideas for future additions/improvements
 
 
 ## Additions:
+- change toml to dict
+- add episode handling (read README)!
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prosody: do people have a stress (melodic) preference?
 - emojis: look for ASCII emojis
+
 
 ## Improvements:
 

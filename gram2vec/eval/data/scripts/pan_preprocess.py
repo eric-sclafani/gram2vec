@@ -21,6 +21,7 @@ def replace_tag(tag:str) -> str:
     :returns: new information in place of the tag
     """
     new_string = None
+    # pattern : [list of possible selections] mappings
     tag_fix_mappings = {
         r"<question(\d)?>" : [" "],
         r"(<addr?(\d+)?_.*>)|(<pers(\d)?.*>)" : names.words(),
@@ -37,11 +38,10 @@ def replace_tag(tag:str) -> str:
         r"<town(\d)?>" : ["Stony Brook", "Port Jefferson", "East Setauket", "Huntington", "Patchogue"],
         r"<band>" : ["Nirvana", "Queen", "Pink Floyd", "The Beatles"]
     }
-
     for pattern, replacements in tag_fix_mappings.items():
         if re.search(pattern, tag):
             new_string = random.choice(replacements)
-
+            
     if tag in ["<data_extract>", "<data_excerpt>", "<link>", "<line_break>", "<tab>", "<table>", "<image>", "<images>", "<nl>", "<new>", "<figure>", "<susiness>"]:
         new_string = " "
     elif not new_string: 
@@ -134,19 +134,7 @@ def main():
     os.chdir("../")
     iter_raw_data("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")
 
-    # print("Loading raw data...")
-    # id_pairs, text_pairs = load_raw_data("pan/raw/pairs.jsonl", "pan/raw/truth.jsonl")
-    # print("Done!")
-    # print("Sorting and fixing data...")
-    # sorted_authors = sort_data(id_pairs, text_pairs)
-    # fixed_sorted_authors = fix_data(sorted_authors)
-    # print("Done!")
-    # print("Saving sorted datasets...")
-    # utils.save_json(sorted_authors, "pan/preprocessed/sorted_authors.json")
-    # print("Done!")
-    # print("Saving preprocessed datasets...")
-    # utils.save_json(fixed_sorted_authors, "pan/preprocessed/fixed_sorted_author.json")
-    # print("Done!")
+    
 
 
     
