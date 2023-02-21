@@ -10,9 +10,7 @@ import os
 import spacy
 import toml
 from typing import Union
-
-# project imports 
-import utils
+import pickle
 
 # ~~~ Logging, type aliases~~~
 
@@ -61,6 +59,19 @@ def make_document(text:str, nlp) -> Document:
     return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
  
 # ~~~ Helper functions ~~~
+
+def load_vocab(path) -> tuple[str]:
+    """Loads in a txt file delimited by newlines as a tuple of strings"""
+    with open (path, "r") as fin:
+        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+
+def save_pkl(data, path):
+    with open (path, "ab") as fout:
+        pickle.dump(data, fout)
+        
+def load_pkl(path):
+    with open (path, "rb") as fin:
+        return pickle.load(fin)
 
 def demojify_text(text:str):
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
@@ -165,7 +176,7 @@ class Feature:
     
 def pos_unigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
+    vocab = load_vocab("vocab/static/pos_unigrams.txt")
     doc_pos_tag_counts = Counter(doc.pos_tags)
     all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
     
@@ -173,7 +184,7 @@ def pos_unigrams(doc:Document) -> Feature:
 
 def pos_bigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+    vocab = load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
@@ -181,7 +192,7 @@ def pos_bigrams(doc:Document) -> Feature:
 
 def func_words(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/function_words.txt")
+    vocab = load_vocab("vocab/static/function_words.txt")
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
     all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
     
@@ -189,7 +200,7 @@ def func_words(doc:Document) -> Feature:
 
 def punc(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/punc_marks.txt")
+    vocab = load_vocab("vocab/static/punc_marks.txt")
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
     all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
     
@@ -197,7 +208,7 @@ def punc(doc:Document) -> Feature:
 
 def letters(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/letters.txt")
+    vocab = load_vocab("vocab/static/letters.txt")
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
     all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
     
@@ -205,7 +216,7 @@ def letters(doc:Document) -> Feature:
 
 def common_emojis(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/common_emojis.txt")
+    vocab = load_vocab("vocab/static/common_emojis.txt")
     extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
@@ -230,7 +241,7 @@ def document_stats(doc:Document) -> Feature:
 
 def dep_labels(doc:Document) -> Feature:
 
-    vocab = utils.load_vocab("vocab/static/dep_labels.txt")
+    vocab = load_vocab("vocab/static/dep_labels.txt")
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
     all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
     
@@ -238,7 +249,7 @@ def dep_labels(doc:Document) -> Feature:
 
 def mixed_bigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+    vocab = load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
@@ -328,7 +339,7 @@ class GrammarVectorizer:
     """
     
     def __init__(self):
-        self.nlp = utils.load_spacy("en_core_web_md")
+        self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
         self.register = (pos_unigrams,
                          pos_bigrams,
                          func_words,

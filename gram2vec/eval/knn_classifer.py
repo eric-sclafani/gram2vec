@@ -4,15 +4,33 @@ import argparse
 import numpy as np
 import os
 import csv
+import json
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from datetime import datetime
+from time import time
 
 # project imports
-import utils
 from featurizers import GrammarVectorizer
+
+def load_json(path) -> dict[str, list[str]]:
+    """Loads a JSON as a dict"""
+    with open (path, "r") as fin:
+        data = json.load(fin)
+        return data
+
+def timer(func):
+    """This decorator shows the execution time of the function object passed"""
+    # Credits: https://www.geeksforgeeks.org/timing-functions-with-decorators-python/
+    def wrap_func(*args, **kwargs):
+        t1 = time()
+        result = func(*args, **kwargs)
+        t2 = time()
+        print(f'Function {func.__name__!r} executed in {(t2-t1):.4f}s')
+        return result
+    return wrap_func
 
 def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
     """Vectorizes a dict of documents. Returns a matrix from all documents"""
@@ -39,6 +57,17 @@ def get_result_path(eval_path, dataset_name, dev_or_test):
         result_path = f"results/{dataset_name}_{dev_or_test}_results.csv"
     return result_path
 
+def get_dataset_name(train_path:str) -> str:
+    """
+    Gets the dataset name from training data path which is needed to generate paths
+    NOTE: This function needs to be manually updated when new datasets are used.
+    """
+    if "pan" in train_path:
+        dataset_name = "pan"
+    else:
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
+    return dataset_name 
+
 def write_results_entry(path, to_write:list):
     
     if not os.path.exists(path):
@@ -49,9 +78,11 @@ def write_results_entry(path, to_write:list):
     with open(path, "a") as fout:
         writer = csv.writer(fout)
         writer.writerow(to_write)
+
+
       
       
-@utils.timer_func
+@timer
 def main():
     
     parser = argparse.ArgumentParser()
@@ -85,8 +116,8 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-    train = utils.load_json(args.train_path)
-    eval  = utils.load_json(args.eval_path)
+    train = load_json(args.train_path)
+    eval  = load_json(args.eval_path)
     
     X_train = vectorize_all_data(train, g2v) 
     Y_train = get_authors(train)
@@ -108,7 +139,7 @@ def main():
     activated_feats = [feat.__name__ for feat in g2v.config]
     
     dev_or_test = "dev" if args.eval_path.endswith("dev.json") else "test" #! change to: "dev" if "dev" in path else "test"
-    dataset_name = utils.get_dataset_name(args.train_path)
+    dataset_name = get_dataset_name(args.train_path)
     result_path = get_result_path(args.eval_path, dataset_name, dev_or_test)
     
     print(f"Eval set: {dev_or_test}")

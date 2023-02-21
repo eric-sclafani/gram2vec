@@ -12,10 +12,18 @@ import csv
 
 seed(80085)
 
-# project import
-from gram2vec import utils
-
 AuthorToDocsMapping = tuple[str,list[str]]
+
+def save_json(data:dict, path, mode="w"):
+    """Saves a dict as a JSON"""
+    with open(path, mode) as fout:
+        json.dump(data, fout, ensure_ascii=False, indent=2)
+
+def load_json(path) -> dict[str, list[str]]:
+    """Loads a JSON as a dict"""
+    with open (path, "r") as fin:
+        data = json.load(fin)
+        return data
 
 def sort_by_token_avg(author_to_avg_tokens:dict[str, float]) -> dict[str, int]:
     """Sorts a dictionary of author id to average token count mappings"""
@@ -214,7 +222,7 @@ def save_dev_bins(sorted_data:list[tuple]):
     i = 0
     for bin_num in range(1,9):
         partition = dict(sorted_data[i:i+7])
-        utils.save_json(data=partition, path=f"pan/dev_bins/sorted_by_docfreq/bin_{bin_num}_dev.json")
+        save_json(data=partition, path=f"pan/dev_bins/sorted_by_docfreq/bin_{bin_num}_dev.json")
         i += 7
 
 def train_dev_test_splits(data:dict):
@@ -239,7 +247,7 @@ def get_raw_document_splits(sorted_authors_path) -> tuple[list,list,list]:
     """
     Retrieves the pre-fixed versions (raw) of the documents sorted into train, dev, test
     """
-    data = utils.load_json(sorted_authors_path)
+    data = load_json(sorted_authors_path)
     
     train, dev, test = [],[],[]
     for author_id in data.keys():

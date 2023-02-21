@@ -3,20 +3,27 @@
 import argparse
 from collections import Counter
 from dataclasses import dataclass
-import featurizers as feats
-from featurizers import Document
 import os
 import shutil
+import spacy
+import pickle
+import json
 
 # project imports
-import utils
+import featurizers as feats
+from featurizers import Document
 
 @dataclass
 class Vocab:
     name:str
     features:tuple[str]
+    
+def load_json(path) -> dict[str, list[str]]:
+    """Loads a JSON as a dict"""
+    with open (path, "r") as fin:
+        data = json.load(fin)
+        return data
 
-# This function will likely change when integrated into Delip's system
 def check_for_valid_format(train_path:str) -> bool:
     """
     Validates training set JSON for the following format:
@@ -29,7 +36,7 @@ def check_for_valid_format(train_path:str) -> bool:
         type([doc1, doc2,...doc_n]) = array[str]
     """
     try:
-        data = utils.load_json(train_path)
+        data = load_json(train_path)
         assert all(isinstance(author_id, str) for author_id in data.keys()),\
         "Each author id must be a string"
         assert all(isinstance(author_docs, list) for author_docs in data.values()),\
@@ -40,10 +47,21 @@ def check_for_valid_format(train_path:str) -> bool:
         raise Exception("Data format incorrect :(. Check documentation for expected format.")
     return True
 
+def get_dataset_name(train_path:str) -> str:
+    """
+    Gets the dataset name from training data path which is needed to generate paths
+    NOTE: This function needs to be manually updated when new datasets are used.
+    """
+    if "pan" in train_path:
+        dataset_name = "pan"
+    else:
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
+    return dataset_name 
+
 def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
     """Retrieves all training documents in training data"""
     check_for_valid_format(train_path)
-    data = utils.load_json(train_path)
+    data = load_json(train_path)
     documents = []
     for author_docs in data.values():
         for doc in author_docs:
@@ -74,7 +92,8 @@ def generate_most_common(documents:list[Document], n:int, count_function) -> tup
 
 def save_vocab_to_pickle(vocab:tuple, path:str):
     """Writes vocab to pickle to be used by featurizers"""
-    utils.save_pkl(vocab, path)
+    with open (path, "ab") as fout:
+        pickle.dump(vocab, fout)
 
 def save_vocab_to_txt_file(vocab:tuple, path:str):
     """Writes vocab to a txt file for debugging purposes only"""
@@ -102,7 +121,7 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
  
 def main():
     
-    nlp = utils.load_spacy("en_core_web_md")
+    nlp = nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
     parser = argparse.ArgumentParser()
     
     parser.add_argument("-train",
@@ -115,7 +134,7 @@ def main():
     train_path = args.train_path
     
     print("Retrieving all training documents...")
-    dataset_name = utils.get_dataset_name(train_path)
+    dataset_name = get_dataset_name(train_path)
     all_documents = get_all_documents_from_data(train_path, nlp)
     print("Done!")
     
