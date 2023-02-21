@@ -278,52 +278,6 @@ def fix_pair(pair:tuple[str, str]) -> tuple[str, str]:
     return tuple(fixed_pair)
 
 
-def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[list, list, list]:
-    """
-    Using the raw train, dev, test splits, sort the raw pairs into their own splits
-    for the metric learning setup. Also applies the same text fixes as done to the regular eval data
-    """
-    doc_pairs = get_data("pan/raw/pairs.jsonl")
-    doc_truths = get_data("pan/raw/truth.jsonl")
-    assert len(doc_pairs) == len(doc_truths)
-    
-    metric_train, metric_dev, metric_test = [],[],[]
-    
-    for doc_entry, truth_entry in zip(doc_pairs, doc_truths):
-        truth:bool = truth_entry["same"]
-        pair:tuple[str,str] = tuple(doc_entry["pair"])
-        entry = {"same":truth, "pair":fix_pair(pair)}
-        
-        if pair[0] in raw_train and pair[1] in raw_train:
-            metric_train.append(entry)
-            
-        elif pair[0] in raw_train and pair[1] in raw_dev:
-            metric_dev.append(entry)
-            
-        elif pair[0] in raw_dev and pair[1] in raw_train:
-            metric_dev.append(entry)
-            
-        elif pair[0] in raw_train and pair[1] in raw_test:
-            metric_test.append(entry)
-            
-        elif pair[0] in raw_test and pair[1] in raw_train:
-            metric_test.append(entry)
-            
-        elif pair[0] in raw_dev and pair[1] in raw_dev:
-            metric_dev.append(entry)
-            
-        elif pair[0] in raw_test and pair[1] in raw_test:
-            metric_test.append(entry)
-            
-        elif pair[0] in raw_dev and pair[1] in raw_test:
-            metric_dev.append(entry)
-            
-        elif pair[0] in raw_test and pair[1] in raw_dev:
-            metric_test.append(entry) 
-        else:
-            raise Exception(f"Document unclassified: ({pair[0].split()[0:10]}, {pair[1].split()[0:10]})")
-        
-    return metric_train, metric_dev, metric_test
     
 def write_metric_data_to_file(data:list[dict], out_path):
     """Write a list of dictionaries to jsonl file"""

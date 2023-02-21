@@ -1,5 +1,9 @@
 # Gram2Vec
 
+# NOTE:
+
+This branch is undergoing structure changes. Updates to this README will follow
+
 ## Description
 `Gram2Vec` is a feature extraction algorithm that extracts grammatical and syntactic properties from a given document and returns a 1-dimensional vector. This is one part of the PAUSIT team's **Linguistic Indicator Vector** (LIV). 
 
