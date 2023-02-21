@@ -107,7 +107,7 @@ def main():
     accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
     activated_feats = [feat.__name__ for feat in g2v.config]
     
-    dev_or_test = "dev" if args.eval_path.endswith("dev.json") else "test"
+    dev_or_test = "dev" if args.eval_path.endswith("dev.json") else "test" #! change to: "dev" if "dev" in path else "test"
     dataset_name = utils.get_dataset_name(args.train_path)
     result_path = get_result_path(args.eval_path, dataset_name, dev_or_test)
     

@@ -26,6 +26,7 @@ This file contains ideas for future additions/improvements
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric
+- odd parenthesis crash happening in fix_data in pan_preprocess
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name in `utils.py` has to be updated with a new dataset name conditional

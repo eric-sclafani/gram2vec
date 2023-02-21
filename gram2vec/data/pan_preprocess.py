@@ -149,8 +149,8 @@ def sort_data(id_pairs, text_pairs) -> dict:
     """This function maps authors or discourses to their texts."""
     data = {}
     # the pair lists are one to one corresponding, so iterate over them at once
-    for ids, texts in zip(id_pairs, text_pairs):
-        for id, text in zip(ids, texts): 
+    for id_pair, text_pair in zip(id_pairs, text_pairs):
+        for id, text in zip(id_pair, text_pair): 
             if id not in data:
                 data[id] = []
             if text not in data[id]: # avoid duplicates
@@ -181,7 +181,7 @@ def fix_data(data):
     return data
 
 def sort_authors_by_avg_tokens(dev:dict, train:dict) -> list[tuple]:
-    """Sorts the authors in DEV by average token count in TRAIN"""
+    """Sorts the authors in DEV by average token count in TRAIN. Used for making dev bins"""
     author_to_avg_tokens = {}
     for author_id, documents in train.items():
         token_count = lambda x: len(x.split())  
@@ -197,7 +197,7 @@ def sort_authors_by_avg_tokens(dev:dict, train:dict) -> list[tuple]:
     return dev_sorted
 
 def sort_authors_by_doc_freq(dev:dict, train:dict):
-    """Sorts the authors in DEV by document frequency in TRAIN"""
+    """Sorts the authors in DEV by document frequency in TRAIN. Used for making dev bins."""
     train_sorted = sort_by_doc_freq(train)
     
     # sorts dev by document occurence in train
@@ -210,7 +210,7 @@ def sort_authors_by_doc_freq(dev:dict, train:dict):
     return dev_sorted
         
 def save_dev_bins(sorted_data:list[tuple]):
-    """Saves dev bins to directory"""
+    """Saves dev bins to directory. #! MAKE FUNCTIONN ABLE TO CREATE TEST BINS"""
     i = 0
     for bin_num in range(1,9):
         partition = dict(sorted_data[i:i+7])
