@@ -44,5 +44,8 @@ This file contains ideas for future additions/improvements
 ### Other
 - https://www.cs.waikato.ac.nz/ml/weka/index.html
 
+## PAN22 paper
+https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf
+
 ## Before I gradiate:
 - add very detailed documentation of project

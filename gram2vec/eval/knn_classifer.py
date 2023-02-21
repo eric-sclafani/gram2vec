@@ -92,10 +92,10 @@ def main():
                         help="k value for K-NN", 
                         default=7)
     
-    parser.add_argument("-m", 
-                        "--metric", 
+    parser.add_argument("-d", 
+                        "--distance", 
                         type=str, 
-                        help="distance metric", 
+                        help="distance function", 
                         default="cosine")
     
     parser.add_argument("-train", 
@@ -131,7 +131,7 @@ def main():
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.transform(X_eval)
     
-    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.metric)
+    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.distance)
     model.fit(X_train, Y_train_encoded)
     
     predictions = model.predict(X_eval)
