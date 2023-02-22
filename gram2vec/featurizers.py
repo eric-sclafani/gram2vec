@@ -224,7 +224,7 @@ def common_emojis(doc:Document) -> Feature:
     return Feature(all_emoji_counts, len(doc.tokens))
 
 def embedding_vector(doc:Document) -> Feature:
-    """spaCy word2vec document embedding"""
+    """spaCy word2vec (or glove?) document embedding"""
     embedding = {"embedding_vector" : doc.spacy_doc.vector}
     return Feature(embedding)
 
@@ -354,7 +354,7 @@ class GrammarVectorizer:
         self.config = read_config(self.register)
         os.system("./clear_logs.sh")
 
-    def vectorize(self, document:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
+    def vectorize_document(self, document:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
         """
         Applies featurizers to an input text and returns with either a numpy array
         or DocumentVector object depending on the return_vector flag
@@ -383,6 +383,6 @@ class GrammarVectorizer:
         """NOTE: FUNCTION UNTESTED"""
         all_vectors = []
         for document in documents:
-            grammar_vector = self.vectorize(document)
+            grammar_vector = self.vectorize_document(document)
             all_vectors.append(grammar_vector)
         return np.stack(all_vectors)

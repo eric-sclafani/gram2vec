@@ -26,24 +26,37 @@ def replace_tag(tag:str) -> str:
     # pattern : [list of possible selections] mappings
     tag_fix_mappings = {
         r"<question(\d)?>" : [" "],
+        
         r"(<addr?(\d+)?_.*>)|(<pers(\d)?.*>)" : names.words(),
+        
         r"<part_.*>" : ["."],
+        
         r"<city(\d)?>" : ["New York City", "Seattle", "Los Angelos", "San Fransisco", "Chicago", "Houston", "Pheonix", "Philadelphia", "San Antonio", "San Jose", "Dallas"],
+        
         r"<condition(\d)?>" : ["hypothermia", "flu", "covid", "cancer", "asthma", "monkey pox"],
+        
         r"(<continent(\d)?_adj>)|(<condition(\d)?_adj>)|(<country(\d)_adj>)" : ["happy", "dense", "loud", "large", "small", "populated", "amazing"],
+        
         r"(<country(\d)?>)|(<counr?ty>)|(<continent>)" : ["America", "Britain", "Brazil", "Russia", "Mexico", "Iran", "Iraq"],
+        
         r"<course(\d)>" : ["math", "linguistics", "computer science", "biology", "physics", "chemistry"],
+        
         r"(<day(\d)?>)|(<day_abbr>)" : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        
         r"(<month(\d)?>)|(<month_abbr>)" : ["December", "November", "October", "September", "August", "July", "June"],
+        
         r"<language(\d)?>" : ["Spanish", "English", "Arabic", "Russian", "Mandarin", "French", "Hebrew"],
+        
         r"<station(\d)?>" : ["Penn Station", "Grand Central Terminal", "Huntington Station", "Port Jefferson Station", "Stony Brook Station"],
+        
         r"<town(\d)?>" : ["Stony Brook", "Port Jefferson", "East Setauket", "Huntington", "Patchogue"],
+        
         r"<band>" : ["Nirvana", "Queen", "Pink Floyd", "The Beatles"]
     }
     for pattern, replacements in tag_fix_mappings.items():
         if re.search(pattern, tag):
             new_string = random.choice(replacements)
-            
+                
     if tag in ["<data_extract>", "<data_excerpt>", "<link>", "<line_break>", "<tab>", "<table>", "<image>", "<images>", "<nl>", "<new>", "<figure>", "<susiness>"]:
         new_string = " "
     elif not new_string: 
@@ -150,10 +163,7 @@ def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -
             seen_docs.append(doc_2)
             
     return author_mappings
-            
-        
-
-             
+                       
 def main(): 
 
     os.chdir("../")
@@ -167,11 +177,6 @@ def main():
         with jsonlines.open(f"pan22/preprocessed/{author_id}.jsonl", "w") as fout:
             for doc_object in author_to_docs[author_id]:
                 fout.write(doc_object)
-    
-    
-
-
-    
     
     
 if __name__ == "__main__":

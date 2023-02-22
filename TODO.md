@@ -2,20 +2,12 @@
 This file contains ideas for future additions/improvements
 ------
 
-## `pan_preprocess.py` overhaul:
-- BEFORE OVERHAUL: write a quick script to get all discourse type counts. Then, write a better one later
-- From the raw data, create a new jsonlines file with the following format: 
-```python
-{"author_id": id, "text": document, "discourse_type":discourse_type},
-...             
-```
-- Create a "sorted" and "fixed_sorted" version of the above. This is essentially merging pairs.jsonl and truths.jsonl
+
 - In `knn_classifier.py`, write a function that sorts by author_id, 
 
 
-## Additions:
-- change toml to dict
-- add episode handling (read README)!
+## Features:
+
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prosody: do people have a stress (melodic) preference?
@@ -24,6 +16,8 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
+- change toml to dict
+- Add easy way to evaluate on raw and fixed
 - Document preprocessing and vocab scripts
 - change type annotations to use Typing module (for compatibility purposes)
 
@@ -41,11 +35,6 @@ This file contains ideas for future additions/improvements
 ### Corpora
 - https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm
 - https://huggingface.co/datasets/guardian_authorship
-- https://www.jmlr.org/papers/volume21/19-678/19-678.pdf
-### Metric learning
-- More metric learning stuff: https://www.semanticscholar.org/paper/Metric-Learning%3A-A-Support-Vector-Approach-Nguyen-Guo/51d8dabeb6d4aad285f5f5765de8baff771f5693
-### Other
-- https://www.cs.waikato.ac.nz/ml/weka/index.html
 
 ## PAN22 paper
 https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf

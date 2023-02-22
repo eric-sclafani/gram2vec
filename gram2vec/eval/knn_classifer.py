@@ -78,10 +78,7 @@ def write_results_entry(path, to_write:list):
     with open(path, "a") as fout:
         writer = csv.writer(fout)
         writer.writerow(to_write)
-
-
-      
-      
+     
 @timer
 def main():
     

@@ -8,6 +8,7 @@ import jsonlines
 import argparse
 from dataclasses import dataclass
 from tqdm import tqdm
+from time import time
 
 # project imports
 from featurizers import GrammarVectorizer
@@ -29,8 +30,8 @@ def load_metric_data(path) -> list[Pair]:
 
 def vectorize_pair(g2v:GrammarVectorizer, pair:Pair) -> np.ndarray:
     """Applies the GrammarVectorizer to pairs of documents and returns a matrix of docuemnt vector pairs"""
-    vec1 = g2v.vectorize(pair.docs[0])
-    vec2 = g2v.vectorize(pair.docs[1])
+    vec1 = g2v.vectorize_document(pair.docs[0])
+    vec2 = g2v.vectorize_document(pair.docs[1])
     return np.array([vec1, vec2])
 
 def get_pair_matrix(g2v:GrammarVectorizer, data:list[Pair]) -> np.ndarray:
@@ -48,8 +49,19 @@ def encode_labels(train:list[Pair]) -> np.ndarray:
     """
     truth_labels = [1 if pair.same == True else -1 for pair in train]
     return np.array(truth_labels)
+
+def timer(func):
+    """This decorator shows the execution time of the function object passed"""
+    # Credits: https://www.geeksforgeeks.org/timing-functions-with-decorators-python/
+    def wrap_func(*args, **kwargs):
+        t1 = time()
+        result = func(*args, **kwargs)
+        t2 = time()
+        print(f'Function {func.__name__!r} executed in {(t2-t1):.4f}s')
+        return result
+    return wrap_func
           
-@utils.timer_func          
+@timer 
 def main():
     
     parser = argparse.ArgumentParser()

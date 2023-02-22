@@ -1,52 +1,57 @@
 
 from collections import defaultdict
-import json
+from dataclasses import dataclass
+from pathlib import Path
 import jsonlines
+import os
+import re
 
-def get_data(path) -> list[dict]:
-    """Reads a series of JSON objects into a list"""
-    return [json.loads(line) for line in open(path, "r")]
+@dataclass
+class Partition:
+    """Simple way to categorize which parition is train, dev, or test"""
+    data:dict
+    set_type:str
 
 
-def get_raw_document_splits(sorted_authors_path) -> tuple[list,list,list]:
+def iter_author_jsonls(author_files_dir:str) -> str:
+    """Yields each {author_id}.jsonl from a given dir"""
+    for author_file in Path(author_files_dir).glob("*.jsonl"):
+        yield author_file
+
+def extract_knn_splits_from_authors(authors_file_dir:str) -> tuple[Partition, Partition, Partition]:
     """
-    Retrieves the pre-fixed versions (raw) of the documents sorted into train, dev, test
+    Splits the given PAN22 training set into training, development, and testing partitions.
+    This is only necessary until the official PAN22 testing set has been released.
     """
-    #! THIS FUNCTION WILL BECOME IRRELEVANT WHEN DATA IS REGENERATED
-    data = load_json(sorted_authors_path)
+    train = defaultdict(lambda:[])
+    dev = defaultdict(lambda:[])
+    test = defaultdict(lambda:[])
+
+    for file in iter_author_jsonls(authors_file_dir):
+        with jsonlines.open(file) as author_entries:
+            for i, entry in enumerate(author_entries):
+                author_id = entry["author_id"]
+                if i <= 4:
+                    test[author_id].append(entry)
+                elif i <= 9:
+                    dev[author_id].append(entry)
+                else:
+                    train[author_id].append(entry)
+    return Partition(train, "train"), Partition(dev,"dev"), Partition(test, "test")
+                
+            
+def write_knn_splits(partitions:tuple[Partition], knn_splits_dir:str):
     
-    train, dev, test = [],[],[]
-    for author_id in data.keys():
-        for idx, text in enumerate(data[author_id]):
-            if idx <= 4:  
-                test.append(text)
-            elif idx <= 9: 
-                dev.append(text)
-            else:         
-                train.append(text)
-    return train, dev, test
-
-
-
-def make_knn_splits(data:dict):
-    """
-    Splits the fixed_sorted_authors.json into train, dev, test splits.
-    CURRENT SPLITS: 5 for dev and test, the rest for train. These numbers are specific to the PAN22 dataset.
-    When test set us released, this function will change
-    """
-    train = defaultdict(list)
-    dev   = defaultdict(list)
-    test  = defaultdict(list)
-    for author_id in data.keys():
-        for idx, text in enumerate(data[author_id]):
-            if idx <= 4:  
-                test[author_id].append(text)
-            elif idx <= 9: 
-                dev[author_id].append(text)
-            else:         
-                train[author_id].append(text)
-    return train, dev, test
-
+    for parition in partitions:
+        for author_id, documents in parition.data.items():
+            path = f"{knn_splits_dir}{parition.set_type}/{author_id}.jsonl"
+            
+            with jsonlines.open(path, "w") as author_file:
+                author_file.write_all(documents)
+    
+    
+                
+            
 def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[list, list, list]:
     """
     Using the raw train, dev, test splits, sort the raw pairs into their own splits
@@ -59,6 +64,7 @@ def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[list, lis
     metric_train, metric_dev, metric_test = [],[],[]
     
     for doc_entry, truth_entry in zip(doc_pairs, doc_truths):
+        
         truth:bool = truth_entry["same"]
         pair:tuple[str,str] = tuple(doc_entry["pair"])
         entry = {"same":truth, "pair": fix_pair(pair)}
@@ -100,13 +106,25 @@ def write_metric_data_to_file(data:list[dict], out_path):
         for entry in data:
             fout.write(entry)
 
+
+
+    
 def main():
-    # print("Dividing data into splits...")
-    # train, dev, test = train_dev_test_splits(fixed_sorted_authors)
-    # for split, path in [(train, "pan/train_dev_test/train.json"), (dev, "pan/train_dev_test/dev.json"), (test, "pan/train_dev_test/test.json")]:
-    #     utils.save_json(split, path)
-    # print("Done!")
-    pass
+    
+    
+
+    os.chdir("../")
+    
+    print("Partitioning KNN splits...")
+    train, dev, test = extract_knn_splits_from_authors("pan22/preprocessed/")
+    write_knn_splits((train, dev, test), "pan22/splits/knn/")
+    print("Done!")
+    
+    
+    
+    
+                
+    
 
 
 if __name__ == "__main__":
