@@ -130,7 +130,7 @@ dmypy.json
 
 
 # project
-*/eval/data/pan22/
+*/data/pan22/*
 */logs/*
 backup*/
 .DS_Store

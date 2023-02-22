@@ -8,6 +8,8 @@ import shutil
 import spacy
 import pickle
 import json
+import jsonlines
+from pathlib import Path
 
 # project imports
 import featurizers as feats
@@ -17,36 +19,13 @@ from featurizers import Document
 class Vocab:
     name:str
     features:tuple[str]
-    
-def load_json(path) -> dict[str, list[str]]:
-    """Loads a JSON as a dict"""
-    with open (path, "r") as fin:
-        data = json.load(fin)
-        return data
 
-def check_for_valid_format(train_path:str) -> bool:
-    """
-    Validates training set JSON for the following format:
-    {
-        author_id : [doc1, doc2,...doc_n],
-        author_id : [...],
-    }
-    WHERE:
-        type(author_id) = str
-        type([doc1, doc2,...doc_n]) = array[str]
-    """
-    try:
-        data = load_json(train_path)
-        assert all(isinstance(author_id, str) for author_id in data.keys()),\
-        "Each author id must be a string"
-        assert all(isinstance(author_docs, list) for author_docs in data.values()),\
-        "Each collection of documents must be an array"
-        assert all(isinstance(author_doc, str) for author_docs in data.values() for author_doc in author_docs),\
-        "Each document must be a string"
-    except:
-        raise Exception("Data format incorrect :(. Check documentation for expected format.")
-    return True
 
+def iter_author_jsonls(author_files_dir:str) -> str:
+    """Yields each {author_id}.jsonl from a given dir"""
+    for author_file in Path(author_files_dir).glob("*.jsonl"):
+        yield author_file
+        
 def get_dataset_name(train_path:str) -> str:
     """
     Gets the dataset name from training data path which is needed to generate paths
@@ -59,14 +38,16 @@ def get_dataset_name(train_path:str) -> str:
     return dataset_name 
 
 def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
-    """Retrieves all training documents in training data"""
-    check_for_valid_format(train_path)
-    data = load_json(train_path)
+    """Retrieves all training documents and aggregates them"""
+    
     documents = []
-    for author_docs in data.values():
-        for doc in author_docs:
-            document = feats.make_document(doc, nlp)
-            documents.append(document)
+    for file in iter_author_jsonls(train_path):
+        with jsonlines.open(file) as author_entries:
+            for entry in author_entries:
+                doc = entry["fixed_text"]
+                document = feats.make_document(doc, nlp)
+                documents.append(document)
+                
     return documents  
 
 def count_pos_bigrams(doc:Document):
@@ -118,7 +99,6 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
     
 
- 
 def main():
     
     nlp = nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
@@ -128,7 +108,7 @@ def main():
                         "--train_path",
                         type=str,
                         help="Path to train data",
-                        default="data/pan/train_dev_test/author_splits/train.json")
+                        default="data/pan22/splits/knn/train/")
     
     args = parser.parse_args()
     train_path = args.train_path
