@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from collections import defaultdict
 import jsonlines
 import re
 from dataclasses import dataclass
@@ -119,21 +121,53 @@ def apply_all_fixes(document:str) -> str:
     return normalized_document
 
 
-def iter_raw_data(pairs_path:str, truths_path:str) -> tuple[list]:
-    """Iterator for the raw jsonl files"""
+def iter_raw_data(pairs_path:str, truths_path:str) -> dict:
+    """Generator that yields each raw document pair and raw truth pair, which are 1-1 corresponding"""
     with jsonlines.open(pairs_path) as pairs_file, jsonlines.open(truths_path) as truths_file:
         for pair, truth in zip(pairs_file, truths_file):
             yield pair, truth
-            
-     
     
+            
+def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -> dict[str,list]: 
+    """Maps each unique author id to a list of JSON objects"""
+    seen_docs = []
+    author_mappings = defaultdict(lambda:[])
+    
+    for document_pair, truth_pair in iter_raw_data(raw_pairs_path, raw_truths_path):
+        
+        author_1, author_2 = truth_pair["authors"]
+        doc_1, doc_2  = document_pair["pair"]
+        discourse_1, discourse_2 = document_pair["discourse_types"]
+        
+        if doc_1 not in seen_docs:
+            obj_1 = {"author_id":author_1, "discourse_type":discourse_1, "raw_text":doc_1, "fixed_text":apply_all_fixes(doc_1)}
+            seen_docs.append(doc_1)
+            author_mappings[author_1].append(obj_1)
+        
+        if doc_2 not in seen_docs:
+            obj_2 = {"author_id":author_2, "discourse_type":discourse_2, "raw_text":doc_2, "fixed_text":apply_all_fixes(doc_2)}
+            author_mappings[author_2].append(obj_2)  
+            seen_docs.append(doc_2)
+            
+    return author_mappings
+            
+        
 
              
 def main(): 
 
     os.chdir("../")
-    iter_raw_data("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")
-
+    
+    author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")
+    author_ids = author_to_docs.keys()
+    
+    for author_id in author_ids:
+        print(f"Saving {author_id}.jsonl...")
+        
+        with jsonlines.open(f"pan22/preprocessed/{author_id}.jsonl", "w") as fout:
+            for doc_object in author_to_docs[author_id]:
+                fout.write(doc_object)
+    
     
 
 

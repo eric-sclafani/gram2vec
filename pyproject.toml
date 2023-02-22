@@ -22,6 +22,7 @@ nbformat = "^5.7.1"
 metric-learn = "^0.6.2"
 jsonlines = "^3.1.0"
 more-itertools = "^9.0.0"
+annoy = "^1.17.1"
 
 
 [tool.poetry.group.dev.dependencies]

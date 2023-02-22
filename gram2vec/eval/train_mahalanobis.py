@@ -11,7 +11,6 @@ from tqdm import tqdm
 
 # project imports
 from featurizers import GrammarVectorizer
-import utils
 
 
 @dataclass
