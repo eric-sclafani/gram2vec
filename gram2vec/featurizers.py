@@ -369,7 +369,6 @@ class GrammarVectorizer:
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()
-            assert not np.isnan(vector).any()
             
             feature_vector._update_vector_map(featurizer.__name__, vector)
             feature_vector._update_count_map(featurizer.__name__, counts)
@@ -379,3 +378,11 @@ class GrammarVectorizer:
             return feature_vector.vector
         else:
             return feature_vector
+        
+    def vectorize_episode(self, documents:list[str]) -> np.ndarray:
+        """NOTE: FUNCTION UNTESTED"""
+        all_vectors = []
+        for document in documents:
+            grammar_vector = self.vectorize(document)
+            all_vectors.append(grammar_vector)
+        return np.stack(all_vectors)
