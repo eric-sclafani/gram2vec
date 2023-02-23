@@ -354,13 +354,14 @@ class GrammarVectorizer:
         self.config = read_config(self.register)
         os.system("./clear_logs.sh")
 
-    def vectorize_document(self, document:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
+    def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
         """
-        Applies featurizers to an input text and returns with either a numpy array
-        or DocumentVector object depending on the return_vector flag
+        Applies featurizers to a document and returns either a numpy array
+        or DocumentVector object depending on the return_obj flag
         
-        :param text: string to be vectorized
-        :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
+        :param document: string to be vectorized
+        :param return_obj: Defaults to False. Option to return DocumentVector object instead of a numpy array 
+        :returns: a 1-D feature vector or FeatureVector object
         """
         doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
@@ -374,15 +375,26 @@ class GrammarVectorizer:
             feature_vector._update_count_map(featurizer.__name__, counts)
             feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
 
-        if return_vector:
+        if not return_obj:
             return feature_vector.vector
         else:
             return feature_vector
         
-    def vectorize_episode(self, documents:list[str]) -> np.ndarray:
-        """NOTE: FUNCTION UNTESTED"""
+    def vectorize_episode(self, documents:list[str], return_obj=False) -> Union[np.ndarray, list[FeatureVector]]:
+        """
+        Applies featurizers to a list of documents and returns either a numpy matrix
+        or DocumentVector object depending on the return_obj flag
+        
+        :param documents: list of documents to be vectorized
+        :param return_obj: Defaults to False. Option to return DocumentVector object instead of a numpy matrix
+        :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
+        """
         all_vectors = []
         for document in documents:
-            grammar_vector = self.vectorize_document(document)
+            grammar_vector = self.vectorize_document(document, return_obj)
             all_vectors.append(grammar_vector)
-        return np.stack(all_vectors)
+            
+        if not return_obj:
+            return np.stack(all_vectors)
+        else:
+            return all_vectors

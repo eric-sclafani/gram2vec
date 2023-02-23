@@ -25,7 +25,13 @@ def iter_author_jsonls(author_files_dir:str) -> str:
     """Yields each {author_id}.jsonl from a given dir"""
     for author_file in Path(author_files_dir).glob("*.jsonl"):
         yield author_file
-        
+
+def iter_author_entries(author_file):
+    """Yields each JSON object from an {author_id}.jsonl file"""
+    with jsonlines.open(author_file) as author_entries:
+        for entry in author_entries:
+            yield entry
+
 def get_dataset_name(train_path:str) -> str:
     """
     Gets the dataset name from training data path which is needed to generate paths
@@ -39,14 +45,12 @@ def get_dataset_name(train_path:str) -> str:
 
 def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
     """Retrieves all training documents and aggregates them"""
-    
     documents = []
-    for file in iter_author_jsonls(train_path):
-        with jsonlines.open(file) as author_entries:
-            for entry in author_entries:
-                doc = entry["fixed_text"]
-                document = feats.make_document(doc, nlp)
-                documents.append(document)
+    for file_name in iter_author_jsonls(train_path):
+        for entry in iter_author_entries(file_name):
+            doc = entry["fixed_text"]
+            document = feats.make_document(doc, nlp)
+            documents.append(document)
                 
     return documents  
 
@@ -128,10 +132,10 @@ def main():
     
     print("Done!")
     
-    for vocab in VOCABS:
-        print(f"Saving vocabulary '{vocab.name}'...")
-        save_vocab(dataset_name, vocab)
-    print("Done!") 
+    # for vocab in VOCABS:
+    #     print(f"Saving vocabulary '{vocab.name}'...")
+    #     save_vocab(dataset_name, vocab)
+    # print("Done!") 
     
 if __name__ == "__main__":
     main()
