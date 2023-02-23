@@ -4,7 +4,7 @@ This file contains ideas for future additions/improvements
 
 ## Before PR:
 
-- UPDATE SPLITS PATH
+- write a readme inside of vocab/ describing static vs non-static
 - update broken paths
 - In `knn_classifier.py`, write a function that sorts by author_id, 
 - fix dev bins script
