@@ -43,8 +43,7 @@ def extract_knn_splits_from_authors(authors_file_dir:str) -> tuple[Partition, Pa
                     train[author_id].append(entry)
     return Partition(train, "train"), Partition(dev,"dev"), Partition(test, "test")
                 
-def write_knn_splits(partitions:tuple[Partition, Partition, Partition], 
-                     knn_splits_dir:str):
+def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_splits_dir:str):
     
     for parition in partitions:
         for author_id, documents in parition.data.items():
@@ -54,7 +53,8 @@ def write_knn_splits(partitions:tuple[Partition, Partition, Partition],
                 author_file.write_all(documents)
                 
 def get_which_partition_docs(partition:Partition) -> list[str]:
-    """Gets which raw documents belong given parition. Needed to partition metric learning splits correctly"""
+    """Gets the raw documents that belong to given parition. Needed to partition metric learning 
+    splits correctly according to already established KNN splits"""
     docs = []
     for parition_objs in partition.data.values():
         for obj in parition_objs:
@@ -115,8 +115,7 @@ def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[Partition
         
     return Partition(metric_train, "train"), Partition(metric_dev,"dev"), Partition(metric_test, "test")
 
-def write_metric_data(partitions:tuple[Partition, Partition, Partition], 
-                      out_dir:str):
+def write_metric_data(partitions:tuple[Partition, Partition, Partition], out_dir:str):
     """Write a list of paritions to jsonl file"""
     for partition in partitions:
         with jsonlines.open(f"{out_dir}{partition.set_type}.jsonl", "w") as metric_file:
@@ -130,17 +129,19 @@ def main():
     
     print("Partitioning KNN splits...")
     train, dev, test = extract_knn_splits_from_authors("pan22/preprocessed/")
-    write_knn_splits((train, dev, test), "pan22/splits/knn/")
     print("Done!")
     
+    #! NOTE: new script has not been fully tested because metric learning is not being focused on yet
+    print("Partitioning metric learning splits...")
     train_docs = get_which_partition_docs(train)
     dev_docs   = get_which_partition_docs(dev)
     test_docs  = get_which_partition_docs(test)
-    
-    #! NOTE: script has not been fully tested because metric learning is not being focused on yet
-    print("Partitioning metric learning splits...")
     metric_train, metric_dev, metric_test = prepare_metric_learn_splits(train_docs, dev_docs, test_docs)
-    write_metric_data((metric_train, metric_dev, metric_test), "pan22/splits/metric_learn/")
+    
+    os.chdir("../")
+    
+    write_knn_splits((train, dev, test), "eval/splits/knn/")
+    write_metric_data((metric_train, metric_dev, metric_test), "eval/splits/metric_learn/")
     
     
                 

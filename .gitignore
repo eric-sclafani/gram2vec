@@ -131,6 +131,7 @@ dmypy.json
 
 # project
 */data/pan22/*
+*/eval/pan22_splits/
 */logs/*
 backup*/
 .DS_Store

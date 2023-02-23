@@ -96,16 +96,16 @@ def main():
                         default="cosine")
     
     parser.add_argument("-train", 
-                        "--train_path", 
+                        "--train_dir", 
                         type=str, 
-                        help="Path to train data",
-                        default="data/pan/train_dev_test/author_splits/train.json") 
+                        help="Path to train directory",
+                        default="pan22_splits/knn/train/") 
     
     parser.add_argument("-eval", 
-                        "--eval_path", 
+                        "--eval_dir", 
                         type=str,
-                        help="Path to eval data",
-                        default="data/pan/train_dev_test/author_splits/dev.json") 
+                        help="Path to eval directory",
+                        default="pan22_splits/knn/train/") 
     
     args = parser.parse_args()
     
@@ -113,6 +113,8 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
+    
+    #! UTILIZE g2v.vectorize_episode() HERE
     train = load_json(args.train_path)
     eval  = load_json(args.eval_path)
     

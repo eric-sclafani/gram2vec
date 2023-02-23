@@ -4,11 +4,12 @@ This file contains ideas for future additions/improvements
 
 ## Before PR:
 
-- MOVE DATA OUTSIDE OF EVAL
+- UPDATE SPLITS PATH
 - update broken paths
 - In `knn_classifier.py`, write a function that sorts by author_id, 
 - fix dev bins script
 - make sure metric learn splitting works correctly
+- discourse: just look at eval data
 
 ## Features:
 
