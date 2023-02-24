@@ -7,11 +7,6 @@ from collections import defaultdict
 import re
 import pandas as pd
 
-class AuthorEntry:
-    author_id:str
-    discourse_type:str
-    fixed_text:str
-
 def iter_author_jsonls(author_files_dir:str) -> str:
     """Yields each {author_id}.jsonl from a given dir"""
     for author_file in Path(author_files_dir).glob("*.jsonl"):
@@ -43,16 +38,22 @@ def author_to_doc_counts(train_dir_path:str) -> pd.DataFrame:
         author_docfreq_map["author_id"].append(clean_file_name(author_file)) 
         author_docfreq_map["doc_count"].append(count_num_entries(author_file))
     return pd.DataFrame(author_docfreq_map)
-            
 
-        
+def get_sorted_authors_ids(train_dir_path:str) -> list[str]:
+    
+    df = author_to_doc_counts(train_dir_path)
+    df.sort_values("doc_count", inplace=True)
+    return df.author_id.to_list()
 
 def main():
     
     os.chdir("../../")
-    df = author_to_doc_counts("eval/pan22_splits/knn/train")
-    df.sort_values("doc_count", inplace=True)
-    print(df)
+    
+    authors_sorted_by_train = get_sorted_authors_ids("eval/pan22_splits/knn/train")
+    print(authors_sorted_by_train)
+    
+    
+    
    
     
     
