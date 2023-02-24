@@ -7,7 +7,6 @@ import os
 import shutil
 import spacy
 import pickle
-import json
 import jsonlines
 from pathlib import Path
 
@@ -89,7 +88,7 @@ def save_vocab_to_txt_file(vocab:tuple, path:str):
 def save_vocab(dataset_name:str, vocab:tuple[str]):
     """
     Saves non-static vocabs as both a pickle and text file.
-    The text file is purely for debugging purposes
+    The text file is purely for debugging purposes (only for non-static vocabs)
     """
     vocab_name = vocab.name
     vocab_features = vocab.features
@@ -112,7 +111,7 @@ def main():
                         "--train_path",
                         type=str,
                         help="Path to train data",
-                        default="data/pan22/splits/knn/train/")
+                        default="eval/pan22_splits/knn/train/")
     
     args = parser.parse_args()
     train_path = args.train_path

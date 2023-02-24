@@ -10,6 +10,7 @@ This file contains ideas for future additions/improvements
 - fix dev bins script
 - make sure metric learn splitting works correctly
 - discourse: just look at eval data
+- move data viz dataset generation code into its own python script
 
 ## Features:
 
@@ -17,7 +18,7 @@ This file contains ideas for future additions/improvements
 - morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
 - prosody: do people have a stress (melodic) preference?
 - emojis: look for ASCII emojis
-- 
+- John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 
 
 ## Improvements:

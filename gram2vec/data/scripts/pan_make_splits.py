@@ -44,7 +44,12 @@ def extract_knn_splits_from_authors(authors_file_dir:str) -> tuple[Partition, Pa
     return Partition(train, "train"), Partition(dev,"dev"), Partition(test, "test")
                 
 def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_splits_dir:str):
+    """
+    Writes a tuple of Partition data splits to disk
     
+    :param partitions: train, dev, test paritions to save
+    :param knn_splits_dir: directory to write the {author}.json files
+    """
     for parition in partitions:
         for author_id, documents in parition.data.items():
             path = f"{knn_splits_dir}{parition.set_type}/{author_id}.jsonl"
@@ -53,8 +58,10 @@ def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_spli
                 author_file.write_all(documents)
                 
 def get_which_partition_docs(partition:Partition) -> list[str]:
-    """Gets the raw documents that belong to given parition. Needed to partition metric learning 
-    splits correctly according to already established KNN splits"""
+    """
+    Gets the raw documents that belong to given parition. Needed to partition metric learning 
+    splits correctly according to already established KNN splits
+    """
     docs = []
     for parition_objs in partition.data.values():
         for obj in parition_objs:
