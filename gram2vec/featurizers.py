@@ -256,23 +256,6 @@ def mixed_bigrams(doc:Document) -> Feature:
 
 # ~~~ FEATURIZERS END ~~~
 
-# def read_config(register:tuple, path="config.toml") -> list:
-#     """
-#     Reads config.toml to see which features to activate
-#     :param register: tuple of featurizer functions
-#     :returns: list of featurizer functions to apply to input strings
-#     """
-#     toml_config = toml.load(path)["Features"]
-#     config = []
-#     for feature in register:
-#         try:
-#             if toml_config[feature.__name__] == 1:
-#                 config.append(feature)
-#         except KeyError:
-#             raise KeyError(f"Feature '{feature.__name__}' does not exist in config.toml")
-#     return config
-
-
 class FeatureVector:
     """
     This class provides access to the large concatenated feature vector,
@@ -354,7 +337,11 @@ class GrammarVectorizer:
         os.system("./clear_logs.sh")
         
     def _process_config(self, passed_config: Optional[dict]):
-        """Reads which features to activate and returns a list of featurizer functions"""
+        """
+        Reads which features to activate and returns a list of featurizer functions
+        :param passed_config: User provided configuration dictionary. Can be None.
+        :returns: list of activated featurizers
+        """
         default_config = {feat.__name__: 1 for feat in self.register} # every feature on by default
         current_config = default_config if not passed_config else passed_config
         
