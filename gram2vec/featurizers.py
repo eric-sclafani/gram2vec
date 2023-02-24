@@ -8,8 +8,7 @@ from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
-import toml
-from typing import Union
+from typing import Union, Optional
 import pickle
 
 # ~~~ Logging, type aliases~~~
@@ -257,21 +256,21 @@ def mixed_bigrams(doc:Document) -> Feature:
 
 # ~~~ FEATURIZERS END ~~~
 
-def read_config(register:tuple, path="config.toml") -> list:
-    """
-    Reads config.toml to see which features to activate
-    :param register: tuple of featurizer functions
-    :returns: list of featurizer functions to apply to input strings
-    """
-    toml_config = toml.load(path)["Features"]
-    config = []
-    for feature in register:
-        try:
-            if toml_config[feature.__name__] == 1:
-                config.append(feature)
-        except KeyError:
-            raise KeyError(f"Feature '{feature.__name__}' does not exist in config.toml")
-    return config
+# def read_config(register:tuple, path="config.toml") -> list:
+#     """
+#     Reads config.toml to see which features to activate
+#     :param register: tuple of featurizer functions
+#     :returns: list of featurizer functions to apply to input strings
+#     """
+#     toml_config = toml.load(path)["Features"]
+#     config = []
+#     for feature in register:
+#         try:
+#             if toml_config[feature.__name__] == 1:
+#                 config.append(feature)
+#         except KeyError:
+#             raise KeyError(f"Feature '{feature.__name__}' does not exist in config.toml")
+#     return config
 
 
 class FeatureVector:
@@ -338,7 +337,7 @@ class GrammarVectorizer:
     Instantiates the spaCy nlp object and activated featurizers
     """
     
-    def __init__(self):
+    def __init__(self, config=None):
         self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
         self.register = (pos_unigrams,
                          pos_bigrams,
@@ -351,8 +350,22 @@ class GrammarVectorizer:
                          dep_labels,
                          mixed_bigrams)
         
-        self.config = read_config(self.register)
+        self.config = self._process_config(config)
         os.system("./clear_logs.sh")
+        
+    def _process_config(self, passed_config: Optional[dict]):
+        """Reads which features to activate and returns a list of featurizer functions"""
+        default_config = {feat.__name__: 1 for feat in self.register} # every feature on by default
+        current_config = default_config if not passed_config else passed_config
+        
+        activated_feats = []
+        for feature in self.register:
+            try:
+                if current_config[feature.__name__] == 1:
+                    activated_feats.append(feature)
+            except KeyError:
+                raise KeyError(f"Feature '{feature.__name__}' does not exist in given configuration")
+        return activated_feats
 
     def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
         """
@@ -366,11 +379,10 @@ class GrammarVectorizer:
         doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
         for featurizer in self.config:
-            
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()
-            
+
             feature_vector._update_vector_map(featurizer.__name__, vector)
             feature_vector._update_count_map(featurizer.__name__, counts)
             feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
@@ -389,6 +401,7 @@ class GrammarVectorizer:
         :param return_obj: Defaults to False. Option to return DocumentVector object instead of a numpy matrix
         :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
         """
+        
         all_vectors = []
         for document in documents:
             grammar_vector = self.vectorize_document(document, return_obj)
