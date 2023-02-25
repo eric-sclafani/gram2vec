@@ -33,7 +33,7 @@ def iter_author_jsonls(author_files_dir:str) -> str:
     for author_file in Path(author_files_dir).glob("*.jsonl"):
         yield author_file
         
-def iter_author_entries(author_file):
+def iter_author_entries(author_file:str) -> dict:
     """Yields each JSON object from an {author_id}.jsonl file"""
     with jsonlines.open(author_file) as author_entries:
         for entry in author_entries:
@@ -101,8 +101,6 @@ def majority_vote(model:KNeighborsClassifier, X_eval:np.ndarray, y_eval_encoded:
 def recall_at_n(n:int):
     pass   
  
-
-        
 G2V_CONFIG = {
     "pos_unigrams":1,
     "pos_bigrams":1,
@@ -110,7 +108,7 @@ G2V_CONFIG = {
     "punc":1,
     "letters":1,
     "common_emojis":1,
-    "embedding_vector":0,
+    "embedding_vector":1,
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
@@ -129,8 +127,8 @@ def main():
     parser.add_argument("-ef", 
                         "--eval_function", 
                         type=str, 
-                        help="Evaluation function to calculate nearest neighbors metric",
-                        choices=["majority_vote", "R@1", "R@8"],
+                        help="Evaluation function",
+                        choices=["majority_vote"] + [f"R@{i}" for i in range(1,9)],
                         default="majority_vote")
     
     parser.add_argument("-train", 
@@ -188,7 +186,7 @@ def main():
     print(f"Eval function: {args.eval_function}")
     print(f"Evaluation score: {eval_score}")
     
-    write_results_entry(result_path, [datetime.now().strftime("%c"),
+    write_results_entry(result_path, [datetime.now(),
                                       eval_score,
                                       len(X_train[0]),
                                       args.k_value,
