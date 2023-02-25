@@ -7,7 +7,6 @@ This file contains ideas for future additions/improvements
 - write a readme inside of vocab/ describing static vs non-static
 - update broken paths
 - In `knn_classifier.py`, write a function that sorts by author_id, 
-- fix dev bins script
 - make sure metric learn splitting works correctly
 - discourse: just look at eval data
 - move data viz dataset generation code into its own python script

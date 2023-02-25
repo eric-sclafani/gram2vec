@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-import numpy as np
 import os
 import csv
 import jsonlines
+import numpy as np
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
@@ -12,6 +12,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from datetime import datetime
 from time import time
+import re
 
 # project imports
 from gram2vec.featurizers import GrammarVectorizer
@@ -38,12 +39,12 @@ def iter_author_entries(author_file):
         for entry in author_entries:
             yield entry
             
-def get_all_fixed_documents(train_dir:str) -> list[str]:
-
+def get_all_documents(train_dir:str, text_type="fixed_text") -> list[str]:
+    """Aggregates all documents into one list"""
     all_documents = []
     for author_file in iter_author_jsonls(train_dir):
         for entry in iter_author_entries(author_file):
-            all_documents.append(entry["fixed_text"])
+            all_documents.append(entry[text_type])
     return all_documents
 
 def get_authors(train_dir:str) -> list[str]:
@@ -53,16 +54,6 @@ def get_authors(train_dir:str) -> list[str]:
         for entry in iter_author_entries(author_file):
             all_authors.append(entry["author_id"])
     return all_authors
-
-# def vectorize_all_data(data:dict, g2v:GrammarVectorizer) -> np.ndarray:
-#     """Vectorizes a dict of documents. Returns a matrix from all documents"""
-#     vectors = []
-#     for author_id in data.keys():
-#         for text in data[author_id]:
-#             grammar_vector = g2v.vectorize(text)
-#             vectors.append(grammar_vector)
-#     return np.stack(vectors)
-
 
 def get_result_path(eval_dir:str, dataset_name:str, dev_or_test:str):
     """Determines whether result path should be for bins or overall eval data"""
@@ -94,6 +85,24 @@ def write_results_entry(path, to_write:list):
         writer = csv.writer(fout)
         writer.writerow(to_write)
         
+def majority_vote(model:KNeighborsClassifier, X_eval:np.ndarray, y_eval_encoded:np.ndarray) -> float:
+    """
+    Evaluates a KNN model using the classic majority vote algorithm
+    
+    :param model: KNN classifier instance
+    :param X_eval: matrix of document vectors from eval set
+    :param: y_eval_encoded: vector of encoded author_id eval labels
+    :returns: accuracy score
+    """
+    predictions = model.predict(X_eval)
+    accuracy = metrics.accuracy_score(y_eval_encoded, predictions)
+    return accuracy
+
+def recall_at_n(n:int):
+    pass   
+ 
+
+        
 G2V_CONFIG = {
     "pos_unigrams":1,
     "pos_bigrams":1,
@@ -106,8 +115,7 @@ G2V_CONFIG = {
     "dep_labels":1,
     "mixed_bigrams":1,
 }        
-
-     
+   
 @timer
 def main():
     
@@ -118,11 +126,12 @@ def main():
                         help="k value for K-NN", 
                         default=7)
     
-    parser.add_argument("-d", 
-                        "--distance", 
+    parser.add_argument("-ef", 
+                        "--eval_function", 
                         type=str, 
-                        help="distance function", 
-                        default="cosine")
+                        help="Evaluation function to calculate nearest neighbors metric",
+                        choices=["majority_vote", "R@1", "R@8"],
+                        default="majority_vote")
     
     parser.add_argument("-train", 
                         "--train_dir", 
@@ -142,53 +151,48 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-    
-    # train = load_json(args.train_path)
-    # eval  = load_json(args.eval_path)
-    
-    # X_train = vectorize_all_data(train, g2v) 
-    # Y_train = get_authors(train)
-    
-    # X_eval = vectorize_all_data(eval, g2v)
-    # Y_eval = get_authors(eval)
-    
-
-    X_train = g2v.vectorize_episode(get_all_fixed_documents(args.train_dir))
+    X_train = g2v.vectorize_episode(get_all_documents(args.train_dir))
     y_train = get_authors(args.train_dir)
 
-    
-    X_eval = g2v.vectorize_episode(get_all_fixed_documents(args.eval_dir))
+    X_eval = g2v.vectorize_episode(get_all_documents(args.eval_dir))
     y_eval = get_authors(args.eval_dir)
     
-    Y_train_encoded = le.fit_transform(y_train)
-    Y_eval_encoded  = le.transform(y_eval)
+    y_train_encoded = le.fit_transform(y_train)
+    y_eval_encoded  = le.transform(y_eval)
     
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.transform(X_eval)
     
-    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric=args.distance)
-    model.fit(X_train, Y_train_encoded)
+    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric="cosine")
+    model.fit(X_train, y_train_encoded)
     
-    predictions = model.predict(X_eval)
-    accuracy = metrics.accuracy_score(Y_eval_encoded, predictions)
+    if args.eval_function == "majority_vote":
+        eval_score = majority_vote(model, X_eval, y_eval_encoded)
+        
+    elif re.search(r"R@\d", args.eval_function):
+        
+        eval_score = recall_at_n()
+
+
+   
+    
     activated_feats = [feat.__name__ for feat in g2v.config]
-    
-    dev_or_test = "dev" if "dev" in args.eval_dir else "test"
-    dataset_name = get_dataset_name(args.train_dir)
-    result_path = get_result_path(args.eval_dir, dataset_name, dev_or_test)
+    dev_or_test     = "dev" if "dev" in args.eval_dir else "test"
+    dataset_name    = get_dataset_name(args.train_dir)
+    result_path     = get_result_path(args.eval_dir, dataset_name, dev_or_test)
     
     print(f"Eval set: {dev_or_test}")
     print(f"Features: {activated_feats}")
     print(f"Feature vector size: {len(X_train[0])}")
     print(f"k: {args.k_value}")
-    print(f"Distance function: {args.distance}")
-    print(f"Accuracy: {accuracy}")
+    print(f"Eval function: {args.eval_function}")
+    print(f"Evaluation score: {eval_score}")
     
     write_results_entry(result_path, [datetime.now().strftime("%c"),
-                                      accuracy,
+                                      eval_score,
                                       len(X_train[0]),
                                       args.k_value,
-                                      args.distance,
+                                      args.eval_function,
                                       str(activated_feats)])
  
 if __name__ == "__main__":
