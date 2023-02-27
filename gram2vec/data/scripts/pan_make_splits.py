@@ -122,7 +122,7 @@ def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[Partition
         
     return Partition(metric_train, "train"), Partition(metric_dev,"dev"), Partition(metric_test, "test")
 
-def write_metric_data(partitions:tuple[Partition, Partition, Partition], out_dir:str):
+def write_metric_splits(partitions:tuple[Partition, Partition, Partition], out_dir:str):
     """Write a list of paritions to jsonl file"""
     for partition in partitions:
         with jsonlines.open(f"{out_dir}{partition.set_type}.jsonl", "w") as metric_file:
@@ -147,8 +147,8 @@ def main():
     
     os.chdir("../")
     
-    write_knn_splits((train, dev, test), "eval/splits/knn/")
-    write_metric_data((metric_train, metric_dev, metric_test), "eval/splits/metric_learn/")
+    write_knn_splits((train, dev, test), "eval/pan22_splits/knn/")
+    write_metric_splits((metric_train, metric_dev, metric_test), "eval/pan22_splits/metric_learn/")
     
     
                 

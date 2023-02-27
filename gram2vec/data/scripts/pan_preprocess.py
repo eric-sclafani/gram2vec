@@ -3,7 +3,6 @@
 from collections import defaultdict
 import jsonlines
 import re
-from dataclasses import dataclass
 from nltk.corpus import names
 import random
 import re
@@ -65,7 +64,7 @@ def replace_tag(tag:str) -> str:
     return new_string
 
 def normalize_spacing(tokens:list[str]) -> str:
-    """Ensures a document's spacing is correct and consistent"""
+    """Ensures a document's spacing is consistent"""
     return " ".join(tokens)
 
 def fix_BOS_cutoffs(text:str) -> list[str]:
@@ -135,7 +134,7 @@ def apply_all_fixes(document:str) -> str:
 
 
 def iter_raw_data(pairs_path:str, truths_path:str) -> dict:
-    """Generator that yields each raw document pair and raw truth pair, which are 1-1 corresponding"""
+    """Generator that yields each raw document pair and raw truth pair json object, which are 1-1 corresponding"""
     with jsonlines.open(pairs_path) as pairs_file, jsonlines.open(truths_path) as truths_file:
         for pair, truth in zip(pairs_file, truths_file):
             yield pair, truth
@@ -171,12 +170,14 @@ def main():
     author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")
     author_ids = author_to_docs.keys()
     
-    for author_id in author_ids:
-        print(f"Saving {author_id}.jsonl...")
+    print(author_ids)
+    
+    # for author_id in author_ids:
+    #     print(f"Saving {author_id}.jsonl...")
         
-        with jsonlines.open(f"pan22/preprocessed/{author_id}.jsonl", "w") as fout:
-            for doc_object in author_to_docs[author_id]:
-                fout.write(doc_object)
+    #     with jsonlines.open(f"pan22/preprocessed/{author_id}.jsonl", "w") as fout:
+    #         for doc_object in author_to_docs[author_id]:
+    #             fout.write(doc_object)
     
     
 if __name__ == "__main__":

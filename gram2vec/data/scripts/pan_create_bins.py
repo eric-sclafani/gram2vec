@@ -27,7 +27,11 @@ def clean_file_name(file_name:str) -> str:
     """Removes extra path information from jsonl file name"""
     return re.sub(r"(eval/pan22_splits/knn/train/)|.jsonl", "", str(file_name))
 
-def author_doc_counts_df(train_dir_path:str) -> pd.DataFrame:
+def make_author_bins(iterable):
+    """Makes 7 bins given an iterable"""
+    return list(chunked(iterable, 7))
+
+def author_doc_counts_df(train_dir:str) -> pd.DataFrame:
     """
     Stores each unique author_id with the document count
     
@@ -35,45 +39,69 @@ def author_doc_counts_df(train_dir_path:str) -> pd.DataFrame:
     :returns: dataframe consisting of author_ids and corresponding document counts
     """
     author_docfreq_map = defaultdict(lambda:[])
-    for author_file in iter_author_jsonls(train_dir_path):
+    for author_file in iter_author_jsonls(train_dir):
         author_docfreq_map["author_id"].append(clean_file_name(author_file)) 
         author_docfreq_map["doc_count"].append(count_num_entries(author_file))
     return pd.DataFrame(author_docfreq_map)
 
-def get_sorted_authors_ids(train_dir:str) -> list[str]:
-    """
-    Sorts a dataframe by doc_count and returns the sorted author_id labels
-    
-    :param train_dir_path: training data directory
-    :returns: list of author_ids sorted by document frequency
-    """
+def get_authors_sorted_by_docfreq(train_dir:str) -> list[str]:
+    """Sorts a dataframe by doc_count and returns the sorted author_id labels"""
     df = author_doc_counts_df(train_dir)
     df.sort_values("doc_count", inplace=True)
     return df.author_id.values
 
-def create_bins_by_docfreq(source_dir:str, target_dir:str, bins:list[list]):
+def write_bins(source_dir:str, target_dir:str, bins:list[list]):
     """
     Writes each bin to file given source and target directories, and list of bins
-    
     :param source_dir: directory to create bins from
     :param target_dir: directory to place the bins
     """
     for i, author_id_bin in enumerate(bins):
         for author_id in author_id_bin:
-            os.system(f"cp {source_dir}/{author_id}.jsonl {target_dir}/bin{i+1}/")
+            bin_path = f"{target_dir}/devbin{i+1}"
+            if not os.path.exists(bin_path):
+                os.mkdir(bin_path)
             
+            os.system(f"cp {source_dir}/{author_id}.jsonl {bin_path}")
+
+def count_author_avg_tokens(author_file:str) -> float:
+    """Aggregates the token counts of an author and takes the average"""
+    author_token_counts = [len(doc["fixed_text"].split()) for doc in iter_author_entries(author_file)]
+    return np.mean(author_token_counts)
+
+def author_avg_tokens_df(train_dir:str) -> pd.DataFrame:
+    """
+    Stores each unique author_id with corresponding average token count
+    
+    :param train_dir_path: training data directory
+    :returns: dataframe consisting of author_ids and corresponding average token count
+    """
+    author_avg_tokens_map = defaultdict(lambda:[])
+    for author_file in iter_author_jsonls(train_dir):
+        author_avg_tokens_map["author_id"].append(clean_file_name(author_file))
+        author_avg_tokens_map["avg_token_count"].append(count_author_avg_tokens(author_file))
+    return pd.DataFrame(author_avg_tokens_map)          
+            
+def get_authors_sorted_by_avg_tokens(train_dir:str) -> list[str]:
+    """Sorts a dataframe by avg_token_count and returns the sorted author_id labels"""
+    df = author_avg_tokens_df(train_dir)
+    df.sort_values("avg_token_count", inplace=True)
+    return df.author_id.values
             
 def main():
     
     os.chdir("../../")
-    authors_sorted_by_docfreq = get_sorted_authors_ids("eval/pan22_splits/knn/train")
-    bins_sorted_by_docfreq = list(chunked(authors_sorted_by_docfreq, 7))
-    create_bins_by_docfreq("eval/pan22_splits/knn/dev", "eval/eval_bins", bins_sorted_by_docfreq)
+    train_dir = "eval/pan22_splits/knn/train"
     
+    authors_sorted_by_docfreq = get_authors_sorted_by_docfreq(train_dir)
+    bins_sorted_by_docfreq = make_author_bins(authors_sorted_by_docfreq)
+    #write_bins("eval/pan22_splits/knn/dev", "eval/sorted_by_doc_freq/eval_bins", bins_sorted_by_docfreq)
     
-    
+    authors_sorted_by_avg_tokens = get_authors_sorted_by_avg_tokens(train_dir)
+    bins_sorted_by_avg_tokens = make_author_bins(authors_sorted_by_avg_tokens)
+    write_bins("eval/pan22_splits/knn/dev", "eval/eval_bins/sorted_by_avg_tokens", bins_sorted_by_avg_tokens)
             
-    
+     
     
     
    
