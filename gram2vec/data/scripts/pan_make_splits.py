@@ -1,9 +1,6 @@
 
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
-from more_itertools import collapse
-import jsonlines
 import json
 import os
 import re
@@ -15,32 +12,32 @@ class Partition:
     """Simple way to categorize which parition is train, dev, or test"""
     data:Union[dict, list]
     set_type:str
-
-
-def iter_author_jsonls(author_files_dir:str) -> str:
-    """Yields each {author_id}.jsonl from a given dir"""
-    for author_file in Path(author_files_dir).glob("*.jsonl"):
-        yield author_file
-
-def extract_knn_splits_from_authors(authors_file_dir:str) -> tuple[Partition, Partition, Partition]:
+    
+def load_preprocessed_data(preprocessed_file_path:str) -> dict[str, list[dict]]:
+    """Loads in the preprocessed PAN data as a dict"""
+    with open(preprocessed_file_path) as fin:
+        data = json.load(fin)
+    return data
+    
+def extract_knn_splits_from_authors(preprocessed_data:dict[str, list[dict]]) -> tuple[Partition, Partition, Partition]:
     """
     Splits the given PAN22 training set into training, development, and testing partitions.
     This is only necessary until the official PAN22 testing set has been released.
     """
-    train = defaultdict(lambda:[])
-    dev = defaultdict(lambda:[])
-    test = defaultdict(lambda:[])
+    train = defaultdict(list)
+    dev = defaultdict(list)
+    test = defaultdict(list)
 
-    for file in iter_author_jsonls(authors_file_dir):
-        with jsonlines.open(file) as author_entries:
-            for i, entry in enumerate(author_entries):
-                author_id = entry["author_id"]
-                if i <= 4:
-                    test[author_id].append(entry)
-                elif i <= 9:
-                    dev[author_id].append(entry)
-                else:
-                    train[author_id].append(entry)
+    author_ids = preprocessed_data.keys()
+    for author_id in author_ids:
+        for i, entry in enumerate(preprocessed_data[author_id]):
+            author_id = entry["author_id"]
+            if i <= 4:
+                test[author_id].append(entry)
+            elif i <= 9:
+                dev[author_id].append(entry)
+            else:
+                train[author_id].append(entry)
     return Partition(train, "train"), Partition(dev,"dev"), Partition(test, "test")
                 
 def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_splits_dir:str):
@@ -51,11 +48,11 @@ def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_spli
     :param knn_splits_dir: directory to write the {author}.json files
     """
     for parition in partitions:
-        for author_id, documents in parition.data.items():
-            path = f"{knn_splits_dir}{parition.set_type}/{author_id}.jsonl"
+        path = f"{knn_splits_dir}{parition.set_type}.json"
+        with open(path, "w") as fout:
+            json.dump(parition.data, fout, indent=2, ensure_ascii=False)
             
-            with jsonlines.open(path, "w") as author_file:
-                author_file.write_all(documents)
+          
                 
 def get_which_partition_docs(partition:Partition) -> list[str]:
     """
@@ -130,25 +127,19 @@ def write_metric_splits(partitions:tuple[Partition, Partition, Partition], out_d
   
 def main():
     
-    
 
-    os.chdir("../")
-    
-    print("Partitioning KNN splits...")
-    train, dev, test = extract_knn_splits_from_authors("pan22/preprocessed/")
-    print("Done!")
-    
-    #! NOTE: new script has not been fully tested because metric learning is not being focused on yet
-    print("Partitioning metric learning splits...")
-    train_docs = get_which_partition_docs(train)
-    dev_docs   = get_which_partition_docs(dev)
-    test_docs  = get_which_partition_docs(test)
-    metric_train, metric_dev, metric_test = prepare_metric_learn_splits(train_docs, dev_docs, test_docs)
-    
-    os.chdir("../")
-    
+    os.chdir("../../")
+    pan_preprocessed = load_preprocessed_data("data/pan22/preprocessed/preprocessed_data.json")
+    train, dev, test = extract_knn_splits_from_authors(pan_preprocessed)
     write_knn_splits((train, dev, test), "eval/pan22_splits/knn/")
-    write_metric_splits((metric_train, metric_dev, metric_test), "eval/pan22_splits/metric_learn/")
+
+    #! METRIC LEARNING CODE DEPRECATED; NEEDS TO BE UPDATED LATER, NOT BEING FOCUSED ON NOW
+    # print("Partitioning metric learning splits...")
+    # train_docs = get_which_partition_docs(train)
+    # dev_docs   = get_which_partition_docs(dev)
+    # test_docs  = get_which_partition_docs(test)
+    # metric_train, metric_dev, metric_test = prepare_metric_learn_splits(train_docs, dev_docs, test_docs)
+    # write_metric_splits((metric_train, metric_dev, metric_test), "eval/pan22_splits/metric_learn/")
     
     
                 

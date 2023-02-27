@@ -3,9 +3,8 @@
 import argparse
 import os
 import csv
-import jsonlines
+import json
 import numpy as np
-from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -28,50 +27,45 @@ def timer(func):
         return result
     return wrap_func
 
-def iter_author_jsonls(author_files_dir:str) -> str:
-    """Yields each {author_id}.jsonl from a given dir"""
-    for author_file in Path(author_files_dir).glob("*.jsonl"):
-        yield author_file
-        
-def iter_author_entries(author_file:str) -> dict:
-    """Yields each JSON object from an {author_id}.jsonl file"""
-    with jsonlines.open(author_file) as author_entries:
-        for entry in author_entries:
-            yield entry
-            
-def get_all_documents(dir:str, text_type="fixed_text") -> list[str]:
+def load_data(data_path:str) -> dict[str, list[dict]]:
+    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
+    with open(data_path) as fin:
+        data = json.load(fin)
+    return data
+
+def get_all_documents(data_path:str, text_type="fixed_text") -> list[str]:
     """Aggregates all documents into one list"""
     all_documents = []
-    for author_file in iter_author_jsonls(dir):
-        for entry in iter_author_entries(author_file):
+    for author_entries in load_data(data_path).values():
+        for entry in author_entries:
             all_documents.append(entry[text_type])
     return all_documents
 
-def get_authors(train_dir:str) -> list[str]:
-    
+def get_authors(data_path:str) -> list[str]:
+    """Aggregates all authors into one list"""
     all_authors = []
-    for author_file in iter_author_jsonls(train_dir):
-        for entry in iter_author_entries(author_file):
+    for author_entries in load_data(data_path).values():
+        for entry in author_entries:
             all_authors.append(entry["author_id"])
     return all_authors
 
-def get_result_path(eval_dir:str, dataset_name:str, dev_or_test:str):
+def get_result_path(eval_path:str, dataset_name:str, dev_or_test:str):
     """Determines whether result path should be for bins or overall eval data"""
-    if "bin" in eval_dir:
+    if "bin" in eval_path:
         result_path = f"eval/results/{dataset_name}_{dev_or_test}_bin_results.csv"
     else:
         result_path = f"eval/results/{dataset_name}_{dev_or_test}_results.csv"
     return result_path
 
-def get_dataset_name(train_dir:str) -> str:
+def get_dataset_name(train_path:str) -> str:
     """
     Gets the dataset name from training data path which is needed to generate paths
     NOTE: This function needs to be manually updated when new datasets are used.
     """
-    if "pan" in train_dir:
+    if "pan" in train_path:
         dataset_name = "pan"
     else:
-        raise ValueError(f"Dataset name unrecognized in path: {train_dir}")
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
     return dataset_name 
 
 def write_results_entry(path, to_write:list):
@@ -79,7 +73,7 @@ def write_results_entry(path, to_write:list):
     if not os.path.exists(path):
         with open(path, "w") as fout:
             writer = csv.writer(fout)
-            writer.writerow(["Datetime", "Accuracy", "Vector_length", "k", "Distance function", "config"])
+            writer.writerow(["Datetime", "Accuracy", "Vector_length", "k", "Eval function", "config"])
             
     with open(path, "a") as fout:
         writer = csv.writer(fout)
@@ -108,7 +102,7 @@ G2V_CONFIG = {
     "punc":1,
     "letters":1,
     "common_emojis":1,
-    "embedding_vector":1,
+    "embedding_vector":0,
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
@@ -132,16 +126,16 @@ def main():
                         default="majority_vote")
     
     parser.add_argument("-train", 
-                        "--train_dir", 
+                        "--train_path", 
                         type=str, 
                         help="Path to train directory",
-                        default="eval/pan22_splits/knn/train/") 
+                        default="eval/pan22_splits/knn/train.json") 
     
     parser.add_argument("-eval", 
-                        "--eval_dir", 
+                        "--eval_path", 
                         type=str,
                         help="Path to eval directory",
-                        default="eval/pan22_splits/knn/dev/") 
+                        default="eval/pan22_splits/knn/dev.json") 
     
     args = parser.parse_args()
     
@@ -150,14 +144,13 @@ def main():
     scaler = StandardScaler()
     
 
-    train_docs = get_all_documents(args.train_dir)
+    train_docs = get_all_documents(args.train_path)
     X_train = g2v.vectorize_episode(train_docs)
-    y_train = get_authors(args.train_dir)
+    y_train = get_authors(args.train_path)
 
-    eval_docs = get_all_documents(args.eval_dir)
+    eval_docs = get_all_documents(args.eval_path)
     X_eval = g2v.vectorize_episode(eval_docs)
-    y_eval = get_authors(args.eval_dir)
-    
+    y_eval = get_authors(args.eval_path)
     
     y_train_encoded = le.fit_transform(y_train)
     y_eval_encoded  = le.transform(y_eval)
@@ -175,9 +168,9 @@ def main():
         eval_score = recall_at_n()
 
     activated_feats = [feat.__name__ for feat in g2v.config]
-    dev_or_test     = "dev" if "dev" in args.eval_dir else "test"
-    dataset_name    = get_dataset_name(args.train_dir)
-    result_path     = get_result_path(args.eval_dir, dataset_name, dev_or_test)
+    dev_or_test     = "dev" if "dev" in args.eval_path else "test"
+    dataset_name    = get_dataset_name(args.train_path)
+    result_path     = get_result_path(args.eval_path, dataset_name, dev_or_test)
     
     print(f"Eval set: {dev_or_test}")
     print(f"Features: {activated_feats}")

@@ -1,2 +1,0 @@
-Datetime,Accuracy,Vector_length,k,Distance function,config
-2023-02-26 20:32:09.122201,0.02857142857142857,707,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"

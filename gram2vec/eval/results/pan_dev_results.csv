@@ -4,3 +4,5 @@ Sat Feb 25 16:53:30 2023,0.21428571428571427,407,7,majority_vote,"['pos_unigrams
 2023-02-26 18:47:48.980872,0.05714285714285714,707,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-02-26 18:48:16.458995,0.20714285714285716,707,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-02-26 18:49:45.348586,0.18928571428571428,707,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-02-27 12:18:30.777063,0.20714285714285716,707,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-02-27 12:19:02.151530,0.21428571428571427,407,7,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"

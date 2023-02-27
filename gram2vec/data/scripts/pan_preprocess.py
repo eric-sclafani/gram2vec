@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 import jsonlines
+import json
 import re
 from nltk.corpus import names
 import random
@@ -167,18 +168,10 @@ def main():
 
     os.chdir("../")
     
-    author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")
-    author_ids = author_to_docs.keys()
-    
-    print(author_ids)
-    
-    # for author_id in author_ids:
-    #     print(f"Saving {author_id}.jsonl...")
-        
-    #     with jsonlines.open(f"pan22/preprocessed/{author_id}.jsonl", "w") as fout:
-    #         for doc_object in author_to_docs[author_id]:
-    #             fout.write(doc_object)
-    
-    
+    author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")    
+    with open("pan22/preprocessed/preprocessed_data.json", "w") as fout:
+         json.dump(author_to_docs, fout, indent=2, ensure_ascii=False)
+
+
 if __name__ == "__main__":
     main()
