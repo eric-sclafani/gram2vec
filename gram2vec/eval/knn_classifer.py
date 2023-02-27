@@ -39,16 +39,16 @@ def iter_author_entries(author_file:str) -> dict:
         for entry in author_entries:
             yield entry
             
-def get_all_documents(train_dir:str, text_type="fixed_text") -> list[str]:
+def get_all_documents(dir:str, text_type="fixed_text") -> list[str]:
     """Aggregates all documents into one list"""
     all_documents = []
-    for author_file in iter_author_jsonls(train_dir):
+    for author_file in iter_author_jsonls(dir):
         for entry in iter_author_entries(author_file):
             all_documents.append(entry[text_type])
     return all_documents
 
 def get_authors(train_dir:str) -> list[str]:
-
+    
     all_authors = []
     for author_file in iter_author_jsonls(train_dir):
         for entry in iter_author_entries(author_file):
@@ -149,11 +149,15 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-    X_train = g2v.vectorize_episode(get_all_documents(args.train_dir))
+
+    train_docs = get_all_documents(args.train_dir)
+    X_train = g2v.vectorize_episode(train_docs)
     y_train = get_authors(args.train_dir)
 
-    X_eval = g2v.vectorize_episode(get_all_documents(args.eval_dir))
+    eval_docs = get_all_documents(args.eval_dir)
+    X_eval = g2v.vectorize_episode(eval_docs)
     y_eval = get_authors(args.eval_dir)
+    
     
     y_train_encoded = le.fit_transform(y_train)
     y_eval_encoded  = le.transform(y_eval)
@@ -168,12 +172,8 @@ def main():
         eval_score = majority_vote(model, X_eval, y_eval_encoded)
         
     elif re.search(r"R@\d", args.eval_function):
-        
         eval_score = recall_at_n()
 
-
-   
-    
     activated_feats = [feat.__name__ for feat in g2v.config]
     dev_or_test     = "dev" if "dev" in args.eval_dir else "test"
     dataset_name    = get_dataset_name(args.train_dir)
