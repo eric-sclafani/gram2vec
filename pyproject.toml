@@ -17,12 +17,13 @@ nltk = "^3.8"
 toml = "^0.10.2"
 ipdb = "^0.13.11"
 ijson = "^3.1.4"
-plotly = "5.11.0"
 nbformat = "^5.7.1"
 metric-learn = "^0.6.2"
 jsonlines = "^3.1.0"
 more-itertools = "^9.0.0"
 annoy = "^1.17.1"
+matplotlib = "^3.7.0"
+seaborn = "^0.12.2"
 
 
 [tool.poetry.group.dev.dependencies]

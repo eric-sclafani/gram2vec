@@ -1,5 +1,5 @@
 
-#! NEEDS TO BE FORMATTED AND CLEANED
+#! NEEDS TO BE FORMATTED AND FIXED
 
 @dataclass
 class AuthorEntry:
