@@ -92,7 +92,7 @@ def majority_vote(model:KNeighborsClassifier, X_eval:np.ndarray, y_eval_encoded:
     accuracy = metrics.accuracy_score(y_eval_encoded, predictions)
     return accuracy
 
-def recall_at_n(n:int):
+def recall_at_n(model:KNeighborsClassifier, n:int):
     pass   
  
 G2V_CONFIG = {
@@ -102,7 +102,7 @@ G2V_CONFIG = {
     "punc":1,
     "letters":1,
     "common_emojis":1,
-    "embedding_vector":0,
+    "embedding_vector":1,
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,

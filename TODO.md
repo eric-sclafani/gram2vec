@@ -18,6 +18,7 @@ This file contains ideas for future additions/improvements
 - prosody: do people have a stress (melodic) preference?
 - emojis: look for ASCII emojis
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
+- Relook at <nl> tag. Stylistic feature?
 
 
 ## Improvements:
