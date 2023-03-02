@@ -11,7 +11,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from datetime import datetime
 from time import time
-import re
 
 # project imports
 from gram2vec.featurizers import GrammarVectorizer
@@ -80,33 +79,71 @@ def write_results_entry(path, to_write:list):
         writer = csv.writer(fout)
         writer.writerow(to_write)
         
-def majority_vote(model:KNeighborsClassifier, X_eval:np.ndarray, y_eval_encoded:np.ndarray) -> float:
-    """
-    Evaluates a KNN model using the classic majority vote algorithm
+        
+def fetch_labels_from_indices(indices:np.ndarray, encoded_labels:np.ndarray) -> np.ndarray:
+    """Fetches labels from given array of index positions"""
+    return encoded_labels[indices]
+
+def get_first_8_authors(predicted_labels:np.ndarray) -> list[int]:
+    """Retrieves the first 8 unique labels from an array of predicted labels, which may contain duplicates"""
+    candidates = []
+    for label in predicted_labels:
+        if label not in candidates and not len(candidates) == 8:
+            candidates.append(label)
+    return candidates
     
-    :param model: KNN classifier instance
-    :param X_eval: matrix of document vectors from eval set
-    :param: y_eval_encoded: vector of encoded author_id eval labels
-    :returns: accuracy score
-    """
+        
+def majority_vote(k, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
+    """Evaluates a KNN model using the classic majority vote algorithm to calculate R@1"""
+      
+    model = KNeighborsClassifier(n_neighbors=k, metric="cosine")
+    model.fit(X_train, y_train_encoded)
+    
     predictions = model.predict(X_eval)
     accuracy = metrics.accuracy_score(y_eval_encoded, predictions)
     return accuracy
 
-def recall_at_n(model:KNeighborsClassifier, n:int, ):
-    pass   
- 
+def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
+    """
+    Evaluates a KNN model using a custom made R@8 algorithm. Checks to see if the 
+    query author is in the top 8 ranked predictions made by the model
+    
+    :param X_train: vectorized training matrix
+    :param X_eval: vectorized evaluation matrix
+    :param y_train_encoded: array of encoded training labels
+    :param y_eval_encoded: array of encoded evaluation labels
+    
+    :returns: R@8 score
+    """
+    correct_pred = 0
+    all_pred = 0
+    model = KNeighborsClassifier(n_neighbors=20, metric="cosine")
+    model.fit(X_train, y_train_encoded)
+    
+    _, prediction_indices = model.kneighbors(X_eval)
+    for i in range(len(prediction_indices)):
+        
+        predicted_authors = fetch_labels_from_indices(prediction_indices[i], y_train_encoded)
+        first_eight_authors = get_first_8_authors(predicted_authors)
+        
+        if y_eval_encoded[i] in first_eight_authors:
+            correct_pred += 1
+            
+        all_pred += 1
+    
+    return correct_pred / all_pred
+    
 G2V_CONFIG = {
-    "pos_unigrams":1,
-    "pos_bigrams":1,
-    "func_words":1,
-    "punc":1,
-    "letters":1,
-    "common_emojis":1,
+    "pos_unigrams":0,
+    "pos_bigrams":0,
+    "func_words":0,
+    "punc":0,
+    "letters":0,
+    "common_emojis":0,
     "embedding_vector":1,
-    "document_stats":1,
-    "dep_labels":1,
-    "mixed_bigrams":1,
+    "document_stats":0,
+    "dep_labels":0,
+    "mixed_bigrams":0,
 }        
    
 @timer
@@ -123,7 +160,7 @@ def main():
                         "--eval_function", 
                         type=str, 
                         help="Evaluation function",
-                        choices=["majority_vote"] + [f"R@{i}" for i in range(1,9)],
+                        choices=["majority_vote", "R@8"],
                         default="majority_vote")
     
     parser.add_argument("-train", 
@@ -157,17 +194,14 @@ def main():
     
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.transform(X_eval)
-    
-    model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric="cosine")
-    model.fit(X_train, y_train_encoded)
-    
+  
     
     
     if args.eval_function == "majority_vote":
-        eval_score = majority_vote(model, X_eval, y_eval_encoded) # needs to take X_train, y_train, X_eval, y_eval
+        eval_score = majority_vote(args.k_value, X_train, X_eval, y_train_encoded, y_eval_encoded)
         
-    elif re.search(r"R@\d", args.eval_function):
-        eval_score = recall_at_n()
+    elif args.eval_function == "R@8":
+        eval_score = recall_at_8(X_train, X_eval, y_train_encoded, y_eval_encoded)
         
         
 
@@ -179,14 +213,12 @@ def main():
     print(f"Eval set: {dev_or_test}")
     print(f"Features: {activated_feats}")
     print(f"Feature vector size: {len(X_train[0])}")
-    print(f"k: {args.k_value}")
     print(f"Eval function: {args.eval_function}")
     print(f"Evaluation score: {eval_score}")
     
     write_results_entry(result_path, [datetime.now(),
                                       eval_score,
                                       len(X_train[0]),
-                                      args.k_value,
                                       args.eval_function,
                                       str(activated_feats)])
  
