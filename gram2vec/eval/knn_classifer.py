@@ -39,6 +39,7 @@ def get_all_documents(data_path:str, text_type="fixed_text") -> list[str]:
     for author_entries in load_data(data_path).values():
         for entry in author_entries:
             all_documents.append(entry[text_type])
+            
     return all_documents
 
 def get_authors(data_path:str) -> list[str]:
@@ -92,7 +93,7 @@ def majority_vote(model:KNeighborsClassifier, X_eval:np.ndarray, y_eval_encoded:
     accuracy = metrics.accuracy_score(y_eval_encoded, predictions)
     return accuracy
 
-def recall_at_n(model:KNeighborsClassifier, n:int):
+def recall_at_n(model:KNeighborsClassifier, n:int, ):
     pass   
  
 G2V_CONFIG = {
@@ -116,7 +117,7 @@ def main():
                         "--k_value", 
                         type=int, 
                         help="k value for K-NN", 
-                        default=7)
+                        default=6)
     
     parser.add_argument("-ef", 
                         "--eval_function", 
@@ -143,7 +144,6 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-
     train_docs = get_all_documents(args.train_path)
     X_train = g2v.vectorize_episode(train_docs)
     y_train = get_authors(args.train_path)
@@ -161,11 +161,15 @@ def main():
     model = KNeighborsClassifier(n_neighbors=int(args.k_value), metric="cosine")
     model.fit(X_train, y_train_encoded)
     
+    
+    
     if args.eval_function == "majority_vote":
-        eval_score = majority_vote(model, X_eval, y_eval_encoded)
+        eval_score = majority_vote(model, X_eval, y_eval_encoded) # needs to take X_train, y_train, X_eval, y_eval
         
     elif re.search(r"R@\d", args.eval_function):
         eval_score = recall_at_n()
+        
+        
 
     activated_feats = [feat.__name__ for feat in g2v.config]
     dev_or_test     = "dev" if "dev" in args.eval_path else "test"

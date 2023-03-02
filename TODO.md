@@ -5,11 +5,8 @@ This file contains ideas for future additions/improvements
 ## Before PR:
 
 - write a readme inside of vocab/ describing static vs non-static
-- update broken paths
-- In `knn_classifier.py`, write a function that sorts by author_id, 
 - make sure metric learn splitting works correctly
 - discourse: just look at eval data
-- move data viz dataset generation code into its own python script
 
 ## Features:
 
@@ -19,12 +16,13 @@ This file contains ideas for future additions/improvements
 - emojis: look for ASCII emojis
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 - Relook at <nl> tag. Stylistic feature?
+- https://aclanthology.org/2021.findings-emnlp.359/
+- relook at Document statistics feature
+
 
 
 ## Improvements:
 
-- change toml to dict
-- Add easy way to evaluate on raw and fixed
 - Document preprocessing and vocab scripts
 - change type annotations to use Typing module (for compatibility purposes)
 
@@ -45,6 +43,3 @@ This file contains ideas for future additions/improvements
 
 ## PAN22 paper
 https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf
-
-## Before I gradiate:
-- add very detailed documentation of project
