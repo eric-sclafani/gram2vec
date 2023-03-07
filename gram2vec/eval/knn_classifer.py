@@ -93,8 +93,17 @@ def get_first_8_authors(predicted_labels:np.ndarray) -> list[int]:
     return candidates
     
         
-def majority_vote(k, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
-    """Evaluates a KNN model using the classic majority vote algorithm to calculate R@1"""
+def recall_at_1(k, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
+    """
+    Evaluates a KNN model using the majority vote algorithm to calculate R@1
+    
+    :param k: kNN k value
+    :param X_train: vectorized training matrix
+    :param X_eval: vectorized evaluation matrix
+    :param y_train_encoded: array of encoded training labels
+    :param y_eval_encoded: array of encoded evaluation labels
+    :returns: R@1 score
+    """
       
     model = KNeighborsClassifier(n_neighbors=k, metric="cosine")
     model.fit(X_train, y_train_encoded)
@@ -105,8 +114,8 @@ def majority_vote(k, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.n
 
 def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
     """
-    Evaluates a KNN model using a custom made R@8 algorithm. Checks to see if the 
-    query author is in the top 8 ranked predictions made by the model
+    Evaluates a KNN model using R@8. Checks to see if the 
+    query author is in the top 8 nearest authors predicted by the model
     
     :param X_train: vectorized training matrix
     :param X_eval: vectorized evaluation matrix
@@ -156,12 +165,12 @@ def main():
                         help="k value for K-NN", 
                         default=6)
     
-    parser.add_argument("-ef", 
-                        "--eval_function", 
+    parser.add_argument("-m", 
+                        "--metric", 
                         type=str, 
-                        help="Evaluation function",
-                        choices=["majority_vote", "R@8"],
-                        default="majority_vote")
+                        help="Metric to calculate",
+                        choices=["R@1", "R@8"],
+                        default="R@1")
     
     parser.add_argument("-train", 
                         "--train_path", 
@@ -196,13 +205,11 @@ def main():
     X_eval = scaler.transform(X_eval)
   
     
-    
-    if args.eval_function == "majority_vote":
-        eval_score = majority_vote(args.k_value, X_train, X_eval, y_train_encoded, y_eval_encoded)
+    if args.metric == "R@1":
+        eval_score = recall_at_1(args.k_value, X_train, X_eval, y_train_encoded, y_eval_encoded)
         
-    elif args.eval_function == "R@8":
+    elif args.metric == "R@8":
         eval_score = recall_at_8(X_train, X_eval, y_train_encoded, y_eval_encoded)
-        
         
 
     activated_feats = [feat.__name__ for feat in g2v.config]
@@ -213,13 +220,13 @@ def main():
     print(f"Eval set: {dev_or_test}")
     print(f"Features: {activated_feats}")
     print(f"Feature vector size: {len(X_train[0])}")
-    print(f"Eval function: {args.eval_function}")
+    print(f"Metric: {args.metric}")
     print(f"Evaluation score: {eval_score}")
     
     write_results_entry(result_path, [datetime.now(),
                                       eval_score,
                                       len(X_train[0]),
-                                      args.eval_function,
+                                      args.metric,
                                       str(activated_feats)])
  
 if __name__ == "__main__":

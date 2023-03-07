@@ -63,10 +63,6 @@ def load_vocab(path) -> tuple[str]:
     """Loads in a txt file delimited by newlines as a tuple of strings"""
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
-
-def save_pkl(data, path):
-    with open (path, "ab") as fout:
-        pickle.dump(data, fout)
         
 def load_pkl(path):
     with open (path, "rb") as fin:

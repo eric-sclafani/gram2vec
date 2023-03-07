@@ -25,6 +25,7 @@ This file contains ideas for future additions/improvements
 
 - Document preprocessing and vocab scripts
 - change type annotations to use Typing module (for compatibility purposes)
+- In generate_tabular_vector_dataset: normalize counts if needed
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric (may be fixed? need to check)

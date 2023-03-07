@@ -1,59 +1,40 @@
 
 import json
 from dataclasses import dataclass
-from featurizers import GrammarVectorizer
+from gram2vec.featurizers import GrammarVectorizer
 import os
-
-#! NEEDS TO BE FORMATTED AND FIXED
-
-
-def load_data(data_path:str) -> dict[str, list[dict]]:
-    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
-    with open(data_path) as fin:
-        data = json.load(fin)
-    return data
+import pandas as pd
 
 @dataclass
 class AuthorEntry:
     author_id:str
     discourse_type:str
     fixed_text:str
-            
-def get_all_entries(data_dir:str) -> list[AuthorEntry]:
-    """Extracts author file entries as AuthorEntry objects and aggregates into one list"""
+    
+def load_data(data_path:str) -> dict[str, list[dict]]:
+    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
+    with open(data_path) as fin:
+        data = json.load(fin)
+    return data
+
+
+def get_all_entries(data_path:str) -> list[AuthorEntry]:
+    """Extracts and aggregates author file entries as AuthorEntry objects into one list"""
     all_entries = []
-    for author_file in iter_author_jsonls(data_dir):
-        for entry in iter_author_entries(author_file):
-            all_entries.append(AuthorEntry(entry["author_id"], entry["discourse_type"], entry["fixed_text"]))
+    for author_entries in load_data(data_path).values():
+        for author_dict in author_entries:
+            author_id = author_dict["author_id"]
+            fixed_text = author_dict["fixed_text"]
+            discourse_type = author_dict["discourse_type"]
+            all_entries.append(AuthorEntry(author_id, discourse_type, fixed_text))
     return all_entries
 
-data_dir = "data/pan22/preprocessed/"
-all_entries = get_all_entries(data_dir)
 
-documents = [entry.fixed_text for entry in all_entries]
-authors = [entry.author_id for entry in all_entries]
-discourse_types = [entry.discourse_type for entry in all_entries]
-
-g2v = GrammarVectorizer()
-
-feature_vectors = g2v.vectorize_episode(documents)
-
-
-def get_vocab(path) -> list[str]:
+def get_vocab(path:str) -> list[str]:
+    """Retrieves a featurizer vocabulary stored in a given path"""
     with open(path, "r") as fin:
         return fin.read().strip().split("\n")
 
-pos_unigrams  = get_vocab("vocab/static/pos_unigrams.txt")
-pos_bigrams   = get_vocab("vocab/non_static/pos_bigrams/pan/pos_bigrams.txt")
-func_words    = get_vocab("vocab/static/function_words.txt")
-punc          = get_vocab("vocab/static/punc_marks.txt")
-letters       = get_vocab("vocab/static/letters.txt")
-common_emojis = get_vocab("vocab/static/common_emojis.txt")
-doc_stats     = ["short_words", "large_words", "word_len_avg", "word_len_std", "sent_len_avg", "sent_len_std", "hapaxes"]
-deps          = get_vocab("vocab/static/dep_labels.txt")
-mixed_bigrams = get_vocab("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.txt")
-
-all_features = pos_unigrams + pos_bigrams + func_words + punc + letters + common_emojis + doc_stats + deps + mixed_bigrams
 
 def convert_feature_name(feature:str, seen_i, seen_a, seen_X) -> str:
     """
@@ -125,23 +106,46 @@ def populate_feature_to_counts_map(all_features:list[str], feature_vectors:list)
                 if feat_name == "X":
                     feat_name = convert_feature_name(feat_name, seen_i, seen_a, seen_X)
                     seen_X = True
-                       
-                feats_to_counts[str(feat_name)].append(count)
+                
+                if feat_name != "embedding_vector": 
+                    feats_to_counts[str(feat_name)].append(count)
         seen_i, seen_a, seen_X = False, False, False # reset flags for every count_dict
             
     return feats_to_counts
 
-features_to_count_lists = populate_feature_to_counts_map(all_features, feature_vectors)
+
+def main():
+    #TODO: add ability to generate tabular data set for any supplied dataset
+    
+    os.chdir("../pan22/preprocessed/")
+    
+    all_entries = get_all_entries("preprocessed_data.json")
+    documents = [entry.fixed_text for entry in all_entries]
+    authors = [entry.author_id for entry in all_entries]
+    discourse_types = [entry.discourse_type for entry in all_entries]
+    
+    os.chdir("../../../")
+    g2v = GrammarVectorizer()
+    feature_vectors = g2v.vectorize_episode(documents, return_obj=True)
+    
+    pos_unigrams  = get_vocab("vocab/static/pos_unigrams.txt")
+    pos_bigrams   = get_vocab("vocab/non_static/pos_bigrams/pan/pos_bigrams.txt")
+    func_words    = get_vocab("vocab/static/function_words.txt")
+    punc          = get_vocab("vocab/static/punc_marks.txt")
+    letters       = get_vocab("vocab/static/letters.txt")
+    common_emojis = get_vocab("vocab/static/common_emojis.txt")
+    doc_stats     = ["short_words", "large_words", "word_len_avg", "word_len_std", "sent_len_avg", "sent_len_std", "hapaxes"]
+    deps          = get_vocab("vocab/static/dep_labels.txt")
+    mixed_bigrams = get_vocab("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.txt")
+    
+    all_features = pos_unigrams + pos_bigrams + func_words + punc + letters + common_emojis + doc_stats + deps + mixed_bigrams
+    
+    features_to_count_lists = populate_feature_to_counts_map(all_features, feature_vectors)
+    df = pd.DataFrame(features_to_count_lists)
+    df.insert(0, "author_id", authors)
+    df.insert(1, "discourse_type", discourse_types)
+    df.to_csv("pan22_features.csv", index=None)
 
 
-
-df = pd.DataFrame(features_to_count_lists)
-df.insert(0, "author_id", authors)
-df.insert(1, "discourse_type", discourse_types)
-
-
-try:
-    os.chdir("../../cse564/project2/data/")
-except:pass
-
-df.to_csv("pan22_features.csv", index=None)
+if __name__ == "__main__":
+    main()

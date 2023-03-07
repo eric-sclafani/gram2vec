@@ -14,8 +14,6 @@ import featurizers as feats
 from featurizers import Document
 
 
-#! SCRIPT NEEDS TO BE UPDATED
-
 @dataclass
 class Vocab:
     name:str
