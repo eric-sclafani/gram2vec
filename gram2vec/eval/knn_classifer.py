@@ -134,16 +134,16 @@ def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarra
     return correct_pred / all_pred
     
 G2V_CONFIG = {
-    "pos_unigrams":0,
-    "pos_bigrams":0,
-    "func_words":0,
-    "punc":0,
-    "letters":0,
-    "common_emojis":0,
+    "pos_unigrams":1,
+    "pos_bigrams":1,
+    "func_words":1,
+    "punc":1,
+    "letters":1,
+    "common_emojis":1,
     "embedding_vector":1,
-    "document_stats":0,
-    "dep_labels":0,
-    "mixed_bigrams":0,
+    "document_stats":1,
+    "dep_labels":1,
+    "mixed_bigrams":1,
 }        
    
 @timer

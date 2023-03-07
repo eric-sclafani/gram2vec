@@ -12,8 +12,6 @@ def load_data(data_path:str) -> dict[str, list[dict]]:
         data = json.load(fin)
     return data
 
-
-
 def count_num_entries(author_dict:dict) -> int:
     """Counts how many documents an author has by taking the length of their list of dict objects"""
     return len(author_dict)

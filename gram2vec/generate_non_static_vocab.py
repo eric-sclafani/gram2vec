@@ -7,29 +7,36 @@ import os
 import shutil
 import spacy
 import pickle
-import jsonlines
-from pathlib import Path
+import json
 
 # project imports
 import featurizers as feats
 from featurizers import Document
+
+
+#! SCRIPT NEEDS TO BE UPDATED
 
 @dataclass
 class Vocab:
     name:str
     features:tuple[str]
 
+def load_data(data_path:str) -> dict[str, list[dict]]:
+    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
+    with open(data_path) as fin:
+        data = json.load(fin)
+    return data
 
-def iter_author_jsonls(author_files_dir:str) -> str:
-    """Yields each {author_id}.jsonl from a given dir"""
-    for author_file in Path(author_files_dir).glob("*.jsonl"):
-        yield author_file
+def get_all_documents(train_path:str, nlp) -> list[Document]:
+    """Retrieves all training documents in training data"""
+    data = load_data(train_path)
+    documents = []
+    for author_entries in data.values():
+        for author_dict in author_entries:
+            document = feats.make_document(author_dict["fixed_text"], nlp)
+            documents.append(document)
+    return documents
 
-def iter_author_entries(author_file):
-    """Yields each JSON object from an {author_id}.jsonl file"""
-    with jsonlines.open(author_file) as author_entries:
-        for entry in author_entries:
-            yield entry
 
 def get_dataset_name(train_path:str) -> str:
     """
@@ -42,16 +49,6 @@ def get_dataset_name(train_path:str) -> str:
         raise ValueError(f"Dataset name unrecognized in path: {train_path}")
     return dataset_name 
 
-def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
-    """Retrieves all training documents and aggregates them"""
-    documents = []
-    for file_name in iter_author_jsonls(train_path):
-        for entry in iter_author_entries(file_name):
-            doc = entry["fixed_text"]
-            document = feats.make_document(doc, nlp)
-            documents.append(document)
-                
-    return documents  
 
 def count_pos_bigrams(doc:Document):
     counter = Counter(feats.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
@@ -111,14 +108,14 @@ def main():
                         "--train_path",
                         type=str,
                         help="Path to train data",
-                        default="eval/pan22_splits/knn/train/")
+                        default="eval/pan22_splits/knn/train.json")
     
     args = parser.parse_args()
     train_path = args.train_path
     
     print("Retrieving all training documents...")
     dataset_name = get_dataset_name(train_path)
-    all_documents = get_all_documents_from_data(train_path, nlp)
+    all_documents = get_all_documents(train_path, nlp)
     print("Done!")
     
     print("Generating non-static vocabularies...")
@@ -128,7 +125,6 @@ def main():
     MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, count_mixed_bigrams))
     
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
-    
     print("Done!")
     
     # for vocab in VOCABS:

@@ -15,9 +15,9 @@ This file contains ideas for future additions/improvements
 - prosody: do people have a stress (melodic) preference?
 - emojis: look for ASCII emojis
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
-- Relook at <nl> tag. Stylistic feature?
 - https://aclanthology.org/2021.findings-emnlp.359/
-- relook at Document statistics feature
+- relook at Document statistics feature (split into two vectors)
+- contractions, emphasized text?, 
 
 
 
@@ -27,13 +27,13 @@ This file contains ideas for future additions/improvements
 - change type annotations to use Typing module (for compatibility purposes)
 
 ## Issues:
-- odd crash when turning certain features off while using cosine metric
+- odd crash when turning certain features off while using cosine metric (may be fixed? need to check)
 - odd parenthesis crash happening in fix_data in pan_preprocess
 
 ## When changing data sets, the following need to be altered manually:
-- get_dataset_name in `utils.py` has to be updated with a new dataset name conditional
+- get_dataset_name function has to be updated with a new dataset name conditional
 - After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file generated for the new dataset
-- 
+
 
 ## To check out
 

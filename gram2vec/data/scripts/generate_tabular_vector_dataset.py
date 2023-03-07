@@ -1,22 +1,23 @@
 
+import json
+from dataclasses import dataclass
+from featurizers import GrammarVectorizer
+import os
+
 #! NEEDS TO BE FORMATTED AND FIXED
+
+
+def load_data(data_path:str) -> dict[str, list[dict]]:
+    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
+    with open(data_path) as fin:
+        data = json.load(fin)
+    return data
 
 @dataclass
 class AuthorEntry:
     author_id:str
     discourse_type:str
     fixed_text:str
-
-def iter_author_jsonls(author_files_dir:str) -> str:
-    """Yields each {author_id}.jsonl from a given dir"""
-    for author_file in Path(author_files_dir).glob("*.jsonl"):
-        yield author_file
-        
-def iter_author_entries(author_file):
-    """Yields each JSON object from an {author_id}.jsonl file"""
-    with jsonlines.open(author_file) as author_entries:
-        for entry in author_entries:
-            yield entry
             
 def get_all_entries(data_dir:str) -> list[AuthorEntry]:
     """Extracts author file entries as AuthorEntry objects and aggregates into one list"""
