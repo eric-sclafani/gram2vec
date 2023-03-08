@@ -4,9 +4,11 @@ This file contains ideas for future additions/improvements
 
 ## Before PR:
 
+- Important: optimize GrammarVectorizer by loading in all vocabs only once instead of in a loop
 - write a readme inside of vocab/ describing static vs non-static
-- make sure metric learn splitting works correctly
-- discourse: just look at eval data
+- Rewrite metric learning split code & verify it's working correctly
+- discourse eval: just look at eval data
+- In featurizers.py: combine `load_vocab` and `load_pkl`, make a flag for static vs non-static
 
 ## Features:
 
@@ -33,7 +35,7 @@ This file contains ideas for future additions/improvements
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional
-- After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be set to new pickle file generated for the new dataset
+- After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be manually set to new pickle file generated for the new dataset
 
 
 ## To check out

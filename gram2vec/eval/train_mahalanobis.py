@@ -2,7 +2,6 @@
 
 from metric_learn import MMC
 import numpy as np
-import pickle
 import os
 import jsonlines
 import argparse
@@ -13,12 +12,10 @@ from time import time
 # project imports
 from featurizers import GrammarVectorizer
 
-
 @dataclass
 class Pair:
     docs:tuple[str, str]
     same:bool
-
 
 def load_metric_data(path) -> list[Pair]:
     """Reads in a jsonlines file and returns a list of Pair objects"""
@@ -70,7 +67,7 @@ def main():
                         "--train_path",
                         type=str,
                         help="path to metric learning train data",
-                        default="data/pan/train_dev_test/pairs/metric_train.jsonl")
+                        default="pan22_splits/metric_learn/metric_train.jsonl")
     
     args = parser.parse_args()
     

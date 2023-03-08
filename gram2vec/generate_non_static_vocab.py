@@ -47,17 +47,20 @@ def get_dataset_name(train_path:str) -> str:
         raise ValueError(f"Dataset name unrecognized in path: {train_path}")
     return dataset_name 
 
+def combine_counters(counters:list[Counter]) -> Counter:
+    """Adds a list of Counter objects into one"""
+    return sum(counters, Counter())
+
 
 def count_pos_bigrams(doc:Document):
+    """Counter function: counts the POS bigrams in a doc"""
     counter = Counter(feats.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     return counter
 
 def count_mixed_bigrams(doc:Document):
+    """Counter function: counts the mixed bigrams in a doc"""
     return Counter(feats.bigrams(feats.replace_openclass(doc.tokens, doc.pos_tags)))
         
-def combine_counters(counters:list[Counter]) -> Counter:
-    """Adds a list of Counter objects into one"""
-    return sum(counters, Counter())
 
 def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
     """Generates n most common elements according to count_function"""
@@ -87,7 +90,7 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     """
     vocab_name = vocab.name
     vocab_features = vocab.features
-    path = f"vocab/non_static/{vocab_name}/{dataset_name}/"
+    path = f"vocab/non_static/{dataset_name}/{vocab_name}/"
     
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -125,10 +128,10 @@ def main():
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
     print("Done!")
     
-    # for vocab in VOCABS:
-    #     print(f"Saving vocabulary '{vocab.name}'...")
-    #     save_vocab(dataset_name, vocab)
-    # print("Done!") 
+    for vocab in VOCABS:
+        print(f"Saving vocabulary '{vocab.name}'...")
+        save_vocab(dataset_name, vocab)
+    print("Done!") 
     
 if __name__ == "__main__":
     main()

@@ -65,6 +65,7 @@ def load_vocab(path) -> tuple[str]:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
         
 def load_pkl(path):
+    """Loads a pickled object given a path"""
     with open (path, "rb") as fin:
         return pickle.load(fin)
 
@@ -179,7 +180,7 @@ def pos_unigrams(doc:Document) -> Feature:
 
 def pos_bigrams(doc:Document) -> Feature:
     
-    vocab = load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+    vocab = load_pkl("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
@@ -244,7 +245,7 @@ def dep_labels(doc:Document) -> Feature:
 
 def mixed_bigrams(doc:Document) -> Feature:
     
-    vocab = load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+    vocab = load_pkl("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
@@ -353,10 +354,10 @@ class GrammarVectorizer:
     def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
         """
         Applies featurizers to a document and returns either a numpy array
-        or DocumentVector object depending on the return_obj flag
+        or FeatureVector object depending on the return_obj flag
         
         :param document: string to be vectorized
-        :param return_obj: Defaults to False. Option to return DocumentVector object instead of a numpy array 
+        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy array 
         :returns: a 1-D feature vector or FeatureVector object
         """
         doc = make_document(document, self.nlp)
@@ -378,10 +379,10 @@ class GrammarVectorizer:
     def vectorize_episode(self, documents:list[str], return_obj=False) -> Union[np.ndarray, list[FeatureVector]]:
         """
         Applies featurizers to a list of documents and returns either a numpy matrix
-        or DocumentVector object depending on the return_obj flag
+        or FeatureVector object depending on the return_obj flag
         
         :param documents: list of documents to be vectorized
-        :param return_obj: Defaults to False. Option to return DocumentVector object instead of a numpy matrix
+        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy matrix
         :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
         """
         

@@ -73,7 +73,7 @@ def write_results_entry(path, to_write:list):
     if not os.path.exists(path):
         with open(path, "w") as fout:
             writer = csv.writer(fout)
-            writer.writerow(["Datetime", "Accuracy", "Vector_length", "k", "Eval function", "config"])
+            writer.writerow(["Datetime", "Accuracy", "Vector length", "k", "Metric", "config"])
             
     with open(path, "a") as fout:
         writer = csv.writer(fout)

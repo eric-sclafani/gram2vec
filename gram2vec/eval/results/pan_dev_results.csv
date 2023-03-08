@@ -1,5 +1,4 @@
 Datetime,Accuracy,Vector_length,k,Metric,config
-
 2023-02-28 21:50:28.634595,0.22142857142857142,707,6,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-02-28 21:50:58.974692,0.21785714285714286,407,6,majority_vote,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-02-28 21:52:25.474501,0.12142857142857143,300,6,majority_vote,['embedding_vector']
