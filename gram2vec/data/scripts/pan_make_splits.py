@@ -2,8 +2,8 @@
 from collections import defaultdict
 from dataclasses import dataclass
 import json
+import jsonlines
 import os
-import re
 from pan_preprocess import apply_all_fixes
 from typing import Union
 
@@ -53,11 +53,10 @@ def write_knn_splits(partitions:tuple[Partition, Partition, Partition], knn_spli
             json.dump(parition.data, fout, indent=2, ensure_ascii=False)
             
           
-                
 def get_which_partition_docs(partition:Partition) -> list[str]:
     """
     Gets the raw documents that belong to given parition. Needed to partition metric learning 
-    splits correctly according to already established KNN splits
+    splits correctly according to already established KNN train, dev, test splits
     """
     docs = []
     for parition_objs in partition.data.values():
@@ -72,13 +71,15 @@ def get_data(path) -> list[dict]:
 def apply_fixes_to_pair(pair:tuple) -> tuple:
     return apply_all_fixes(pair[0]), apply_all_fixes(pair[1])      
        
-def prepare_metric_learn_splits(raw_train, raw_dev, raw_test) -> tuple[Partition, Partition, Partition]:
+def prepare_metric_learn_splits(raw_train:list[str], 
+                                raw_dev:list[str], 
+                                raw_test:list[str]) -> tuple[Partition, Partition, Partition]:
     """
     Using the raw train, dev, test splits, sort the raw pairs into their own splits
     for the metric learning setup. Also applies the same text fixes as done to the regular eval data
     """
-    doc_pairs = get_data("pan22/raw/pairs.jsonl")
-    doc_truths = get_data("pan22/raw/truth.jsonl")
+    doc_pairs = get_data("data/pan22/raw/pairs.jsonl")
+    doc_truths = get_data("data/pan22/raw/truth.jsonl")
     assert len(doc_pairs) == len(doc_truths)
     
     metric_train, metric_dev, metric_test = [],[],[]
@@ -129,17 +130,18 @@ def main():
     
 
     os.chdir("../../")
-    pan_preprocessed = load_preprocessed_data("data/pan22/preprocessed/preprocessed_data.json")
+    pan_preprocessed = load_preprocessed_data("data/pan22/preprocessed/author_doc_mappings.json")
     train, dev, test = extract_knn_splits_from_authors(pan_preprocessed)
     write_knn_splits((train, dev, test), "eval/pan22_splits/knn/")
 
-    #! METRIC LEARNING CODE DEPRECATED; NEEDS TO BE UPDATED LATER, NOT BEING FOCUSED ON NOW
-    # print("Partitioning metric learning splits...")
-    # train_docs = get_which_partition_docs(train)
-    # dev_docs   = get_which_partition_docs(dev)
-    # test_docs  = get_which_partition_docs(test)
-    # metric_train, metric_dev, metric_test = prepare_metric_learn_splits(train_docs, dev_docs, test_docs)
-    # write_metric_splits((metric_train, metric_dev, metric_test), "eval/pan22_splits/metric_learn/")
+    print("Partitioning metric learning splits...")
+    raw_train_docs = get_which_partition_docs(train)
+    raw_dev_docs   = get_which_partition_docs(dev)
+    raw_test_docs  = get_which_partition_docs(test)
+    metric_train, metric_dev, metric_test = prepare_metric_learn_splits(raw_train_docs, 
+                                                                        raw_dev_docs, 
+                                                                        raw_test_docs)
+    write_metric_splits((metric_train, metric_dev, metric_test), "eval/pan22_splits/metric_learn/")
     
     
                 

@@ -119,7 +119,7 @@ def main():
     
     os.chdir("../pan22/preprocessed/")
     
-    all_entries = get_all_entries("preprocessed_data.json")
+    all_entries = get_all_entries("author_doc_mappings.json")
     documents = [entry.fixed_text for entry in all_entries]
     authors = [entry.author_id for entry in all_entries]
     discourse_types = [entry.discourse_type for entry in all_entries]

@@ -2,13 +2,14 @@
 This file contains ideas for future additions/improvements
 ------
 
+## Evals:
+- discourse eval: just look at eval data
+- start playing with TA1 eval script
+
 ## Before PR:
 
 - Important: optimize GrammarVectorizer by loading in all vocabs only once instead of in a loop
-- write a readme inside of vocab/ describing static vs non-static
 - Rewrite metric learning split code & verify it's working correctly
-- discourse eval: just look at eval data
-- In featurizers.py: combine `load_vocab` and `load_pkl`, make a flag for static vs non-static
 
 ## Features:
 
@@ -25,13 +26,12 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
-- Document preprocessing and vocab scripts
+- Document preprocessing script
 - change type annotations to use Typing module (for compatibility purposes)
 - In generate_tabular_vector_dataset: normalize counts if needed
 
 ## Issues:
 - odd crash when turning certain features off while using cosine metric (may be fixed? need to check)
-- odd parenthesis crash happening in fix_data in pan_preprocess
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional

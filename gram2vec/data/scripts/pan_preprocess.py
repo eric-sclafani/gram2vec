@@ -9,12 +9,15 @@ import random
 import re
 import os
 
-random.seed(80085)
+random.seed(42)
 
 
 def replace_tag(tag:str) -> str:
     """
     Given a tag, either deletes it, or replaces it with semantic information corresponding to that tag.
+    This information is chosen "randomly" (seeded) from lists of possible strings
+    
+    The format for all mappings is pattern : [list of possible selections]
     
     NOTE: there is no official tagset description for these tags, so I replace them 
     based off observed context clues from the data. Also does not take the tag numbers into account.
@@ -23,7 +26,6 @@ def replace_tag(tag:str) -> str:
     :returns: new information in place of the tag
     """
     new_string = None
-    # pattern : [list of possible selections] mappings
     tag_fix_mappings = {
         r"<question(\d)?>" : [" "],
         
@@ -53,6 +55,7 @@ def replace_tag(tag:str) -> str:
         
         r"<band>" : ["Nirvana", "Queen", "Pink Floyd", "The Beatles"]
     }
+    
     for pattern, replacements in tag_fix_mappings.items():
         if re.search(pattern, tag):
             new_string = random.choice(replacements)
@@ -71,7 +74,8 @@ def normalize_spacing(tokens:list[str]) -> str:
 def fix_BOS_cutoffs(text:str) -> list[str]:
     """
     Detects beginning of string cutoff (if applicable) and fixes it. 
-    String is split into a list first to avoid potential false positives
+    String is split into a list first instead of just using 
+    str.startswith() to avoid potential false positives
     
     These mappings are also inferred through context clues from the raw data
     
@@ -96,18 +100,18 @@ def fix_BOS_cutoffs(text:str) -> list[str]:
         "nl>":""}  
     try:
         tokens[0] = fix_mapping[tokens[0]]
-    except:pass  
+    except KeyError:pass  
     return tokens
 
 def fix_html_tags(text:str):
     """Replaces any leftover HTML tags"""
     return text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "and")
 
-def remove_parenthesis(text):
-    """Removes parenthesis because of an odd bug involving replace_tags"""
+def remove_parenthesis(text:str):
+    """Removes parenthesis because of an odd bug involving replace_tag"""
     return re.sub(r"\(.*\)", "", text)  
 
-def get_tags(text:str):
+def get_tags(text:str) -> list[str]:
     """Gets list of redaction tags from a text document"""
     document_tags = re.findall(r"<(.*?)>", text)
     return list(map(lambda x: f"<{x}>", document_tags))
@@ -125,9 +129,11 @@ def apply_all_fixes(document:str) -> str:
     :returns: fixed text document
     """
     document = fix_html_tags(document)
-    document = remove_parenthesis(document) #! experiment with this
     for tag in get_tags(document):
-        document = re.sub(tag, replace_tag(tag), document, count=1)  
+        try:
+            document = re.sub(tag, replace_tag(tag), document, count=1)  
+        except re.error:
+            pass # small number of tags in the raw data are very messed up and crash re, so they're skipped.
     
     document_tokens = fix_BOS_cutoffs(document)
     normalized_document = normalize_spacing(document_tokens)
@@ -142,15 +148,15 @@ def iter_raw_data(pairs_path:str, truths_path:str) -> dict:
     
             
 def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -> dict[str,list]: 
-    """Maps each unique author id to a list of JSON objects"""
+    """Maps each unique author id to a list of JSON objects and applies the text preprocessing steps to the raw text"""
     seen_docs = []
     author_mappings = defaultdict(lambda:[])
     
-    for document_pair, truth_pair in iter_raw_data(raw_pairs_path, raw_truths_path):
+    for doc_pair, truth_pair in iter_raw_data(raw_pairs_path, raw_truths_path):
         
         author_1, author_2 = truth_pair["authors"]
-        doc_1, doc_2  = document_pair["pair"]
-        discourse_1, discourse_2 = document_pair["discourse_types"]
+        doc_1, doc_2  = doc_pair["pair"]
+        discourse_1, discourse_2 = doc_pair["discourse_types"]
         
         if doc_1 not in seen_docs:
             obj_1 = {"author_id":author_1, "discourse_type":discourse_1, "raw_text":doc_1, "fixed_text":apply_all_fixes(doc_1)}
@@ -163,15 +169,31 @@ def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -
             seen_docs.append(doc_2)
             
     return author_mappings
+
+def make_preprocessed_author_pairs(raw_pairs_path:str, verbose=False) -> list[dict]:
+    """Applies the preprocessing steps to raw author pairs data, but preserves the pairs format of the original data"""
+    processesed_author_pairs = []
+    with jsonlines.open(raw_pairs_path) as pairs_file:
+        for doc_pair in pairs_file:
+            if verbose: print(f"Processing: {doc_pair['id'], doc_pair['discourse_types'], (doc_pair['pair'][0][0:10],doc_pair['pair'][1][0:10])}")
+            doc_pair["pair"] = list(map(lambda x: apply_all_fixes(x), doc_pair["pair"]))
+            processesed_author_pairs.append(doc_pair)
+    return processesed_author_pairs
+
                        
 def main(): 
 
     os.chdir("../")
     
+    # create the author to list of documents mappings
     author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")    
-    with open("pan22/preprocessed/preprocessed_data.json", "w") as fout:
+    with open("pan22/preprocessed/author_doc_mappings.json", "w") as fout:
          json.dump(author_to_docs, fout, indent=2, ensure_ascii=False)
-
+         
+    fixed_author_pairs = make_preprocessed_author_pairs("pan22/raw/pairs.jsonl", verbose=False)
+    with jsonlines.open("pan22/preprocessed/pairs_preprocessed.jsonl", "w") as fout:
+        for entry in fixed_author_pairs:
+            fout.write(entry)
 
 if __name__ == "__main__":
     main()

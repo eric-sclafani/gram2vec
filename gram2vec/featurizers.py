@@ -59,15 +59,19 @@ def make_document(text:str, nlp) -> Document:
  
 # ~~~ Helper functions ~~~
 
-def load_vocab(path) -> tuple[str]:
-    """Loads in a txt file delimited by newlines as a tuple of strings"""
-    with open (path, "r") as fin:
-        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+def load_vocab(path:str, type="static") -> tuple[str]:
+    """Loads in a vocabulary file as a tuple of strings. This vocabulary file"""
+    
+    if type == "static":
+        assert path.endswith(".txt")
+        with open (path, "r") as fin:
+            return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
         
-def load_pkl(path):
-    """Loads a pickled object given a path"""
-    with open (path, "rb") as fin:
-        return pickle.load(fin)
+    elif type == "non_static":
+        assert path.endswith(".pkl")
+        with open (path, "rb") as fin:
+            return pickle.load(fin)
+
 
 def demojify_text(text:str):
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
@@ -180,7 +184,7 @@ def pos_unigrams(doc:Document) -> Feature:
 
 def pos_bigrams(doc:Document) -> Feature:
     
-    vocab = load_pkl("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl")
+    vocab = load_vocab("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl", type="non_static")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
@@ -245,7 +249,7 @@ def dep_labels(doc:Document) -> Feature:
 
 def mixed_bigrams(doc:Document) -> Feature:
     
-    vocab = load_pkl("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl")
+    vocab = load_vocab("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl", type="non_static")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
