@@ -79,11 +79,13 @@ You can also use the **g2v.vectorize_episode()** method to vectorize a list of d
     "The string below me is false.",
     "The string above me is true"
     ]
->>> g2v.vectorize_episode(docs)
+>>> my_matrix = g2v.vectorize_episode(docs)
 array([[0.16666667, 0., 0.16666667, ..., 0., 0.,0.],
        [0.14285714, 0.14285714, 0., ..., 0., 0.,0. ],
        [0.16666667, 0.16666667, 0., ..., 0., 0.,0.]
        ])
+>>> my_matrix.shape
+(3, 707)
 ```
 
 Optionally, the *return_obj* parameter can be switched to **True** in order to return a **FeatureVector** object instead:
@@ -120,7 +122,9 @@ array([0.06930693, 0.07920792, 0.06930693, 0.04950495, 0.03960396,
 
 ### `Internal KNN Evaluation`
 
-There are two ways to evaluate using `kNN` currently. The second one is specific to PAN 2022.
+There are two ways to evaluate using `kNN` currently. The second one is specific to PAN 2022. 
+
+ > **Note**: Both evaluation scripts below `must` be ran from the **~/gram2vec/gram2vec/** directory
 
 ### **1. Overall scores**
 
@@ -157,7 +161,7 @@ optional arguments:
 
 Additionally, you can run `./eval/evaluate_bins.sh` to evaluate the development bins. The script just loops through the bins located in the **eval_bins/sorted_by_doc_freq/** directory and applies kNN classification. You can modify the arguments inside the script if desired. The results are stored in **eval/results/pan_dev_bin_results.csv**. 
 
-<div class="alert alert-block alert-danger"><b>Note:</b> Each time the script is ran, <b>eval/results/pan_dev_bin_results.csv</b> gets overridden with the newest 8 bin evaluation scores.</div>
+> **Note**: Each time the script is ran, **eval/results/pan_dev_bin_results.csv** gets overridden with the newest 8 bin evaluation scores.
 
 
 
