@@ -211,14 +211,12 @@ def main():
     elif args.metric == "R@8":
         eval_score = recall_at_8(X_train, X_eval, y_train_encoded, y_eval_encoded)
         
-
-    activated_feats = [feat.__name__ for feat in g2v.config]
     dev_or_test     = "dev" if "dev" in args.eval_path else "test"
     dataset_name    = get_dataset_name(args.train_path)
     result_path     = get_result_path(args.eval_path, dataset_name, dev_or_test)
     
     print(f"Eval set: {dev_or_test}")
-    print(f"Features: {activated_feats}")
+    print(f"Features: {g2v.get_config()}")
     print(f"Feature vector size: {len(X_train[0])}")
     print(f"Metric: {args.metric}")
     print(f"Evaluation score: {eval_score}")
@@ -227,7 +225,7 @@ def main():
                                       eval_score,
                                       len(X_train[0]),
                                       args.metric,
-                                      str(activated_feats)])
+                                      str(g2v.get_config())])
  
 if __name__ == "__main__":
     main()

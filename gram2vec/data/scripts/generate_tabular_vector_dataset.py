@@ -129,14 +129,14 @@ def main():
     feature_vectors = g2v.vectorize_episode(documents, return_obj=True)
     
     pos_unigrams  = get_vocab("vocab/static/pos_unigrams.txt")
-    pos_bigrams   = get_vocab("vocab/non_static/pos_bigrams/pan/pos_bigrams.txt")
+    pos_bigrams   = get_vocab("vocab/non_static/pan/pos_bigrams/pos_bigrams.txt")
     func_words    = get_vocab("vocab/static/function_words.txt")
     punc          = get_vocab("vocab/static/punc_marks.txt")
     letters       = get_vocab("vocab/static/letters.txt")
     common_emojis = get_vocab("vocab/static/common_emojis.txt")
     doc_stats     = ["short_words", "large_words", "word_len_avg", "word_len_std", "sent_len_avg", "sent_len_std", "hapaxes"]
     deps          = get_vocab("vocab/static/dep_labels.txt")
-    mixed_bigrams = get_vocab("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.txt")
+    mixed_bigrams = get_vocab("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.txt")
     
     all_features = pos_unigrams + pos_bigrams + func_words + punc + letters + common_emojis + doc_stats + deps + mixed_bigrams
     

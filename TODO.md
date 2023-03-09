@@ -1,6 +1,11 @@
 # TODO
 This file contains ideas for future additions/improvements
+
 ------
+
+## Future repo improvements:
+- Improve dependency handling, maybe bundle this code as a package?
+- Add some kind of uniform data set loader that makes it easier to load / concatenate different data sets
 
 ## Evals:
 - discourse eval: just look at eval data
@@ -8,8 +13,7 @@ This file contains ideas for future additions/improvements
 
 ## Before PR:
 
-- Important: optimize GrammarVectorizer by loading in all vocabs only once instead of in a loop
-- Rewrite metric learning split code & verify it's working correctly
+- Update README
 
 ## Features:
 

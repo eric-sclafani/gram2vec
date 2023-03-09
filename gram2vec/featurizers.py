@@ -17,7 +17,7 @@ SentenceSpan = tuple[int,int]
 Vocab = tuple[str]
 
 def feature_logger(filename, writable):
-    
+    """Custom logging function. Was having issues with standard logging library"""
     if not os.path.exists("logs"):
         os.mkdir("logs")
                
@@ -230,13 +230,13 @@ def embedding_vector(doc:Document) -> Feature:
 
 def document_stats(doc:Document) -> Feature:
     words = doc.words
-    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5]), 
-                      "large_words" : len([1 for word in words if len(word) > 4]),
+    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words), 
+                      "large_words" : len([1 for word in words if len(word) > 4])/len(words),
                       "word_len_avg": np.mean([len(word) for word in words]),
                       "word_len_std": np.std([len(word) for word in words]),
                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
-                      "hapaxes"     : len(FreqDist(words).hapaxes())}
+                      "hapaxes"     : len(FreqDist(words).hapaxes())/len(words)}
     return Feature(doc_statistics)
 
 def dep_labels(doc:Document) -> Feature:
@@ -318,7 +318,7 @@ class GrammarVectorizer:
     """
     Houses all featurizers to apply to a text document.
     
-    Instantiates the spaCy nlp object and activated featurizers
+    Initializes the spaCy nlp object and activated featurizers with each instance
     """
     
     def __init__(self, config=None):
@@ -334,10 +334,14 @@ class GrammarVectorizer:
                          dep_labels,
                          mixed_bigrams)
         
-        self.config = self._process_config(config)
+        self._config = self._process_config(config)
         os.system("./clear_logs.sh")
         
-    def _process_config(self, passed_config: Optional[dict]):
+    def get_config(self) -> list[str]:
+        """Retrieves the names of all activated features"""
+        return [feat.__name__ for feat in self._config]
+        
+    def _process_config(self, passed_config: Optional[dict]) -> list:
         """
         Reads which features to activate and returns a list of featurizer functions
         :param passed_config: User provided configuration dictionary. Can be None.
@@ -347,12 +351,12 @@ class GrammarVectorizer:
         current_config = default_config if not passed_config else passed_config
         
         activated_feats = []
-        for feature in self.register:
+        for feat in self.register:
             try:
-                if current_config[feature.__name__] == 1:
-                    activated_feats.append(feature)
+                if current_config[feat.__name__] == 1:
+                    activated_feats.append(feat)
             except KeyError:
-                raise KeyError(f"Feature '{feature.__name__}' does not exist in given configuration")
+                raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
         return activated_feats
 
     def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
@@ -366,7 +370,8 @@ class GrammarVectorizer:
         """
         doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
-        for featurizer in self.config:
+        for featurizer in self._config:
+            
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()

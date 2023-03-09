@@ -1,4 +1,4 @@
-Datetime,Accuracy,Vector_length,k,Eval function,config
+Datetime,Accuracy,Vector_length,Metric,Config
 2023-03-02 18:16:04.196365,0.22857142857142856,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-03-02 18:16:16.500979,0.5142857142857142,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-03-02 18:16:28.419158,0.4857142857142857,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
