@@ -3,64 +3,64 @@
 import argparse
 from collections import Counter
 from dataclasses import dataclass
-import featurizers as feats
-from featurizers import Document
 import os
 import shutil
+import spacy
+import pickle
+import json
 
 # project imports
-import utils
+import featurizers as feats
+from featurizers import Document
+
 
 @dataclass
 class Vocab:
     name:str
     features:tuple[str]
 
-# This function will likely change when integrated into Delip's system
-def check_for_valid_format(train_path:str) -> bool:
-    """
-    Validates training set JSON for the following format:
-    {
-        author_id : [doc1, doc2,...doc_n],
-        author_id : [...],
-    }
-    WHERE:
-        type(author_id) = str
-        type([doc1, doc2,...doc_n]) = array[str]
-    """
-    try:
-        data = utils.load_json(train_path)
-        assert all(isinstance(author_id, str) for author_id in data.keys()),\
-        "Each author id must be a string"
-        assert all(isinstance(author_docs, list) for author_docs in data.values()),\
-        "Each collection of documents must be an array"
-        assert all(isinstance(author_doc, str) for author_docs in data.values() for author_doc in author_docs),\
-        "Each document must be a string"
-    except:
-        raise Exception("Data format incorrect :(. Check documentation for expected format.")
-    return True
+def load_data(data_path:str) -> dict[str, list[dict]]:
+    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
+    with open(data_path) as fin:
+        data = json.load(fin)
+    return data
 
-def get_all_documents_from_data(train_path:str, nlp) -> list[Document]:
+def get_all_documents(train_path:str, nlp) -> list[Document]:
     """Retrieves all training documents in training data"""
-    check_for_valid_format(train_path)
-    data = utils.load_json(train_path)
+    data = load_data(train_path)
     documents = []
-    for author_docs in data.values():
-        for doc in author_docs:
-            document = feats.make_document(doc, nlp)
+    for author_entries in data.values():
+        for author_dict in author_entries:
+            document = feats.make_document(author_dict["fixed_text"], nlp)
             documents.append(document)
-    return documents  
+    return documents
+
+
+def get_dataset_name(train_path:str) -> str:
+    """
+    Gets the dataset name from training data path which is needed to generate paths
+    NOTE: This function needs to be manually updated when new datasets are used.
+    """
+    if "pan" in train_path:
+        dataset_name = "pan"
+    else:
+        raise ValueError(f"Dataset name unrecognized in path: {train_path}")
+    return dataset_name 
+
+def combine_counters(counters:list[Counter]) -> Counter:
+    """Adds a list of Counter objects into one"""
+    return sum(counters, Counter())
+
 
 def count_pos_bigrams(doc:Document):
+    """Counter function: counts the POS bigrams in a doc"""
     counter = Counter(feats.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     return counter
 
 def count_mixed_bigrams(doc:Document):
+    """Counter function: counts the mixed bigrams in a doc"""
     return Counter(feats.bigrams(feats.replace_openclass(doc.tokens, doc.pos_tags)))
         
-def combine_counters(counters:list[Counter]) -> Counter:
-    """Adds a list of Counter objects into one"""
-    return sum(counters, Counter())
 
 def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
     """Generates n most common elements according to count_function"""
@@ -74,7 +74,8 @@ def generate_most_common(documents:list[Document], n:int, count_function) -> tup
 
 def save_vocab_to_pickle(vocab:tuple, path:str):
     """Writes vocab to pickle to be used by featurizers"""
-    utils.save_pkl(vocab, path)
+    with open (path, "ab") as fout:
+        pickle.dump(vocab, fout)
 
 def save_vocab_to_txt_file(vocab:tuple, path:str):
     """Writes vocab to a txt file for debugging purposes only"""
@@ -85,11 +86,11 @@ def save_vocab_to_txt_file(vocab:tuple, path:str):
 def save_vocab(dataset_name:str, vocab:tuple[str]):
     """
     Saves non-static vocabs as both a pickle and text file.
-    The text file is purely for debugging purposes
+    The text file is purely for debugging purposes (only for non-static vocabs)
     """
     vocab_name = vocab.name
     vocab_features = vocab.features
-    path = f"vocab/non_static/{vocab_name}/{dataset_name}/"
+    path = f"vocab/non_static/{dataset_name}/{vocab_name}/"
     
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -99,24 +100,23 @@ def save_vocab(dataset_name:str, vocab:tuple[str]):
     save_vocab_to_pickle(vocab_features, f"{path}/{vocab_name}.pkl")
     
 
- 
 def main():
     
-    nlp = utils.load_spacy("en_core_web_md")
+    nlp = nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
     parser = argparse.ArgumentParser()
     
     parser.add_argument("-train",
                         "--train_path",
                         type=str,
                         help="Path to train data",
-                        default="data/pan/train_dev_test/author_splits/train.json")
+                        default="eval/pan22_splits/knn/train.json")
     
     args = parser.parse_args()
     train_path = args.train_path
     
     print("Retrieving all training documents...")
-    dataset_name = utils.get_dataset_name(train_path)
-    all_documents = get_all_documents_from_data(train_path, nlp)
+    dataset_name = get_dataset_name(train_path)
+    all_documents = get_all_documents(train_path, nlp)
     print("Done!")
     
     print("Generating non-static vocabularies...")
@@ -126,7 +126,6 @@ def main():
     MIXED_BIGRAMS = Vocab(name="mixed_bigrams", features=generate_most_common(all_documents, 50, count_mixed_bigrams))
     
     VOCABS = [POS_BIGRAMS, MIXED_BIGRAMS]
-    
     print("Done!")
     
     for vocab in VOCABS:

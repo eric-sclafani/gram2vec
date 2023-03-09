@@ -1,0 +1,9 @@
+Datetime,Accuracy,Vector_length,Metric,Config
+2023-03-02 18:16:04.196365,0.22857142857142856,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:16:16.500979,0.5142857142857142,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:16:28.419158,0.4857142857142857,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:16:40.433295,0.5428571428571428,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:16:53.174845,0.7142857142857143,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:17:05.152937,0.6857142857142857,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:17:17.523285,0.7142857142857143,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-02 18:17:29.600786,0.7714285714285715,707,R@8,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"

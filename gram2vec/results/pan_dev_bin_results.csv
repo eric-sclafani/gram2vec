@@ -1,9 +1,0 @@
-Datetime,Accuracy,Vector_length,k,Metric,config
-Tue Feb 14 14:36:41 2023,0.0,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:36:53 2023,0.22857142857142856,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:37:04 2023,0.08571428571428572,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:37:15 2023,0.2,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:37:27 2023,0.2,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:37:38 2023,0.14285714285714285,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:37:50 2023,0.22857142857142856,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-Tue Feb 14 14:38:01 2023,0.6,707,7,cosine,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"

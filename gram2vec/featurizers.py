@@ -8,11 +8,8 @@ from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
-import toml
-from typing import Union
-
-# project imports 
-import utils
+from typing import Union, Optional
+import pickle
 
 # ~~~ Logging, type aliases~~~
 
@@ -20,7 +17,7 @@ SentenceSpan = tuple[int,int]
 Vocab = tuple[str]
 
 def feature_logger(filename, writable):
-    
+    """Custom logging function. Was having issues with standard logging library"""
     if not os.path.exists("logs"):
         os.mkdir("logs")
                
@@ -61,6 +58,20 @@ def make_document(text:str, nlp) -> Document:
     return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
  
 # ~~~ Helper functions ~~~
+
+def load_vocab(path:str, type="static") -> tuple[str]:
+    """Loads in a vocabulary file as a tuple of strings. This vocabulary file"""
+    
+    if type == "static":
+        assert path.endswith(".txt")
+        with open (path, "r") as fin:
+            return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+        
+    elif type == "non_static":
+        assert path.endswith(".pkl")
+        with open (path, "rb") as fin:
+            return pickle.load(fin)
+
 
 def demojify_text(text:str):
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
@@ -165,7 +176,7 @@ class Feature:
     
 def pos_unigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/pos_unigrams.txt")
+    vocab = load_vocab("vocab/static/pos_unigrams.txt")
     doc_pos_tag_counts = Counter(doc.pos_tags)
     all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
     
@@ -173,7 +184,7 @@ def pos_unigrams(doc:Document) -> Feature:
 
 def pos_bigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_pkl("vocab/non_static/pos_bigrams/pan/pos_bigrams.pkl")
+    vocab = load_vocab("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl", type="non_static")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
@@ -181,7 +192,7 @@ def pos_bigrams(doc:Document) -> Feature:
 
 def func_words(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/function_words.txt")
+    vocab = load_vocab("vocab/static/function_words.txt")
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
     all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
     
@@ -189,7 +200,7 @@ def func_words(doc:Document) -> Feature:
 
 def punc(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/punc_marks.txt")
+    vocab = load_vocab("vocab/static/punc_marks.txt")
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
     all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
     
@@ -197,7 +208,7 @@ def punc(doc:Document) -> Feature:
 
 def letters(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/letters.txt")
+    vocab = load_vocab("vocab/static/letters.txt")
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
     all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
     
@@ -205,7 +216,7 @@ def letters(doc:Document) -> Feature:
 
 def common_emojis(doc:Document) -> Feature:
     
-    vocab = utils.load_vocab("vocab/static/common_emojis.txt")
+    vocab = load_vocab("vocab/static/common_emojis.txt")
     extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
@@ -213,24 +224,24 @@ def common_emojis(doc:Document) -> Feature:
     return Feature(all_emoji_counts, len(doc.tokens))
 
 def embedding_vector(doc:Document) -> Feature:
-    """spaCy word2vec document embedding"""
+    """spaCy word2vec (or glove?) document embedding"""
     embedding = {"embedding_vector" : doc.spacy_doc.vector}
     return Feature(embedding)
 
 def document_stats(doc:Document) -> Feature:
     words = doc.words
-    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5]), 
-                      "large_words" : len([1 for word in words if len(word) > 4]),
+    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words), 
+                      "large_words" : len([1 for word in words if len(word) > 4])/len(words),
                       "word_len_avg": np.mean([len(word) for word in words]),
                       "word_len_std": np.std([len(word) for word in words]),
                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
-                      "hapaxes"     : len(FreqDist(words).hapaxes())}
+                      "hapaxes"     : len(FreqDist(words).hapaxes())/len(words)}
     return Feature(doc_statistics)
 
 def dep_labels(doc:Document) -> Feature:
 
-    vocab = utils.load_vocab("vocab/static/dep_labels.txt")
+    vocab = load_vocab("vocab/static/dep_labels.txt")
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
     all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
     
@@ -238,30 +249,13 @@ def dep_labels(doc:Document) -> Feature:
 
 def mixed_bigrams(doc:Document) -> Feature:
     
-    vocab = utils.load_pkl("vocab/non_static/mixed_bigrams/pan/mixed_bigrams.pkl")
+    vocab = load_vocab("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl", type="non_static")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
     return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
 # ~~~ FEATURIZERS END ~~~
-
-def read_config(register:tuple, path="config.toml") -> list:
-    """
-    Reads config.toml to see which features to activate
-    :param register: tuple of featurizer functions
-    :returns: list of featurizer functions to apply to input strings
-    """
-    toml_config = toml.load(path)["Features"]
-    config = []
-    for feature in register:
-        try:
-            if toml_config[feature.__name__] == 1:
-                config.append(feature)
-        except KeyError:
-            raise KeyError(f"Feature '{feature.__name__}' does not exist in config.toml")
-    return config
-
 
 class FeatureVector:
     """
@@ -324,11 +318,11 @@ class GrammarVectorizer:
     """
     Houses all featurizers to apply to a text document.
     
-    Instantiates the spaCy nlp object and activated featurizers
+    Initializes the spaCy nlp object and activated featurizers with each instance
     """
     
-    def __init__(self):
-        self.nlp = utils.load_spacy("en_core_web_md")
+    def __init__(self, config=None):
+        self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
         self.register = (pos_unigrams,
                          pos_bigrams,
                          func_words,
@@ -340,31 +334,73 @@ class GrammarVectorizer:
                          dep_labels,
                          mixed_bigrams)
         
-        self.config = read_config(self.register)
+        self._config = self._process_config(config)
         os.system("./clear_logs.sh")
-
-    def vectorize(self, document:str, return_vector=True) -> Union[np.ndarray, FeatureVector]:
-        """
-        Applies featurizers to an input text and returns with either a numpy array
-        or DocumentVector object depending on the return_vector flag
         
-        :param text: string to be vectorized
-        :param return_vector: Defaults to True. Option to return numpy array instead of DocumentVector object
+    def get_config(self) -> list[str]:
+        """Retrieves the names of all activated features"""
+        return [feat.__name__ for feat in self._config]
+        
+    def _process_config(self, passed_config: Optional[dict]) -> list:
+        """
+        Reads which features to activate and returns a list of featurizer functions
+        :param passed_config: User provided configuration dictionary. Can be None.
+        :returns: list of activated featurizers
+        """
+        default_config = {feat.__name__: 1 for feat in self.register} # every feature on by default
+        current_config = default_config if not passed_config else passed_config
+        
+        activated_feats = []
+        for feat in self.register:
+            try:
+                if current_config[feat.__name__] == 1:
+                    activated_feats.append(feat)
+            except KeyError:
+                raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
+        return activated_feats
+
+    def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
+        """
+        Applies featurizers to a document and returns either a numpy array
+        or FeatureVector object depending on the return_obj flag
+        
+        :param document: string to be vectorized
+        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy array 
+        :returns: a 1-D feature vector or FeatureVector object
         """
         doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
-        for featurizer in self.config:
+        for featurizer in self._config:
             
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()
-            assert not np.isnan(vector).any()
-            
+
             feature_vector._update_vector_map(featurizer.__name__, vector)
             feature_vector._update_count_map(featurizer.__name__, counts)
             feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
 
-        if return_vector:
+        if not return_obj:
             return feature_vector.vector
         else:
             return feature_vector
+        
+    def vectorize_episode(self, documents:list[str], return_obj=False) -> Union[np.ndarray, list[FeatureVector]]:
+        """
+        Applies featurizers to a list of documents and returns either a numpy matrix
+        or FeatureVector object depending on the return_obj flag
+        
+        :param documents: list of documents to be vectorized
+        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy matrix
+        :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
+        """
+        
+        all_vectors = []
+        for document in documents:
+            grammar_vector = self.vectorize_document(document, return_obj)
+            all_vectors.append(grammar_vector)
+            
+        if not return_obj:
+            return np.stack(all_vectors)
+        else:
+            return all_vectors

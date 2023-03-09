@@ -1,7 +1,7 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a feature extraction algorithm that extracts grammatical and syntactic properties from a given document and returns a 1-dimensional vector. This is one part of the PAUSIT team's **Linguistic Indicator Vector** (LIV). 
+`Gram2Vec` is a feature extraction algorithm that extracts grammatical properties from a given document and returns vectors representing that document's grammatical footprint. This is one part of PAUSIT team's stylistic feature vectors for TA1. 
 
 
 ## Setup
@@ -16,37 +16,50 @@ demoji = "^1.1.0"
 numpy = "^1.24.0"
 pandas = "^1.5.2"
 scikit-learn = "^1.2.0"
-metric-learn = "^0.6.2"
-jsonlines = "^3.1.0"
 spacy = "^3.4.4"
 nltk = "^3.8"
-toml = "^0.10.2"
+ipdb = "^0.13.11"
 ijson = "^3.1.4"
+metric-learn = "^0.6.2"
+jsonlines = "^3.1.0"
+more-itertools = "^9.0.0"
+matplotlib = "^3.7.0"
+seaborn = "^0.12.2"
 ```
 ## Usage
 
 ### `GrammarVectorizer`
 
-Before using the vectorizer, you can disable or enable features from activating. The `config.toml` configuration file maps `activated` features to `1` and `deactivated` features to `0`.
-```toml
-[Features]
-pos_unigrams=1
-pos_bigrams=1
-func_words=0
-punc=1
-letters=0
-common_emojis=1
-embedding_vector=1
-document_stats=0
-dep_labels=1
-mixed_bigrams=1
-```
 Import the **GrammarVectorizer** class and create an instance like so:
 ```python3
 >>> from gram2vec.featurizers import GrammarVectorizer
 >>> g2v = GrammarVectorizer()
 ```
-From here, use the **g2v.vectorize()** method on an input string. By default, this will return a `numpy array` of all feature vectors concatenated into one:
+
+The **GrammarVectorizer** instance can also be supplied a configuration to disable or enable features from activating. This configuration is a dictionary that maps `activated` features to `1` and `deactivated` features to `0`. 
+
+By default, all features are activated. You can access the currently activated features through the `.config` attribute, which returns a list of strings.
+
+For example:
+```python
+>>> G2V_CONFIG = {
+    "pos_unigrams":0,
+    "pos_bigrams":1,
+    "func_words":1,
+    "punc":0,
+    "letters":1,
+    "common_emojis":0,
+    "embedding_vector":0,
+    "document_stats":0,
+    "dep_labels":1,
+    "mixed_bigrams":1,
+} 
+>>> g2v = GrammarVectorizer(G2V_CONFIG)
+>>> g2v.config
+["pos_bigrams", "func_words", "letters", "dep_labels", "mixed_bigrams"]
+```
+
+From here, use the **g2v.vectorize()** method on an input string. By default, this will return a `numpy array`:
 ```python
 >>> my_document = """Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live"""
 >>> my_vector = g2v.vectorize(my_document)
@@ -59,13 +72,29 @@ array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,
 >>> my_vector.shape
 (707,)
 ```
-
-Optionally, the *return_vector* parameter can be switched to **False** in order to return a **FeatureVector** object instead:
+You can also use the **g2v.vectorize_episode()** method to vectorize a list of documents. This will return a 2D matrix of document vectors:
 ```python
->>> my_vector = g2v.vectorize(my_document, return_vector=False)
+>>> docs = [
+    "This is an extremely wonderful string",
+    "The string below me is false.",
+    "The string above me is true"
+    ]
+>>> my_matrix = g2v.vectorize_episode(docs)
+array([[0.16666667, 0., 0.16666667, ..., 0., 0.,0.],
+       [0.14285714, 0.14285714, 0., ..., 0., 0.,0. ],
+       [0.16666667, 0.16666667, 0., ..., 0., 0.,0.]
+       ])
+>>> my_matrix.shape
+(3, 707)
+```
+
+Optionally, the *return_obj* parameter can be switched to **True** in order to return a **FeatureVector** object instead:
+```python
+>>> my_vector = g2v.vectorize(my_document, return_obj=True)
 >>> my_vector
 '<gram2vec.featurizers.FeatureVector object at 0x15aacc6d0>'
 ```
+
 The **FeatureVector** class gives access to the following methods:
 
 - `.vector` - returns the concatenated 1D vector
@@ -93,42 +122,50 @@ array([0.06930693, 0.07920792, 0.06930693, 0.04950495, 0.03960396,
 
 ### `Internal KNN Evaluation`
 
-There are two ways to evaluate the PAN 2022 data set using `K-NN`:
+There are two ways to evaluate using `kNN` currently. The second one is specific to PAN 2022. 
 
-### **1. Overall accuracy**
+ > **Note**: Both evaluation scripts below `must` be ran from the **~/gram2vec/gram2vec/** directory
 
-To get the overall accuracy, use the `knn_classifier.py` module:
+### **1. Overall scores**
+
+To get the R@1 or R@8 scores, use the `knn_classifier.py` module:
 ```
-usage: knn_classifer.py [-h] [-k K_VALUE] [-m METRIC] [-train TRAIN_PATH] [-eval EVAL_PATH]
+python3 eval/knn_classifer.py -h
 
-options:
+usage: knn_classifer.py [-h] [-k K_VALUE] [-m {R@1,R@8}] [-train TRAIN_PATH] [-eval EVAL_PATH]
+
+optional arguments:
   -h, --help            show this help message and exit
 
-
   -k K_VALUE, --k_value K_VALUE
-                        k value for K-NN
-                        DEFAULT = 7
+                        k value to calculate R@1. Is ignored when --metric == R@8
+                        default=6
 
-  -m METRIC, --metric   METRIC
-                        distance metric
-                        DEFAULT = "cosine"
+  -m {R@1,R@8}, --metric {R@1,R@8}
+                        Metric to calculate
+                        default="R@1"
 
   -train TRAIN_PATH, --train_path TRAIN_PATH
-                        Path to train data
-                        DEFAULT = "data/pan/train_dev_test/train.json"
+                        Path to train directory
+                        default="eval/pan22_splits/knn/train.json"
 
   -eval EVAL_PATH, --eval_path EVAL_PATH
-                        Path to eval data
-                        DEFAULT = "data/pan/train_dev_test/dev.json"
+                        Path to eval directory
+                        default="eval/pan22_splits/knn/dev.json"
 ```
 
-Running `python3 knn_classifier.py` will give you the overall accuracy score, which currently sits at **21.07%**.  I found `cosine similarity` and `k = 7` to be a good sweetspot. 
 
 
-### **2. Bin accuracy**
 
-Instead of overall accuracy, you can run `./evaluate_bins.sh` to evaluate the bins. The script just loops through the dev bins in the `data/pan/dev_bins/sorted_by_docfreq/` directory and applies K-NN classification. You can modify the arguments inside the script if desired. 
+### **2. PAN2022 Bin scores**
+
+Additionally, you can run `./eval/evaluate_bins.sh` to evaluate the development bins. The script just loops through the bins located in the **eval_bins/sorted_by_doc_freq/** directory and applies kNN classification. You can modify the arguments inside the script if desired. The results are stored in **eval/results/pan_dev_bin_results.csv**. 
+
+> **Note**: Each time the script is ran, **eval/results/pan_dev_bin_results.csv** gets overridden with the newest 8 bin evaluation scores.
+
 
 
 ## Slides
-https://drive.google.com/file/d/1BQ0vffPEvFJsoAR_lO3oZ-YvOCpo596E/view
+(from site visit)
+
+https://docs.google.com/presentation/d/1zAbZ7iwBXwmOo-y-QxSauo8PD5CwHpueToR6yXpnmLM/edit#slide=id.p
