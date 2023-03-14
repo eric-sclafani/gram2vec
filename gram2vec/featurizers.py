@@ -286,7 +286,7 @@ class FeatureVector:
         if feature_name in self.vector_map:
             return self.vector_map[feature_name]
         else:
-            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+            raise KeyError(f"Feature '{feature_name}' not in current configuration")
         
     def get_counts_by_feature(self, feature_name:str) -> dict[str, int]:
         """
@@ -394,7 +394,6 @@ class GrammarVectorizer:
         :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy matrix
         :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
         """
-        
         all_vectors = []
         for document in documents:
             grammar_vector = self.vectorize_document(document, return_obj)

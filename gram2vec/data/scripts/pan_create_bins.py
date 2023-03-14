@@ -102,8 +102,8 @@ def main():
     
     train_authors_dict = get_train_authors_sorted_by_docfreq(train_path)
     bin_labels_sorted_by_docfreq = bin_authors(train_authors_dict)
-    #dev_sorted_by_train = create_dev_bins(bin_labels_sorted_by_docfreq,"eval/pan22_splits/knn/dev.json")
-    #write_sorted_bins(dev_sorted_by_train, "eval/eval_bins/sorted_by_doc_freq")
+    dev_sorted_by_train = create_dev_bins(bin_labels_sorted_by_docfreq,"eval/pan22_splits/knn/dev.json")
+    write_sorted_bins(dev_sorted_by_train, "eval/pan_eval_bins/sorted_by_doc_freq")
 
 
     #! CODE DEPRECATED. NEEDS TO BE UPDATED

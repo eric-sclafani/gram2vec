@@ -73,7 +73,7 @@ def write_results_entry(path, to_write:list):
     if not os.path.exists(path):
         with open(path, "w") as fout:
             writer = csv.writer(fout)
-            writer.writerow(["Datetime", "Accuracy", "Vector length", "k", "Metric", "config"])
+            writer.writerow(["Datetime", "Score", "Vector length", "Metric", "Has content vector", "config"])
             
     with open(path, "a") as fout:
         writer = csv.writer(fout)
@@ -85,7 +85,7 @@ def fetch_labels_from_indices(indices:np.ndarray, encoded_labels:np.ndarray) -> 
     return encoded_labels[indices]
 
 def get_first_8_authors(predicted_labels:np.ndarray) -> list[int]:
-    """Retrieves the first 8 unique labels from an array of predicted labels, which may contain duplicates"""
+    """Retrieves the first 8 unique labels from an array of predicted labels"""
     candidates = []
     for label in predicted_labels:
         if label not in candidates and not len(candidates) == 8:
@@ -141,6 +141,8 @@ def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarra
         all_pred += 1
     
     return correct_pred / all_pred
+
+
     
 G2V_CONFIG = {
     "pos_unigrams":1,
@@ -149,7 +151,7 @@ G2V_CONFIG = {
     "punc":1,
     "letters":1,
     "common_emojis":1,
-    "embedding_vector":1,
+    "embedding_vector":0,
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
@@ -162,7 +164,7 @@ def main():
     parser.add_argument("-k", 
                         "--k_value", 
                         type=int, 
-                        help="k value for K-NN", 
+                        help="k value to calculate R@1. Is ignored when --metric == R@8", 
                         default=6)
     
     parser.add_argument("-m", 
@@ -190,11 +192,11 @@ def main():
     le  = LabelEncoder()
     scaler = StandardScaler()
     
-    train_docs = get_all_documents(args.train_path)
+    train_docs = get_all_documents(args.train_path, text_type="raw_text")
     X_train = g2v.vectorize_episode(train_docs)
     y_train = get_authors(args.train_path)
 
-    eval_docs = get_all_documents(args.eval_path)
+    eval_docs = get_all_documents(args.eval_path, text_type="raw_text")
     X_eval = g2v.vectorize_episode(eval_docs)
     y_eval = get_authors(args.eval_path)
     
@@ -211,12 +213,14 @@ def main():
     elif args.metric == "R@8":
         eval_score = recall_at_8(X_train, X_eval, y_train_encoded, y_eval_encoded)
         
-    dev_or_test     = "dev" if "dev" in args.eval_path else "test"
-    dataset_name    = get_dataset_name(args.train_path)
-    result_path     = get_result_path(args.eval_path, dataset_name, dev_or_test)
+    dev_or_test  = "dev" if "dev" in args.eval_path else "test"
+    dataset_name = get_dataset_name(args.train_path)
+    result_path  = get_result_path(args.eval_path, dataset_name, dev_or_test)
+    has_content_vector = "embedding_vector" in g2v.get_config()
     
     print(f"Eval set: {dev_or_test}")
     print(f"Features: {g2v.get_config()}")
+    print(f"Has content vector: {has_content_vector}")
     print(f"Feature vector size: {len(X_train[0])}")
     print(f"Metric: {args.metric}")
     print(f"Evaluation score: {eval_score}")
@@ -225,6 +229,7 @@ def main():
                                       eval_score,
                                       len(X_train[0]),
                                       args.metric,
+                                      has_content_vector,
                                       str(g2v.get_config())])
  
 if __name__ == "__main__":
