@@ -48,7 +48,7 @@ def extract_authors(raw_path:str, desired_authors:int, doc_count:range, tok_thre
                     print(f"Author extracted: {value}")
             
         if seen_authors == desired_authors:
-            return extracted_data # end early if all conditions are met
+            return extracted_data 
         
     raise ValueError(f"Insufficient # of authors found: {seen_authors} != {desired_authors}")
 
@@ -59,7 +59,7 @@ def main():
 
     d = extract_authors(MUD_PATH, 
                         desired_authors = 50, 
-                        doc_count=range(2000,3000),
+                        doc_count=range(1000,3000),
                         tok_threshold=250,
                         verbose=True)
     

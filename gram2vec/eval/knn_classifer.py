@@ -142,8 +142,6 @@ def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarra
     
     return correct_pred / all_pred
 
-
-    
 G2V_CONFIG = {
     "pos_unigrams":1,
     "pos_bigrams":1,
@@ -205,7 +203,7 @@ def main():
     
     X_train = scaler.fit_transform(X_train)
     X_eval = scaler.transform(X_eval)
-  
+    
     
     if args.metric == "R@1":
         eval_score = recall_at_1(args.k_value, X_train, X_eval, y_train_encoded, y_eval_encoded)

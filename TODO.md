@@ -10,7 +10,6 @@ This file contains ideas for future additions/improvements
 ## Evals:
 - start playing with TA1 eval script
 
-
 ## Features:
 
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
@@ -30,12 +29,8 @@ This file contains ideas for future additions/improvements
 
 ## Improvements:
 
-- Document preprocessing script
 - change type annotations to use Typing module (for compatibility purposes)
-- In generate_tabular_vector_dataset: normalize counts if needed
-
-## Issues:
-- odd crash when turning certain features off while using cosine metric (may be fixed? need to check)
+- In generate_tabular_vector_dataset: normalize counts
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional

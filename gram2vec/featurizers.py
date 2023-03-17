@@ -11,7 +11,7 @@ import spacy
 from typing import Union, Optional
 import pickle
 
-# ~~~ Logging, type aliases~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logging, type aliases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SentenceSpan = tuple[int,int]
 Vocab = tuple[str]
@@ -24,7 +24,8 @@ def feature_logger(filename, writable):
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
         
-# ~~~ Document representation ~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 @dataclass
 class Document:
     """
@@ -56,8 +57,6 @@ def make_document(text:str, nlp) -> Document:
     dep_labels = [token.dep_ for token in spacy_doc]
     sentences  = list(spacy_doc.sents)
     return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
- 
-# ~~~ Helper functions ~~~
 
 def load_vocab(path:str, type="static") -> tuple[str]:
     """Loads in a vocabulary file as a tuple of strings. This vocabulary file"""
@@ -77,9 +76,11 @@ def demojify_text(text:str):
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
     return demoji.replace(text, "")
 
+
 def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
     """Gets each start and end index of all sentences in a document"""
     return [(sent.start, sent.end) for sent in doc.sentences]
+
    
 def insert_sentence_boundaries(spans:list[SentenceSpan], tokens:list[str]) -> list[str]:
     """Inserts sentence boundaries into a list of tokens"""
@@ -101,6 +102,7 @@ def get_bigrams_with_boundary_syms(doc:Document, tokens:list[str]):
     tokens_with_boundary_syms = insert_sentence_boundaries(sent_spans, tokens)
     token_bigrams = bigrams(tokens_with_boundary_syms)
     return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
+
 
 def remove_openclass_bigrams(tokens:list[str], OPEN_CLASS:list[str]) -> list[str]:
     """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
@@ -126,13 +128,9 @@ def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
 def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
     
     """
-    Combines vocab and counted_document_features into one dictionary such that
-    any feature in vocab counted 0 times in counted_document_features is preserved in the feature vector
-    
-    :param document_counts: features counted from document
-    :returns: counts of every element in vocab with 0 counts preserved
-    
-    Example:
+    Combines vocab and counted_doc_features into one dictionary such that
+    any feature in vocab counted 0 times in counted_doc_features is preserved in the feature vector
+        Example:
             >> vocab = ("a", "b", "c", "d")
             
             >> counted_doc_features = Counter({"a":5, "c":2})
@@ -140,6 +138,12 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
             >> add_zero_vocab_counts(vocab, counted_doc_features)
             
                 '{"a": 5, "b" : 0, "c" : 2, "d" : 0}'
+    
+    :param vocab: vocabulary of elements to look for in documentd
+    :param counted_doc_features: features counted from document
+    :returns: counts of every element in vocab with 0 counts preserved
+    
+   
     """
     count_dict = {}
     for feature in vocab:
@@ -155,7 +159,7 @@ def sum_of_counts(counts:dict) -> int:
     count_sum = sum(counts.values())
     return count_sum if count_sum > 0 else 1
               
-# ~~~ FEATURIZERS ~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FEATURIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @dataclass
 class Feature:
@@ -255,7 +259,24 @@ def mixed_bigrams(doc:Document) -> Feature:
     
     return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
+
+
+
+
 # ~~~ FEATURIZERS END ~~~
+
+DEFAULT_CONFIG = {
+    "pos_unigrams":1,
+    "pos_bigrams":1,
+    "func_words":1,
+    "punc":1,
+    "letters":1,
+    "common_emojis":1,
+    "embedding_vector":0,
+    "document_stats":1,
+    "dep_labels":1,
+    "mixed_bigrams":1,
+}  
 
 class FeatureVector:
     """
@@ -347,9 +368,7 @@ class GrammarVectorizer:
         :param passed_config: User provided configuration dictionary. Can be None.
         :returns: list of activated featurizers
         """
-        default_config = {feat.__name__: 1 for feat in self.register} # every feature on by default
-        current_config = default_config if not passed_config else passed_config
-        
+        current_config = DEFAULT_CONFIG if not passed_config else passed_config
         activated_feats = []
         for feat in self.register:
             try:
