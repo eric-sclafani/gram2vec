@@ -30,7 +30,7 @@ def feature_logger(filename, writable):
 class Document:
     """
     This class represents elements from a spaCy Doc object
-        :param raw_text: text before being processed by spaCy
+        :param text: text before being processed by spaCy
         :param spacy_doc: spaCy's document object
         :param tokens = list of tokens
         :param words = list of words (no punc tokens)
@@ -39,7 +39,7 @@ class Document:
         :param sentences: list of spaCy-sentencized sentences
     Note: instances should only be created using the 'make_document' function 
 """
-    raw_text   :str
+    text   :str
     spacy_doc  :spacy.tokens.doc.Doc
     tokens     :list[str]
     words      :list[str]
@@ -49,14 +49,14 @@ class Document:
     
 def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
-    raw_text   = deepcopy(text)
+    text   = deepcopy(text)
     spacy_doc  = nlp(demojify_text(text)) # dep parser hates emojis
     tokens     = [token.text for token in spacy_doc]
     words      = [token.text for token in spacy_doc if not token.is_punct]
     pos_tags   = [token.pos_ for token in spacy_doc]
     dep_labels = [token.dep_ for token in spacy_doc]
     sentences  = list(spacy_doc.sents)
-    return Document(raw_text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
+    return Document(text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
 
 def load_vocab(path:str, type="static") -> tuple[str]:
     """Loads in a vocabulary file as a tuple of strings. This vocabulary file"""
@@ -221,7 +221,7 @@ def letters(doc:Document) -> Feature:
 def common_emojis(doc:Document) -> Feature:
     
     vocab = load_vocab("vocab/static/common_emojis.txt")
-    extract_emojis = demoji.findall_list(doc.raw_text, desc=False)
+    extract_emojis = demoji.findall_list(doc.text, desc=False)
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
     

@@ -19,18 +19,17 @@ This file contains ideas for future additions/improvements
 - emojis: look for ASCII emojis
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 - https://aclanthology.org/2021.findings-emnlp.359/
-- relook at Document statistics feature (split into two vectors)
-- contractions, emphasized text?, 
+- relook at Document statistics feature (split into two vectors) 
 - https://onlinelibrary.wiley.com/doi/full/10.1002/asi.21001?casa_token=yw5ePLow8pMAAAAA%3Al7T1qxyPzwjoxBcAc3uDE9RqFUSZTqaSJVoAmTkY3sUTy5iCAaWSF3dIe3YKmX1PLUaRceSH1QnvSP3Z
 - https://ceur-ws.org/Vol-1178/CLEF2012wn-PAN-TanguyEt2012.pdf
 
 
 
 
-## Improvements:
+## Code improvements:
 
+- look into changing the featurizer code schema: turn things into spacy pipelines??
 - change type annotations to use Typing module (for compatibility purposes)
-- In generate_tabular_vector_dataset: normalize counts
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional
