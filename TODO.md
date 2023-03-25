@@ -13,22 +13,14 @@ This file contains ideas for future additions/improvements
 ## Features:
 
 - syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
-- morph: embedded finite vs non-finite clauses (I hope that I can leave tomorrow vs I hope to leave tomorrow)
-- character n-grams
-- prosody: do people have a stress (melodic) preference?
-- emojis: look for ASCII emojis
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
+- relook at Document statistics feature (split into two vectors)
 - https://aclanthology.org/2021.findings-emnlp.359/
-- relook at Document statistics feature (split into two vectors) 
 - https://onlinelibrary.wiley.com/doi/full/10.1002/asi.21001?casa_token=yw5ePLow8pMAAAAA%3Al7T1qxyPzwjoxBcAc3uDE9RqFUSZTqaSJVoAmTkY3sUTy5iCAaWSF3dIe3YKmX1PLUaRceSH1QnvSP3Z
 - https://ceur-ws.org/Vol-1178/CLEF2012wn-PAN-TanguyEt2012.pdf
 
 
-
-
 ## Code improvements:
-
-- look into changing the featurizer code schema: turn things into spacy pipelines??
 - change type annotations to use Typing module (for compatibility purposes)
 
 ## When changing data sets, the following need to be altered manually:
@@ -37,9 +29,7 @@ This file contains ideas for future additions/improvements
 
 
 ## To check out
-
-### Corpora
-- https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm
+- None
 
 ## PAN22 paper
 https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf

@@ -132,6 +132,8 @@ dmypy.json
 # project
 */data/pan22/*
 */data/mud/*
+*/data/blogs/*
+*/data/hrs/*
 */eval/pan22_splits/
 */eval/pan_eval_bins/
 */logs/*

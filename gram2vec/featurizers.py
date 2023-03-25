@@ -32,14 +32,14 @@ class Document:
     This class represents elements from a spaCy Doc object
         :param text: text before being processed by spaCy
         :param spacy_doc: spaCy's document object
-        :param tokens = list of tokens
-        :param words = list of words (no punc tokens)
+        :param tokens: list of tokens
+        :param words: list of words (no punc tokens)
         :param pos_tags: list of pos tags
         :param dep_labels: list of dependency parse labels
         :param sentences: list of spaCy-sentencized sentences
     Note: instances should only be created using the 'make_document' function 
 """
-    text   :str
+    text       :str
     spacy_doc  :spacy.tokens.doc.Doc
     tokens     :list[str]
     words      :list[str]
@@ -142,8 +142,6 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
     :param vocab: vocabulary of elements to look for in documentd
     :param counted_doc_features: features counted from document
     :returns: counts of every element in vocab with 0 counts preserved
-    
-   
     """
     count_dict = {}
     for feature in vocab:
