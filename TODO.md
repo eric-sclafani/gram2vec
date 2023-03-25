@@ -21,7 +21,7 @@ This file contains ideas for future additions/improvements
 
 
 ## Code improvements:
-- change type annotations to use Typing module (for compatibility purposes)
+- 
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from gram2vec.featurizers import GrammarVectorizer
 import os
 import pandas as pd
+from typing import Dict, List
 
 @dataclass
 class AuthorEntry:
@@ -11,14 +12,14 @@ class AuthorEntry:
     discourse_type:str
     fixed_text:str
     
-def load_data(data_path:str) -> dict[str, list[dict]]:
+def load_data(data_path:str) -> Dict[str, List[dict]]:
     """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
     with open(data_path) as fin:
         data = json.load(fin)
     return data
 
 
-def get_all_entries(data_path:str) -> list[AuthorEntry]:
+def get_all_entries(data_path:str) -> List[AuthorEntry]:
     """Extracts and aggregates author file entries as AuthorEntry objects into one list"""
     all_entries = []
     for author_entries in load_data(data_path).values():
@@ -30,12 +31,12 @@ def get_all_entries(data_path:str) -> list[AuthorEntry]:
     return all_entries
 
 
-def get_vocab(path:str) -> list[str]:
+def get_vocab(path:str) -> List[str]:
     """Retrieves a featurizer vocabulary stored in a given path"""
     with open(path, "r") as fin:
         return fin.read().strip().split("\n")
 
-def fix_feature_names(all_features:list[str]) -> list[str]:
+def fix_feature_names(all_features:List[str]) -> List[str]:
     """
     Raw feature labels contain DIFFERENT features with the SAME name, so they need to be 
     differentiated when generating a tabular dataset. Conditionals are hard-coded following

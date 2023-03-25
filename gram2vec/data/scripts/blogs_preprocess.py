@@ -2,9 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from time import time
-from dataclasses import dataclass
 from nltk.tokenize import word_tokenize
-from collections import defaultdict, Counter
 
 def timer(func):
     """This decorator shows the execution time of the function object passed"""

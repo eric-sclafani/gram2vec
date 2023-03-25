@@ -4,19 +4,20 @@ import numpy as np
 from collections import defaultdict
 import json
 from more_itertools import chunked
-import pandas as pd
+from typing import Dict, List, Tuple
 
-def load_data(data_path:str) -> dict[str, list[dict]]:
+
+def load_data(data_path:str) -> Dict[str, List[dict]]:
     """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
     with open(data_path) as fin:
         data = json.load(fin)
     return data
 
-def count_num_entries(author_dict:dict) -> int:
+def count_num_entries(author_dict:Dict) -> int:
     """Counts how many documents an author has by taking the length of their list of dict objects"""
     return len(author_dict)
 
-def author_doc_counts_dict(train_path:str) -> dict:
+def author_doc_counts_dict(train_path:str) -> Dict:
     """
     Stores each unique author_id with their document count
     
@@ -28,7 +29,7 @@ def author_doc_counts_dict(train_path:str) -> dict:
         author_docfreq_map[author_id] = count_num_entries(author_dict)
     return author_docfreq_map
 
-def get_train_authors_sorted_by_docfreq(train_path:str) -> dict:
+def get_train_authors_sorted_by_docfreq(train_path:str) -> Dict:
     """Sorts a dict by document count and returns the sorted author_id labels"""
     count_dict = author_doc_counts_dict(train_path)
     sorted_by_docfreq = dict(sorted(count_dict.items(), key=lambda items: items[1]))
@@ -66,7 +67,7 @@ def get_train_authors_sorted_by_docfreq(train_path:str) -> dict:
      
      
          
-def bin_authors(sorted_dict:dict) -> tuple[list[str], ...]:
+def bin_authors(sorted_dict:Dict) -> Tuple[List[str]]:
     """Makes bins of 7 authors given a sorted dict"""
     authors = list(sorted_dict.keys())
     return tuple(chunked(authors, 7))       
@@ -77,7 +78,7 @@ def write_sorted_bins(sorted_bins:tuple, target_dir:str):
         with open(f"{target_dir}/{bin[0]}.json", "w") as fout:
             json.dump(bin[1], fout, indent=2, ensure_ascii=False)
             
-def create_dev_bins(train_sorted_bins:tuple[list], dev_path:str) -> list[tuple]:
+def create_dev_bins(train_sorted_bins:Tuple[list], dev_path:str) -> List[Tuple]:
     """
     Sorts the dev set based on the train-set-sorted labels
     
@@ -106,18 +107,12 @@ def main():
     write_sorted_bins(dev_sorted_by_train, "eval/pan_eval_bins/sorted_by_doc_freq")
 
 
-    #! CODE DEPRECATED. NEEDS TO BE UPDATED
+    #! CODE DEPRECATED
     #write_bins("eval/pan22_splits/knn/dev.json", "eval/eval_bins/sorted_by_doc_freq/", bins_sorted_by_docfreq)
     #authors_sorted_by_avg_tokens = get_authors_sorted_by_avg_tokens(train_path)
     #write_bins("eval/pan22_splits/knn/dev", "eval/eval_bins/sorted_by_avg_tokens", bins_sorted_by_avg_tokens)
             
      
-    
-    
-   
-    
-    
-
 
 
 if __name__ == "__main__":

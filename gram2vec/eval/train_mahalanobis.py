@@ -8,16 +8,17 @@ import argparse
 from dataclasses import dataclass
 from tqdm import tqdm
 from time import time
+from typing import Tuple, List
 
 # project imports
 from featurizers import GrammarVectorizer
 
 @dataclass
 class Pair:
-    docs:tuple[str, str]
+    docs:Tuple[str, str]
     same:bool
 
-def load_metric_data(path) -> list[Pair]:
+def load_metric_data(path) -> List[Pair]:
     """Reads in a jsonlines file and returns a list of Pair objects"""
     data:list[Pair] = []
     with jsonlines.open(path, "r") as reader:
@@ -31,14 +32,14 @@ def vectorize_pair(g2v:GrammarVectorizer, pair:Pair) -> np.ndarray:
     vec2 = g2v.vectorize_document(pair.docs[1])
     return np.array([vec1, vec2])
 
-def get_pair_matrix(g2v:GrammarVectorizer, data:list[Pair]) -> np.ndarray:
+def get_pair_matrix(g2v:GrammarVectorizer, data:List[Pair]) -> np.ndarray:
     """Returns a 3-d matrix representing a collection of vector pairs"""
     vector_pairs = []
     for pair in tqdm(data, desc="Vectorizing document pairs"):
         vector_pairs.append(vectorize_pair(g2v, pair))
     return np.stack(vector_pairs)
 
-def encode_labels(train:list[Pair]) -> np.ndarray:
+def encode_labels(train:List[Pair]) -> np.ndarray:
     """
     Encodes True or False labels indicating same or different author pairs, respectively
     1 = True

@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 import jsonlines
+from typing import List, Dict
 import json
 import re
 from nltk.corpus import names
@@ -67,11 +68,11 @@ def replace_tag(tag:str) -> str:
     
     return new_string
 
-def normalize_spacing(tokens:list[str]) -> str:
+def normalize_spacing(tokens:List[str]) -> str:
     """Ensures a document's spacing is consistent"""
     return " ".join(tokens)
 
-def fix_BOS_cutoffs(text:str) -> list[str]:
+def fix_BOS_cutoffs(text:str) -> List[str]:
     """
     Detects beginning of string cutoff (if applicable) and fixes it. 
     String is split into a list first instead of just using 
@@ -111,7 +112,7 @@ def remove_parenthesis(text:str):
     """Removes parenthesis because of an odd bug involving replace_tag"""
     return re.sub(r"\(.*\)", "", text)  
 
-def get_tags(text:str) -> list[str]:
+def get_tags(text:str) -> List[str]:
     """Gets list of redaction tags from a text document"""
     document_tags = re.findall(r"<(.*?)>", text)
     return list(map(lambda x: f"<{x}>", document_tags))
@@ -140,14 +141,14 @@ def apply_all_fixes(document:str) -> str:
     return normalized_document
 
 
-def iter_raw_data(pairs_path:str, truths_path:str) -> dict:
+def iter_raw_data(pairs_path:str, truths_path:str) -> Dict:
     """Generator that yields each raw document pair and raw truth pair json object, which are 1-1 corresponding"""
     with jsonlines.open(pairs_path) as pairs_file, jsonlines.open(truths_path) as truths_file:
         for pair, truth in zip(pairs_file, truths_file):
             yield pair, truth
     
             
-def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -> dict[str,list]: 
+def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -> Dict[str,List]: 
     """Maps each unique author id to a list of JSON objects and applies the text preprocessing steps to the raw text"""
     seen_docs = []
     author_mappings = defaultdict(lambda:[])
@@ -170,7 +171,7 @@ def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -
             
     return author_mappings
 
-def make_preprocessed_author_pairs(raw_pairs_path:str, verbose=False) -> list[dict]:
+def make_preprocessed_author_pairs(raw_pairs_path:str, verbose=False) -> List[Dict]:
     """Applies the preprocessing steps to raw author pairs data, but preserves the pairs format of the original data"""
     processesed_author_pairs = []
     with jsonlines.open(raw_pairs_path) as pairs_file:

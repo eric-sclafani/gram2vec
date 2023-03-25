@@ -3,6 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 import os
+from typing import List
 
 def clean_doc(doc:str):
     """Performs simple text preprocessing"""
@@ -20,7 +21,7 @@ def iter_raw_mud(raw_path:str):
     for prefix, _, value in raw_data:
         yield prefix, value
         
-def get_author_avg_token_cnt(documents:list[str]) -> float:
+def get_author_avg_token_cnt(documents:List[str]) -> float:
     return np.mean([len(doc.split()) for doc in documents])
     
 def extract_authors(raw_path:str, desired_authors:int, doc_count:range, tok_threshold:int, verbose=False) -> dict:

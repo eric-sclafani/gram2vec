@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from datetime import datetime
+from typing import List, Dict
 from time import time
 
 # project imports
@@ -26,13 +27,13 @@ def timer(func):
         return result
     return wrap_func
 
-def load_data(data_path:str) -> dict[str, list[dict]]:
+def load_data(data_path:str) -> Dict[str, List[dict]]:
     """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
     with open(data_path) as fin:
         data = json.load(fin)
     return data
 
-def get_all_documents(data_path:str, text_type="fixed_text") -> list[str]:
+def get_all_documents(data_path:str, text_type="fixed_text") -> List[str]:
     """Aggregates all documents into one list"""
     all_documents = []
     for author_entries in load_data(data_path).values():
@@ -41,7 +42,7 @@ def get_all_documents(data_path:str, text_type="fixed_text") -> list[str]:
             
     return all_documents
 
-def get_authors(data_path:str) -> list[str]:
+def get_authors(data_path:str) -> List[str]:
     """Aggregates all authors into one list"""
     all_authors = []
     for author_entries in load_data(data_path).values():
@@ -49,7 +50,7 @@ def get_authors(data_path:str) -> list[str]:
             all_authors.append(entry["author_id"])
     return all_authors
 
-def get_result_path(eval_path:str, dataset_name:str, dev_or_test:str):
+def get_result_path(eval_path:str, dataset_name:str, dev_or_test:str) -> str:
     """Determines whether result path should be for bins or overall eval data"""
     if "bin" in eval_path:
         result_path = f"eval/results/{dataset_name}_{dev_or_test}_bin_results.csv"
@@ -68,7 +69,7 @@ def get_dataset_name(train_path:str) -> str:
         raise ValueError(f"Dataset name unrecognized in path: {train_path}")
     return dataset_name 
 
-def write_results_entry(path, to_write:list):
+def write_results_entry(path:str, to_write:List):
     
     if not os.path.exists(path):
         with open(path, "w") as fout:
@@ -84,7 +85,7 @@ def fetch_labels_from_indices(indices:np.ndarray, encoded_labels:np.ndarray) -> 
     """Fetches labels from given array of index positions"""
     return encoded_labels[indices]
 
-def get_first_8_authors(predicted_labels:np.ndarray) -> list[int]:
+def get_first_8_authors(predicted_labels:np.ndarray) -> List[int]:
     """Retrieves the first 8 unique labels from an array of predicted labels"""
     candidates = []
     for label in predicted_labels:
@@ -93,7 +94,7 @@ def get_first_8_authors(predicted_labels:np.ndarray) -> list[int]:
     return candidates
     
         
-def recall_at_1(k, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
+def recall_at_1(k:int, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
     """
     Evaluates a KNN model using the majority vote algorithm to calculate R@1
     
