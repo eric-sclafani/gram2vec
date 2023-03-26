@@ -11,6 +11,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from datetime import datetime
 from typing import List, Dict
+import pickle
+from metric_learn import LMNN
 from time import time
 
 # project imports
@@ -92,6 +94,11 @@ def get_first_8_authors(predicted_labels:np.ndarray) -> List[int]:
         if label not in candidates and not len(candidates) == 8:
             candidates.append(label)
     return candidates
+
+def load_metric(path:str):
+    """Loads a trained MMC model from disk"""
+    with open(path, "rb") as fin:
+        return pickle.load(fin)
     
         
 def recall_at_1(k:int, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarray, y_eval_encoded:np.ndarray) -> float:
@@ -105,7 +112,6 @@ def recall_at_1(k:int, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np
     :param y_eval_encoded: array of encoded evaluation labels
     :returns: R@1 score
     """
-      
     model = KNeighborsClassifier(n_neighbors=k, metric="cosine")
     model.fit(X_train, y_train_encoded)
     
@@ -154,6 +160,7 @@ G2V_CONFIG = {
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
+    "morph_tags":1
 }        
    
 @timer

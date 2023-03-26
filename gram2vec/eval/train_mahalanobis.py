@@ -68,7 +68,7 @@ def main():
                         "--train_path",
                         type=str,
                         help="path to metric learning train data",
-                        default="pan22_splits/metric_learn/metric_train.jsonl")
+                        default="pan22_splits/metric_learn/train.jsonl")
     
     args = parser.parse_args()
     

@@ -8,13 +8,13 @@ from nltk import FreqDist
 import numpy as np 
 import os
 import spacy
-from typing import Union, Optional
+from typing import Union, Optional, Tuple, List, Dict
 import pickle
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logging, type aliases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SentenceSpan = tuple[int,int]
-Vocab = tuple[str]
+SentenceSpan = Tuple[int,int]
+Vocab = Tuple[str]
 
 def feature_logger(filename, writable):
     """Custom logging function. Was having issues with standard logging library"""
@@ -41,11 +41,11 @@ class Document:
 """
     text       :str
     spacy_doc  :spacy.tokens.doc.Doc
-    tokens     :list[str]
-    words      :list[str]
-    pos_tags   :list[str]
-    dep_labels :list[str]
-    sentences  :list[spacy.tokens.span.Span]
+    tokens     :List[str]
+    words      :List[str]
+    pos_tags   :List[str]
+    dep_labels :List[str]
+    sentences  :List[spacy.tokens.span.Span]
     
 def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
@@ -58,8 +58,8 @@ def make_document(text:str, nlp) -> Document:
     sentences  = list(spacy_doc.sents)
     return Document(text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
 
-def load_vocab(path:str, type="static") -> tuple[str]:
-    """Loads in a vocabulary file as a tuple of strings. This vocabulary file"""
+def load_vocab(path:str, type="static") -> Tuple[str]:
+    """Loads in a vocabulary file as a tuple of strings"""
     
     if type == "static":
         assert path.endswith(".txt")
@@ -72,17 +72,17 @@ def load_vocab(path:str, type="static") -> tuple[str]:
             return pickle.load(fin)
 
 
-def demojify_text(text:str):
+def demojify_text(text:str) -> str:
     """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
     return demoji.replace(text, "")
 
 
-def get_sentence_spans(doc:Document) -> list[SentenceSpan]:
+def get_sentence_spans(doc:Document) -> List[SentenceSpan]:
     """Gets each start and end index of all sentences in a document"""
     return [(sent.start, sent.end) for sent in doc.sentences]
 
    
-def insert_sentence_boundaries(spans:list[SentenceSpan], tokens:list[str]) -> list[str]:
+def insert_sentence_boundaries(spans:List[SentenceSpan], tokens:List[str]) -> List[str]:
     """Inserts sentence boundaries into a list of tokens"""
     new_tokens = []
     
@@ -96,7 +96,7 @@ def insert_sentence_boundaries(spans:list[SentenceSpan], tokens:list[str]) -> li
     new_tokens.append("EOS")  
     return new_tokens
 
-def get_bigrams_with_boundary_syms(doc:Document, tokens:list[str]):
+def get_bigrams_with_boundary_syms(doc:Document, tokens:List[str]):
     """Gets the bigrams from given list of tokens, including sentence boundaries"""
     sent_spans = get_sentence_spans(doc)
     tokens_with_boundary_syms = insert_sentence_boundaries(sent_spans, tokens)
@@ -104,7 +104,7 @@ def get_bigrams_with_boundary_syms(doc:Document, tokens:list[str]):
     return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
 
 
-def remove_openclass_bigrams(tokens:list[str], OPEN_CLASS:list[str]) -> list[str]:
+def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str]:
     """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
     filtered = []
     for pair in bigrams(tokens):
@@ -115,7 +115,7 @@ def remove_openclass_bigrams(tokens:list[str], OPEN_CLASS:list[str]) -> list[str
             filtered.append(pair[0])
     return filtered
     
-def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
+def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
     """Replaces all open class tokens with corresponding POS tags"""
     OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
     tokens_replaced = deepcopy(tokens)
@@ -125,7 +125,15 @@ def replace_openclass(tokens:list[str], pos:list[str]) -> list[str]:
 
     return remove_openclass_bigrams(tokens_replaced, OPEN_CLASS)
 
-def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
+def parse_morph(morphs_list:List) -> List[str]:
+    """Extracts all occurences of UD morphological tags in a spaCy document"""
+    doc_morph_tags = []
+    for morphs in morphs_list:
+        for morph in morphs:
+            doc_morph_tags.append(morph.split("=")[1])
+    return doc_morph_tags
+
+def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict:
     
     """
     Combines vocab and counted_doc_features into one dictionary such that
@@ -152,7 +160,7 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> dict:
         count_dict[feature] = count
     return count_dict
 
-def sum_of_counts(counts:dict) -> int:
+def sum_of_counts(counts:Dict) -> int:
     """Sums the counts of a count dictionary. Returns 1 if counts sum to 0"""
     count_sum = sum(counts.values())
     return count_sum if count_sum > 0 else 1
@@ -257,6 +265,13 @@ def mixed_bigrams(doc:Document) -> Feature:
     
     return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
+def morph_tags(doc:Document) -> Feature:
+    
+    vocab = load_vocab("vocab/static/morph_tags.txt")
+    doc_morph_tags = Counter(parse_morph([token.morph for token in doc.spacy_doc]))
+    all_morph_tags = add_zero_vocab_counts(vocab, doc_morph_tags)
+    
+    return Feature(all_morph_tags, sum_of_counts(doc_morph_tags))
 
 
 
@@ -274,6 +289,7 @@ DEFAULT_CONFIG = {
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
+    "morph_tags":1
 }  
 
 class FeatureVector:
@@ -326,7 +342,7 @@ class FeatureVector:
         else:
             raise Exception(f"Feature {feature_name} already in this instance")
         
-    def _update_count_map(self, feature_name:str, counts:dict[str, int]):
+    def _update_count_map(self, feature_name:str, counts:Dict[str, int]):
         """Adds a feature mapped to that feature's count dict to self.count_map"""
         if feature_name not in self.count_map:
             self.count_map[feature_name] = counts
@@ -351,16 +367,17 @@ class GrammarVectorizer:
                          embedding_vector,
                          document_stats,
                          dep_labels,
-                         mixed_bigrams)
+                         mixed_bigrams,
+                         morph_tags)
         
         self._config = self._process_config(config)
         os.system("./clear_logs.sh")
         
-    def get_config(self) -> list[str]:
+    def get_config(self) -> List[str]:
         """Retrieves the names of all activated features"""
         return [feat.__name__ for feat in self._config]
         
-    def _process_config(self, passed_config: Optional[dict]) -> list:
+    def _process_config(self, passed_config: Optional[dict]) -> List:
         """
         Reads which features to activate and returns a list of featurizer functions
         :param passed_config: User provided configuration dictionary. Can be None.
@@ -402,7 +419,7 @@ class GrammarVectorizer:
         else:
             return feature_vector
         
-    def vectorize_episode(self, documents:list[str], return_obj=False) -> Union[np.ndarray, list[FeatureVector]]:
+    def vectorize_episode(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[FeatureVector]]:
         """
         Applies featurizers to a list of documents and returns either a numpy matrix
         or FeatureVector object depending on the return_obj flag

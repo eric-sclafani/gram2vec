@@ -5,4 +5,5 @@ Datetime,Score,Vector length,Metric, Has content vector, Config
 2023-03-12 15:29:56.423592,0.5892857142857143,707,R@8,True,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'embedding_vector', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-03-12 15:30:49.916811,0.5678571428571428,407,R@8,False,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"
 2023-03-12 15:34:42.861961,0.24642857142857144,407,R@1,False,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"
-2023-03-17 14:27:34.899931,0.2357142857142857,407,R@1,False,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams']"
+2023-03-26 18:08:48.644414,0.22857142857142856,428,R@1,False,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams', 'morph_tags']"
+2023-03-26 18:09:39.144199,0.5642857142857143,428,R@8,False,"['pos_unigrams', 'pos_bigrams', 'func_words', 'punc', 'letters', 'common_emojis', 'document_stats', 'dep_labels', 'mixed_bigrams', 'morph_tags']"

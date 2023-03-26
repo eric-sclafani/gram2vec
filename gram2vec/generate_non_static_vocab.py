@@ -3,6 +3,7 @@
 import argparse
 from collections import Counter
 from dataclasses import dataclass
+from typing import Tuple, Dict, List
 import os
 import shutil
 import spacy
@@ -17,15 +18,15 @@ from featurizers import Document
 @dataclass
 class Vocab:
     name:str
-    features:tuple[str]
+    features:Tuple[str]
 
-def load_data(data_path:str) -> dict[str, list[dict]]:
+def load_data(data_path:str) -> Dict[str, List[Dict]]:
     """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
     with open(data_path) as fin:
         data = json.load(fin)
     return data
 
-def get_all_documents(train_path:str, nlp) -> list[Document]:
+def get_all_documents(train_path:str, nlp) -> List[Document]:
     """Retrieves all training documents in training data"""
     data = load_data(train_path)
     documents = []
@@ -47,7 +48,7 @@ def get_dataset_name(train_path:str) -> str:
         raise ValueError(f"Dataset name unrecognized in path: {train_path}")
     return dataset_name 
 
-def combine_counters(counters:list[Counter]) -> Counter:
+def combine_counters(counters:List[Counter]) -> Counter:
     """Adds a list of Counter objects into one"""
     return sum(counters, Counter())
 
@@ -62,7 +63,7 @@ def count_mixed_bigrams(doc:Document):
     return Counter(feats.bigrams(feats.replace_openclass(doc.tokens, doc.pos_tags)))
         
 
-def generate_most_common(documents:list[Document], n:int, count_function) -> tuple[str]:
+def generate_most_common(documents:List[Document], n:int, count_function) -> Tuple[str]:
     """Generates n most common elements according to count_function"""
     counters = []
     for document in documents:
@@ -72,18 +73,18 @@ def generate_most_common(documents:list[Document], n:int, count_function) -> tup
     n_most_common = dict(combine_counters(counters).most_common(n))
     return tuple(n_most_common.keys())
 
-def save_vocab_to_pickle(vocab:tuple, path:str):
+def save_vocab_to_pickle(vocab:Tuple, path:str):
     """Writes vocab to pickle to be used by featurizers"""
     with open (path, "ab") as fout:
         pickle.dump(vocab, fout)
 
-def save_vocab_to_txt_file(vocab:tuple, path:str):
+def save_vocab_to_txt_file(vocab:Tuple, path:str):
     """Writes vocab to a txt file for debugging purposes only"""
     with open (path, "w") as fout:
         for entry in vocab:
             fout.write(f"{entry}\n")
             
-def save_vocab(dataset_name:str, vocab:tuple[str]):
+def save_vocab(dataset_name:str, vocab:Tuple[str]):
     """
     Saves non-static vocabs as both a pickle and text file.
     The text file is purely for debugging purposes (only for non-static vocabs)
