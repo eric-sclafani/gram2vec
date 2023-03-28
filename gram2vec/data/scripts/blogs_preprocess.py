@@ -1,6 +1,8 @@
-import numpy as np
 import pandas as pd
+import numpy as np
 import os
+import re
+from typing import List
 from time import time
 from nltk.tokenize import word_tokenize
 
@@ -15,19 +17,36 @@ def timer(func):
         return result
     return wrap_func
 
-
-def get_text_tkn_count(text:str) -> int:
-    print(f"Processing text: {text[0:30]}")
-    return len(word_tokenize(text))
-
 @timer
+def save_preprocessed_blogs(path):
+    """Applies various preprocessing steps to data and saves to disk"""
+    blogs_df = pd.read_csv("blogs/raw/blogtext.csv")
+    blogs_df.drop(columns=["gender", "age", "topic", "sign", "date"], inplace=True)
+    blogs_df["tkn_count"] = blogs_df["text"].apply(lambda x: get_text_tkn_count(x))
+    blogs_df.to_csv(path, index=False)
+
+def get_text_tkn_count(doc:str) -> int:
+    """Returns the token count given a doc"""
+    return len(word_tokenize(doc))
+
+def extract_authors(blogs_df:pd.DataFrame, 
+                    desired_authors:int, 
+                    doc_count:range, 
+                    tok_threshold:int, 
+                    verbose=False) -> dict:
+    pass
+
+    
 def main():
     
     os.chdir("../")
+    PREPROCESS_PATH = "blogs/preprocessed/blogs_preprocessed.csv"
+    if not os.path.exists(PREPROCESS_PATH):
+        save_preprocessed_blogs(PREPROCESS_PATH)
     
-    blogs_df = pd.read_csv("blogs/raw/blogtext.csv")
-    blogs_df["tkn_count"] = blogs_df["text"].apply(lambda x: get_text_tkn_count(x))
-    blogs_df.to_csv("blogs/preprocessed/blogtext.csv")
+    blogs_preprocessed = pd.read_csv(PREPROCESS_PATH, )
+    
+    
     
     
 if __name__ == "__main__":
