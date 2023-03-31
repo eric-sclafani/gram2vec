@@ -8,11 +8,11 @@ This file contains ideas for future additions/improvements
 - Add some kind of uniform data set loader that makes it easier to load / concatenate different data sets
 
 ## Evals:
-- start playing with TA1 eval script
+- dim red
 
 ## Features:
 
-- syntax feats: counts of certain dependency labels, finite verb subject ommision, type of rel clause, 
+- work more on syntactic feats
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 - relook at Document statistics feature (split into two vectors)
 - https://aclanthology.org/2021.findings-emnlp.359/

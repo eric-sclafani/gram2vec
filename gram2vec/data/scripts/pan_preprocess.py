@@ -108,9 +108,9 @@ def fix_html_tags(text:str):
     """Replaces any leftover HTML tags"""
     return text.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "and")
 
-def remove_parenthesis(text:str):
-    """Removes parenthesis because of an odd bug involving replace_tag"""
-    return re.sub(r"\(.*\)", "", text)  
+# def remove_parenthesis(text:str):
+#     """Removes parenthesis because of an odd bug involving replace_tag"""
+#     return re.sub(r"\(.*\)", "", text)  
 
 def get_tags(text:str) -> List[str]:
     """Gets list of redaction tags from a text document"""
@@ -121,10 +121,9 @@ def apply_all_fixes(document:str) -> str:
     """
     Applies the following fixes:
     1. Fixes HTML tags
-    2. Removes parenthesis (causing bug thats currently being looked at)
-    3. Replace redaction tags
-    4. Fixes beginning of string wacky cutoffs
-    5. Normalizes spacing
+    2. Replace redaction tags
+    3. Fixes beginning of string wacky cutoffs
+    4. Normalizes spacing
     
     :param document: text document to fix
     :returns: fixed text document
@@ -181,7 +180,10 @@ def make_preprocessed_author_pairs(raw_pairs_path:str, verbose=False) -> List[Di
             processesed_author_pairs.append(doc_pair)
     return processesed_author_pairs
 
-                       
+
+# TODO (at some point): re-add my train/dev/test split code, since I apparently removed it (for some reason 🤦‍♂️)
+#! all it is: first five docs from each author go to test, next five to dev, the rest go to train
+                   
 def main(): 
 
     os.chdir("../")

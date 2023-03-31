@@ -36,7 +36,7 @@ def load_data(data_path:str) -> Dict[str, List[dict]]:
     return data
 
 def get_all_documents(data_path:str, text_type="fixed_text") -> List[str]:
-    """Aggregates all documents into one list"""
+    """Aggregates all documents from a json file into one list"""
     all_documents = []
     for author_entries in load_data(data_path).values():
         for entry in author_entries:
@@ -45,7 +45,7 @@ def get_all_documents(data_path:str, text_type="fixed_text") -> List[str]:
     return all_documents
 
 def get_authors(data_path:str) -> List[str]:
-    """Aggregates all authors into one list"""
+    """Aggregates all authors from a json file into one list"""
     all_authors = []
     for author_entries in load_data(data_path).values():
         for entry in author_entries:
@@ -110,6 +110,7 @@ def recall_at_1(k:int, X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np
     :param X_eval: vectorized evaluation matrix
     :param y_train_encoded: array of encoded training labels
     :param y_eval_encoded: array of encoded evaluation labels
+    
     :returns: R@1 score
     """
     model = KNeighborsClassifier(n_neighbors=k, metric="cosine")
