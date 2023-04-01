@@ -21,7 +21,7 @@ This file contains ideas for future additions/improvements
 
 
 ## Code improvements:
-- 
+- Make `featurizers.py` call `generate_non_static_vocab` on the fly
 
 ## When changing data sets, the following need to be altered manually:
 - get_dataset_name function has to be updated with a new dataset name conditional

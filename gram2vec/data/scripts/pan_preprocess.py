@@ -146,7 +146,6 @@ def iter_raw_data(pairs_path:str, truths_path:str) -> Dict:
         for pair, truth in zip(pairs_file, truths_file):
             yield pair, truth
     
-            
 def make_author_to_document_mappings(raw_pairs_path:str, raw_truths_path:str)  -> Dict[str,List]: 
     """Maps each unique author id to a list of JSON objects and applies the text preprocessing steps to the raw text"""
     seen_docs = []
@@ -180,7 +179,6 @@ def make_preprocessed_author_pairs(raw_pairs_path:str, verbose=False) -> List[Di
             processesed_author_pairs.append(doc_pair)
     return processesed_author_pairs
 
-
 # TODO (at some point): re-add my train/dev/test split code, since I apparently removed it (for some reason 🤦‍♂️)
 #! all it is: first five docs from each author go to test, next five to dev, the rest go to train
                    
@@ -188,11 +186,13 @@ def main():
 
     os.chdir("../")
     
-    # create the author to list of documents mappings
+    # save as author to list of documents mappings
     author_to_docs = make_author_to_document_mappings("pan22/raw/pairs.jsonl", "pan22/raw/truth.jsonl")    
     with open("pan22/preprocessed/author_doc_mappings.json", "w") as fout:
          json.dump(author_to_docs, fout, indent=2, ensure_ascii=False)
-         
+    
+    
+    # save as preprocessed pairs
     fixed_author_pairs = make_preprocessed_author_pairs("pan22/raw/pairs.jsonl", verbose=False)
     with jsonlines.open("pan22/preprocessed/pairs_preprocessed.jsonl", "w") as fout:
         for entry in fixed_author_pairs:
