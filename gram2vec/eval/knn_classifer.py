@@ -12,7 +12,6 @@ from sklearn import metrics
 from datetime import datetime
 from typing import List, Dict
 import pickle
-from metric_learn import LMNN
 from time import time
 
 # project imports
@@ -93,6 +92,7 @@ def get_first_8_authors(predicted_labels:np.ndarray) -> List[int]:
     for label in predicted_labels:
         if label not in candidates and not len(candidates) == 8:
             candidates.append(label)
+    assert len(candidates) == 8, "Not enough candidates found"
     return candidates
 
 def load_metric(path:str):
@@ -134,7 +134,7 @@ def recall_at_8(X_train:np.ndarray, X_eval:np.ndarray, y_train_encoded:np.ndarra
     """
     correct_pred = 0
     all_pred = 0
-    model = KNeighborsClassifier(n_neighbors=20, metric="cosine")
+    model = KNeighborsClassifier(n_neighbors=50, metric="cosine")
     model.fit(X_train, y_train_encoded)
     
     _, prediction_indices = model.kneighbors(X_eval)
