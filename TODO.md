@@ -4,8 +4,7 @@ This file contains ideas for future additions/improvements
 ------
 
 ## Future repo improvements:
-- Improve dependency handling, maybe bundle this code as a package?
-- Add some kind of uniform data set loader that makes it easier to load / concatenate different data sets
+- Use a config file for G2V again and store it in ../../../config/
 
 ## Evals:
 - dim red
