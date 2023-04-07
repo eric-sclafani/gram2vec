@@ -122,6 +122,13 @@ array([0.06930693, 0.07920792, 0.06930693, 0.04950495, 0.03960396,
 
 ### `Internal KNN Evaluation`
 
+--------------
+
+NOTE: The evaluation setup inside this repository is no longer being used for TA1. That has been moved to the `pausit-eval` repository.
+
+---------------
+
+
 There are two ways to evaluate using `kNN` currently. The second one is specific to PAN 2022. 
 
  > **Note**: Both evaluation scripts below `must` be ran from the **~/gram2vec/gram2vec/** directory
