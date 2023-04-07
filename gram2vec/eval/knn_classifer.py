@@ -80,8 +80,7 @@ def write_results_entry(path:str, to_write:List):
     with open(path, "a") as fout:
         writer = csv.writer(fout)
         writer.writerow(to_write)
-        
-        
+            
 def fetch_labels_from_indices(indices:np.ndarray, encoded_labels:np.ndarray) -> np.ndarray:
     """Fetches labels from given array of index positions"""
     return encoded_labels[indices]
@@ -92,7 +91,7 @@ def get_first_8_authors(predicted_labels:np.ndarray) -> List[int]:
     for label in predicted_labels:
         if label not in candidates and not len(candidates) == 8:
             candidates.append(label)
-    assert len(candidates) == 8, "Not enough candidates found"
+    assert len(candidates) == 8, "Not enough candidates found while calculating R@8"
     return candidates
 
 def load_metric(path:str):

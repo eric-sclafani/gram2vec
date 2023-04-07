@@ -165,7 +165,7 @@ def sum_of_counts(counts:Dict) -> int:
     count_sum = sum(counts.values())
     return count_sum if count_sum > 0 else 1
               
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FEATURIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Featurizers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @dataclass
 class Feature:
@@ -276,7 +276,7 @@ def morph_tags(doc:Document) -> Feature:
 
 
 
-# ~~~ FEATURIZERS END ~~~
+# ~~~ Featurizers end ~~~
 
 DEFAULT_CONFIG = {
     "pos_unigrams":1,

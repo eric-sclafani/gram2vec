@@ -4,7 +4,7 @@ This file contains ideas for future additions/improvements
 ------
 
 ## Future repo improvements:
-- Use a config file for G2V again and store it in ../../../config/
+- 
 
 ## Evals:
 - dim red
@@ -20,12 +20,9 @@ This file contains ideas for future additions/improvements
 
 
 ## Code improvements:
-- Make `featurizers.py` call `generate_non_static_vocab` on the fly
+- Make `featurizers.py` call `generate_non_static_vocab` on the fly for when new datasets are used
 - Revise all doc strings to use numpy format
 
-## When changing data sets, the following need to be altered manually:
-- get_dataset_name function has to be updated with a new dataset name conditional
-- After generating vocabulary via `generate_non_static_vocab.py`, POS bigrams & mixed bigrams in `featurizers.py` vocabulary paths need to be manually set to new pickle file generated for the new dataset
 
 
 ## To check out
