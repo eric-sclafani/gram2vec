@@ -3,11 +3,8 @@ This file contains ideas for future additions/improvements
 
 ------
 
-## Future repo improvements:
-- 
-
 ## Evals:
-- dim red
+- dim reduction experiments
 
 ## Features:
 
@@ -22,6 +19,7 @@ This file contains ideas for future additions/improvements
 ## Code improvements:
 - Make `featurizers.py` call `generate_non_static_vocab` on the fly for when new datasets are used
 - Revise all doc strings to use numpy format
+- fix generate_tabular_vector_dataset.py
 
 
 
