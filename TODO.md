@@ -3,12 +3,16 @@ This file contains ideas for future additions/improvements
 
 ------
 
+## Generate a sentence per dimension
+- verbalizer
+
 ## Evals:
 - dim reduction experiments
 
 ## Features:
 
 - work more on syntactic feats
+- Contraction counts
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 - relook at Document statistics feature (split into two vectors)
 - https://aclanthology.org/2021.findings-emnlp.359/
