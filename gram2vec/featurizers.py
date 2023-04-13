@@ -325,7 +325,7 @@ DEFAULT_CONFIG = {
     "morph_tags":1
 }  
 
-class FeatureVector:
+class DocumentVector:
     """
     This class provides access to the large concatenated feature vector,
     as well as each individual smaller one. Additionally, provides access to
@@ -409,21 +409,21 @@ class GrammarVectorizer:
                 raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
         return activated_feats
 
-    def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
+    def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, DocumentVector]:
         """
-        Applies featurizers to a document and returns either a numpy array or FeatureVector object depending on the return_obj flag
+        Applies featurizers to a document and returns either a numpy array or DocumentVector object depending on the return_obj flag
         
         Params
         ------
             document (str): string to be vectorized
-            return_obj (bool): Defaults to False. Option to return FeatureVector object instead of a numpy array 
+            return_obj (bool): Defaults to False. Option to return DocumentVector object instead of a numpy array 
             
         Returns
         -------
-            Union[np.ndarray, FeatureVector]: 1-D feature vector or FeatureVector object
+            Union[np.ndarray, DocumentVector]: 1-D array or DocumentVector object
         """
         doc = make_document(document, self.nlp)
-        feature_vector = FeatureVector(doc)
+        feature_vector = DocumentVector(doc)
         for featurizer in self._config:
             
             feature = featurizer(doc)
@@ -439,7 +439,7 @@ class GrammarVectorizer:
         else:
             return feature_vector
         
-    def vectorize_episode(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[FeatureVector]]:
+    def vectorize_episode(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[DocumentVector]]:
         """
         Applies featurizers to a list of documents and returns either a numpy matrix
         or FeatureVector object depending on the return_obj flag
@@ -451,7 +451,7 @@ class GrammarVectorizer:
             
         Returns
         -------
-            Union[np.ndarray, List[FeatureVector]]: 1-D feature vector or FeatureVector object
+            Union[np.ndarray, List[DocumentVector]]: numpy matrix or DocumentVector object
         """
         all_vectors = []
         for document in documents:
