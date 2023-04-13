@@ -3,14 +3,20 @@ This file contains ideas for future additions/improvements
 
 ------
 
-## Generate a sentence per dimension
-- verbalizer
+## Major TODOs:
+- index to feature map
+- 
+
+## Verbalizer
+- Generate a quantitative description of count, OR
+- Compare each feature to each feature in an averaged document feature vector (measure with how many standard deviations)(only extract features with n amount of stds from mean)
 
 ## Evals:
 - dim reduction experiments
 
 ## Features:
 
+- For FV dataset, rename all features cols (examples: "Letter:i", "pos_unigram:VERB") <- useful for verbalizer AND vector dataset
 - work more on syntactic feats
 - Contraction counts
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature

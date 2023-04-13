@@ -29,15 +29,22 @@ def feature_logger(filename, writable):
 @dataclass
 class Document:
     """
-    This class represents elements from a spaCy Doc object
-        :param text: text before being processed by spaCy
-        :param spacy_doc: spaCy's document object
-        :param tokens: list of tokens
-        :param words: list of words (no punc tokens)
-        :param pos_tags: list of pos tags
-        :param dep_labels: list of dependency parse labels
-        :param sentences: list of spaCy-sentencized sentences
-    Note: instances should only be created using the 'make_document' function 
+    This class represents elements from a spaCy Doc object. Different featurizers looks for different
+    elements, so this class stores these elements at once rather than calculating them in numerous places
+    
+    Params
+    ------
+        text (str): text before being processed by spaCy
+        spacy_doc (spacy.tokens.doc.Doc): spaCy's document object
+        tokens (List[str]): list of tokens
+        words (List[str]): list of words (no punc tokens)
+        pos_tags (List[str]): list of pos tags
+        dep_labels (List[str]): list of dependency parse labels
+        sentences (List[spacy.tokens.span.Span]: list of spaCy-sentencized sentences
+        
+    Note
+    ----
+        Instances should only be created using the 'make_document' function 
 """
     text       :str
     spacy_doc  :spacy.tokens.doc.Doc
@@ -59,7 +66,23 @@ def make_document(text:str, nlp) -> Document:
     return Document(text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
 
 def load_vocab(path:str, type="static") -> Tuple[str]:
-    """Loads in a vocabulary file as a tuple of strings"""
+    """
+    Loads in a vocabulary file as a tuple of strings
+    
+    Params
+    -----
+        path (str): path of vocab file
+        type (str, default="static"): determines what type of vocab is to be loaded
+        
+    Note
+    ----
+        static: dataset-agnostic vocabulary; it looks for the same exact elements for any dataset
+        non-static: vocabulary generated from a dataset, which is stored as a pickle file
+    
+    Returns
+    -------
+        tuple[str]: tuple of vocabulary elements
+    """
     
     if type == "static":
         assert path.endswith(".txt")
@@ -70,6 +93,8 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
         assert path.endswith(".pkl")
         with open (path, "rb") as fin:
             return pickle.load(fin)
+    else:
+        raise ValueError(f"Vocab type '{type}' doesn't exist. Check your vocab call")
 
 
 def demojify_text(text:str) -> str:
@@ -133,12 +158,18 @@ def parse_morph(morphs_list:List) -> List[str]:
             doc_morph_tags.append(morph.split("=")[1])
     return doc_morph_tags
 
-def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict:
-    
+def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict[str, int]:
     """
     Combines vocab and counted_doc_features into one dictionary such that
     any feature in vocab counted 0 times in counted_doc_features is preserved in the feature vector
-        Example:
+       
+    Params
+    -------
+        vocab (Vocab): vocabulary of elements to look for in documents
+        counted_doc_features (Counter): features counted from document
+        
+    Example
+    -------
             >> vocab = ("a", "b", "c", "d")
             
             >> counted_doc_features = Counter({"a":5, "c":2})
@@ -146,10 +177,10 @@ def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict:
             >> add_zero_vocab_counts(vocab, counted_doc_features)
             
                 '{"a": 5, "b" : 0, "c" : 2, "d" : 0}'
-    
-    :param vocab: vocabulary of elements to look for in documentd
-    :param counted_doc_features: features counted from document
-    :returns: counts of every element in vocab with 0 counts preserved
+                
+    Returns
+    -------
+        Dict[str,int]: counts of every element in vocab with 0 counts preserved
     """
     count_dict = {}
     for feature in vocab:
@@ -170,16 +201,18 @@ def sum_of_counts(counts:Dict) -> int:
 @dataclass
 class Feature:
     """
-    This class represents the output of each feature extractor
+    This class represents the output of each featurizer. Gives access to both the counts themselves and vector
     
-    :param feature_counts: dictionary of counts
-    :param normalize_by: option to normalize. Defaults to 1
+    Params
+    ------
+        feature_counts (Dict[str,int]): dictionary of counts
+        normalize_by (int): option to normalize. Defaults to 1
     """
-    feature_counts:dict
+    feature_counts:Dict[str,int]
     normalize_by:int = 1
     
     def counts_to_vector(self) -> np.ndarray:
-        """Converts a dictionary of counts into a numpy array"""
+        """Converts a dictionary of counts into a numpy array and normalizes"""
         counts = list(self.feature_counts.values())
         return np.array(counts).flatten() / self.normalize_by
     
@@ -300,36 +333,23 @@ class FeatureVector:
     """
     def __init__(self, doc:Document):
         self.doc = doc
-        self.vector_map : dict[str, np.ndarray] = {} 
-        self.count_map  : dict[str, dict] = {} 
+        self.vector_map : Dict[str, np.ndarray] = {} 
+        self.count_map  : Dict[str, Dict] = {} 
     
     @property
     def vector(self) -> np.ndarray:
-        """
-        Concatenates all individual feature vectors into one
-        :returns: 1D numpy array
-        """
+        """Concatenates all individual feature vectors into one"""
         return np.concatenate(list(self.vector_map.values()))
     
     def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
-        """
-        Retrieves an individual feature vector by name from self.vector_map
-        :param feature_name: name of the featurizer
-        :returns: the vector created by the 'feature_name' featurizer 
-        :raises KeyError: if feature_name is not in current configuration
-        """
+        """Retrieves an individual feature vector by name from self.vector_map"""
         if feature_name in self.vector_map:
             return self.vector_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name}' not in current configuration")
         
-    def get_counts_by_feature(self, feature_name:str) -> dict[str, int]:
-        """
-        Retrieves an individual feature count dict by name from self.count_map
-        :param feature_name: name of the featurizer
-        :returns: the count dict created by the 'feature_name' featurizer 
-        :raises KeyError: if feature_name is not in current configuration
-        """
+    def get_counts_by_feature(self, feature_name:str) -> Dict[str, int]:
+        """Retrieves an individual feature count dict by name from self.count_map"""
         if feature_name in self.count_map:
             return self.count_map[feature_name]
         else:
@@ -351,12 +371,12 @@ class FeatureVector:
         
 class GrammarVectorizer:
     """
-    Houses all featurizers to apply to a text document.
+    Houses all featurizers to apply to a text document according to a given config.
     
     Initializes the spaCy nlp object and activated featurizers with each instance
     """
     
-    def __init__(self, config=None):
+    def __init__(self, config:Dict[str,int]=None):
         self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
         self.register = (pos_unigrams,
                          pos_bigrams,
@@ -377,12 +397,8 @@ class GrammarVectorizer:
         """Retrieves the names of all activated features"""
         return [feat.__name__ for feat in self._config]
         
-    def _process_config(self, passed_config: Optional[dict]) -> List:
-        """
-        Reads which features to activate and returns a list of featurizer functions
-        :param passed_config: User provided configuration dictionary. Can be None.
-        :returns: list of activated featurizers
-        """
+    def _process_config(self, passed_config: Optional[Dict]) -> List:
+        """Reads which features to activate and returns a list of featurizer functions"""
         current_config = DEFAULT_CONFIG if not passed_config else passed_config
         activated_feats = []
         for feat in self.register:
@@ -395,12 +411,16 @@ class GrammarVectorizer:
 
     def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, FeatureVector]:
         """
-        Applies featurizers to a document and returns either a numpy array
-        or FeatureVector object depending on the return_obj flag
+        Applies featurizers to a document and returns either a numpy array or FeatureVector object depending on the return_obj flag
         
-        :param document: string to be vectorized
-        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy array 
-        :returns: a 1-D feature vector or FeatureVector object
+        Params
+        ------
+            document (str): string to be vectorized
+            return_obj (bool): Defaults to False. Option to return FeatureVector object instead of a numpy array 
+            
+        Returns
+        -------
+            Union[np.ndarray, FeatureVector]: 1-D feature vector or FeatureVector object
         """
         doc = make_document(document, self.nlp)
         feature_vector = FeatureVector(doc)
@@ -424,9 +444,14 @@ class GrammarVectorizer:
         Applies featurizers to a list of documents and returns either a numpy matrix
         or FeatureVector object depending on the return_obj flag
         
-        :param documents: list of documents to be vectorized
-        :param return_obj: Defaults to False. Option to return FeatureVector object instead of a numpy matrix
-        :returns: a 2-D matrix of feature vectors or list of FeatureVector objects
+        Params
+        ------
+            document (List[str]): list of strings to be vectorized
+            return_obj (bool): Defaults to False. Option to return FeatureVector objects instead of a numpy matrix
+            
+        Returns
+        -------
+            Union[np.ndarray, List[FeatureVector]]: 1-D feature vector or FeatureVector object
         """
         all_vectors = []
         for document in documents:

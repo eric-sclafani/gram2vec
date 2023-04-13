@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+
+###############################################################################################################
+#                      THIS EVAL SCRIPT IS DEPRECATED. PLEASE SEE PAUSIT-EVAL REPO 
+###############################################################################################################
+raise DeprecationWarning("Module deprecated for now")
+
 import argparse
 import os
 import csv
