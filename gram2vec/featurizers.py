@@ -6,6 +6,7 @@ import demoji
 from nltk import bigrams
 from nltk import FreqDist
 import numpy as np 
+import pandas as pd
 import os
 import spacy
 from typing import Union, Optional, Tuple, List, Dict
@@ -335,7 +336,7 @@ class DocumentVector:
         self.doc = doc
         self.vector_map : Dict[str, np.ndarray] = {} 
         self.count_map  : Dict[str, Dict] = {} 
-    
+     
     @property
     def vector(self) -> np.ndarray:
         """Concatenates all individual feature vectors into one"""
@@ -354,6 +355,14 @@ class DocumentVector:
             return self.count_map[feature_name]
         else:
             raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
+        
+    def get_expanded_feature_names(self) -> List[str]:
+        """Prepends the featurizer name to each individual feature ("ADJ" -> "pos_unigram:ADJ")"""
+        all_feat_names = []
+        for featurizer, count_dict in self.count_map.items():
+            for feat in count_dict.keys():
+                all_feat_names.append(f"{featurizer}:{feat}")
+        return all_feat_names
     
     def _update_vector_map(self, feature_name:str, vector:np.ndarray):
         """Adds a feature mapped to that feature's vector to self.vector_map"""
@@ -375,7 +384,6 @@ class GrammarVectorizer:
     
     Initializes the spaCy nlp object and activated featurizers with each instance
     """
-    
     def __init__(self, config:Dict[str,int]=None):
         self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
         self.register = (pos_unigrams,
@@ -393,10 +401,6 @@ class GrammarVectorizer:
         self._config = self._process_config(config)
         os.system("./clear_logs.sh")
         
-    def get_config(self) -> List[str]:
-        """Retrieves the names of all activated features"""
-        return [feat.__name__ for feat in self._config]
-        
     def _process_config(self, passed_config: Optional[Dict]) -> List:
         """Reads which features to activate and returns a list of featurizer functions"""
         current_config = DEFAULT_CONFIG if not passed_config else passed_config
@@ -408,8 +412,12 @@ class GrammarVectorizer:
             except KeyError:
                 raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
         return activated_feats
-
-    def vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, DocumentVector]:
+        
+    def get_config(self) -> List[str]:
+        """Retrieves the names of all activated features"""
+        return [feat.__name__ for feat in self._config]
+        
+    def _vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, DocumentVector]:
         """
         Applies featurizers to a document and returns either a numpy array or DocumentVector object depending on the return_obj flag
         
@@ -423,23 +431,23 @@ class GrammarVectorizer:
             Union[np.ndarray, DocumentVector]: 1-D array or DocumentVector object
         """
         doc = make_document(document, self.nlp)
-        feature_vector = DocumentVector(doc)
+        doc_vector = DocumentVector(doc)
         for featurizer in self._config:
             
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()
 
-            feature_vector._update_vector_map(featurizer.__name__, vector)
-            feature_vector._update_count_map(featurizer.__name__, counts)
+            doc_vector._update_vector_map(featurizer.__name__, vector)
+            doc_vector._update_count_map(featurizer.__name__, counts)
             feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
 
         if not return_obj:
-            return feature_vector.vector
+            return doc_vector.vector
         else:
-            return feature_vector
+            return doc_vector
         
-    def vectorize_episode(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[DocumentVector]]:
+    def vectorize_documents(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[DocumentVector]]:
         """
         Applies featurizers to a list of documents and returns either a numpy matrix
         or FeatureVector object depending on the return_obj flag
@@ -455,10 +463,12 @@ class GrammarVectorizer:
         """
         all_vectors = []
         for document in documents:
-            grammar_vector = self.vectorize_document(document, return_obj)
+            grammar_vector = self._vectorize_document(document, return_obj)
             all_vectors.append(grammar_vector)
             
         if not return_obj:
             return np.stack(all_vectors)
         else:
             return all_vectors
+        
+        
