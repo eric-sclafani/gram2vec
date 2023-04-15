@@ -3,37 +3,34 @@
 ## Description
 `Gram2Vec` is a feature extraction algorithm that extracts grammatical properties from a given document and returns vectors representing that document's grammatical footprint. This is one part of PAUSIT team's stylistic feature vectors for TA1. 
 
-
 ## Setup
 
-If you use poetry, run `poetry install`
-inside **gram2vec/**. It should install all dependencies in `pyproject.toml`. Then run `poetry shell`  to spawn the venv.
+Create an environment by running:
+```bash
+python3.11 -m venv venv/
+source venv/bin/activate
+```
+Which will create a directory called `venv/` which will store all the dependencies. Now run:
+```bash
+pip3 install -r requirements.txt
+```
+Which will install all the dependencies for the project.
 
-Alternatively, if you don't use poetry, the bare minimum dependencies are:
-```toml
-python = "^3.8"
-demoji = "^1.1.0"
-numpy = "^1.24.0"
-pandas = "^1.5.2"
-scikit-learn = "^1.2.0"
-spacy = "^3.4.4"
-nltk = "^3.8"
-ipdb = "^0.13.11"
-ijson = "^3.1.4"
-metric-learn = "^0.6.2"
-jsonlines = "^3.1.0"
-more-itertools = "^9.0.0"
-matplotlib = "^3.7.0"
-seaborn = "^0.12.2"
+Note: for the `spacy` installation, I have the M1 mac version installed. If spacy throws you an error, you may need to install the version specific to your PC [https://spacy.io/usage](https://spacy.io/usage)
+
+
+Next, you need to download spacy's medium size English language model:
+```bash
+python3 -m spacy download en_core_web_md   
 ```
 ## Usage
 
 ### `GrammarVectorizer`
 
 Import the **GrammarVectorizer** class and create an instance like so:
-```python3
->>> from gram2vec.featurizers import GrammarVectorizer
->>> g2v = GrammarVectorizer()
+```python
+>>> from gram2vec.featurizers import GrammarVectorizer # exact import may vary depending on where you're calling this module from
+>>> g2v = GrammarVectorizer() 
 ```
 
 The **GrammarVectorizer** instance can also be supplied a configuration to disable or enable features from activating. This configuration is a dictionary that maps `activated` features to `1` and `deactivated` features to `0`. 
@@ -55,70 +52,24 @@ For example:
     "mixed_bigrams":1,
 } 
 >>> g2v = GrammarVectorizer(G2V_CONFIG)
->>> g2v.config
+>>> g2v.get_config()
 ["pos_bigrams", "func_words", "letters", "dep_labels", "mixed_bigrams"]
 ```
 
-From here, use the **g2v.vectorize()** method on an input string. By default, this will return a `numpy array`:
-```python
->>> my_document = """Four score and seven years ago our fathers brought forth, upon this continent, a new nation, conceived in liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived, and so dedicated, can long endure. We are met on a great battle field of that war. We come to dedicate a portion of it, as a final resting place for those who died here, that the nation might live"""
->>> my_vector = g2v.vectorize(my_document)
->>> my_vector
-array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,  
-        4.95049505e-02, 3.96039604e-02,  1.18811881e-01, 
-        0.00000000e+00,  1.78217822e-01, 1.98019802e-02,
-        ...
-      ])
->>> my_vector.shape
-(707,)
-```
-You can also use the **g2v.vectorize_episode()** method to vectorize a list of documents. This will return a 2D matrix of document vectors:
+From here, you can use the **g2v.create_vector_df()** method to vectorize a list of documents and store everything in a dataframe:
 ```python
 >>> docs = [
     "This is an extremely wonderful string",
     "The string below me is false.",
     "The string above me is true"
     ]
->>> my_matrix = g2v.vectorize_episode(docs)
-array([[0.16666667, 0., 0.16666667, ..., 0., 0.,0.],
-       [0.14285714, 0.14285714, 0., ..., 0., 0.,0. ],
-       [0.16666667, 0.16666667, 0., ..., 0., 0.,0.]
-       ])
->>> my_matrix.shape
-(3, 707)
+>>> df = g2v.create_vector_df(docs)
+>>> df.shape
+(3, 429) # 3 document vectors, 429 features each
 ```
 
-Optionally, the *return_obj* parameter can be switched to **True** in order to return a **FeatureVector** object instead:
-```python
->>> my_vector = g2v.vectorize(my_document, return_obj=True)
->>> my_vector
-'<gram2vec.featurizers.FeatureVector object at 0x15aacc6d0>'
-```
 
-The **FeatureVector** class gives access to the following methods:
 
-- `.vector` - returns the concatenated 1D vector
-- `.get_vector_by_feature` (*feature_name*) - returns the vector of a specific feature given that feature's name
-- `.get_counts_by_feature` (*feature_name*) - returns the count dict of a specific feature given that feature's name
-
-```python
->>> my_vector.vector
-array([ 6.93069307e-02,  7.92079208e-02,  6.93069307e-02,  
-        4.95049505e-02, 3.96039604e-02,  1.18811881e-01, 
-        0.00000000e+00,  1.78217822e-01, 1.98019802e-02,
-        ...
-      ])
->>> my_vector.get_vector_by_feature("pos_unigrams")
-
-array([0.06930693, 0.07920792, 0.06930693, 0.04950495, 0.03960396,
-       0.11881188, 0.        , 0.17821782, 0.01980198, 0.00990099,
-       0.07920792, 0.        , 0.12871287, 0.02970297, 0.        ,
-       0.12871287, 0.        , 0.        ])
-
->>> my_vector.get_counts_by_feature("pos_unigrams")
-
-{'ADJ': 7, 'ADP': 8, 'ADV': 7, 'AUX': 5, 'CCONJ': 4, 'DET': 12, 'INTJ': 0, 'NOUN': 18, 'NUM': 2, 'PART': 1, 'PRON': 8, 'PROPN': 0, 'PUNCT': 13, 'SCONJ': 3, 'SYM': 0, 'VERB': 13, 'X': 0, 'SPACE': 0}
-```
 
 ### `Internal KNN Evaluation`
 
