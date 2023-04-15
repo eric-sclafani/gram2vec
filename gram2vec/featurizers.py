@@ -206,9 +206,11 @@ class Feature:
     
     Params
     ------
+        featurizer_name (str): featurizer name to prepend to features in self.get_feature_names()
         feature_counts (Dict[str,int]): dictionary of counts
         normalize_by (int): option to normalize. Defaults to 1
     """
+    featurizer_name:str
     feature_counts:Dict[str,int]
     normalize_by:int = 1
     
@@ -217,6 +219,11 @@ class Feature:
         counts = list(self.feature_counts.values())
         return np.array(counts).flatten() / self.normalize_by
     
+    def get_feature_names(self) -> List[str]:
+        return [f"{self.featurizer_name}: {feat}" for feat in self.feature_counts.keys()]
+    
+        
+    
     
 def pos_unigrams(doc:Document) -> Feature:
     
@@ -224,7 +231,7 @@ def pos_unigrams(doc:Document) -> Feature:
     doc_pos_tag_counts = Counter(doc.pos_tags)
     all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
     
-    return Feature(all_pos_tag_counts, len(doc.pos_tags))
+    return Feature("POS Unigram", all_pos_tag_counts, len(doc.pos_tags))
 
 def pos_bigrams(doc:Document) -> Feature:
     
@@ -232,7 +239,7 @@ def pos_bigrams(doc:Document) -> Feature:
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
     
-    return Feature(all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
+    return Feature("POS Bigram", all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
 
 def func_words(doc:Document) -> Feature:
     
@@ -240,7 +247,7 @@ def func_words(doc:Document) -> Feature:
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
     all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
     
-    return Feature(all_func_word_counts, sum_of_counts(doc_func_word_counts))
+    return Feature("Function word", all_func_word_counts, sum_of_counts(doc_func_word_counts))
 
 def punc(doc:Document) -> Feature:
     
@@ -248,7 +255,7 @@ def punc(doc:Document) -> Feature:
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
     all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
     
-    return Feature(all_punc_counts, sum_of_counts(doc_punc_counts))
+    return Feature("Punctuation", all_punc_counts, sum_of_counts(doc_punc_counts))
 
 def letters(doc:Document) -> Feature:
     
@@ -256,7 +263,7 @@ def letters(doc:Document) -> Feature:
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
     all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
     
-    return Feature(all_letter_counts, sum_of_counts(doc_letter_counts))
+    return Feature("Letter", all_letter_counts, sum_of_counts(doc_letter_counts))
 
 def common_emojis(doc:Document) -> Feature:
     
@@ -265,12 +272,12 @@ def common_emojis(doc:Document) -> Feature:
     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
     
-    return Feature(all_emoji_counts, len(doc.tokens))
+    return Feature("Emoji", all_emoji_counts, len(doc.tokens))
 
 def embedding_vector(doc:Document) -> Feature:
     """spaCy word2vec (or glove?) document embedding"""
     embedding = {"embedding_vector" : doc.spacy_doc.vector}
-    return Feature(embedding)
+    return Feature(None, embedding)
 
 def document_stats(doc:Document) -> Feature:
     words = doc.words
@@ -281,7 +288,7 @@ def document_stats(doc:Document) -> Feature:
                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
                       "hapaxes"     : len(FreqDist(words).hapaxes())/len(words)}
-    return Feature(doc_statistics)
+    return Feature("Document statistic", doc_statistics)
 
 def dep_labels(doc:Document) -> Feature:
 
@@ -289,7 +296,7 @@ def dep_labels(doc:Document) -> Feature:
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
     all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
     
-    return Feature(all_dep_labels, sum_of_counts(doc_dep_labels))
+    return Feature("Dependency label", all_dep_labels, sum_of_counts(doc_dep_labels))
 
 def mixed_bigrams(doc:Document) -> Feature:
     
@@ -297,7 +304,7 @@ def mixed_bigrams(doc:Document) -> Feature:
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
     all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
     
-    return Feature(all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
+    return Feature("Mixed Bigram", all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
 def morph_tags(doc:Document) -> Feature:
     
@@ -305,10 +312,7 @@ def morph_tags(doc:Document) -> Feature:
     doc_morph_tags = Counter(parse_morph([token.morph for token in doc.spacy_doc]))
     all_morph_tags = add_zero_vocab_counts(vocab, doc_morph_tags)
     
-    return Feature(all_morph_tags, sum_of_counts(doc_morph_tags))
-
-
-
+    return Feature("Morphology tag", all_morph_tags, sum_of_counts(doc_morph_tags))
 
 # ~~~ Featurizers end ~~~
 
@@ -319,65 +323,13 @@ DEFAULT_CONFIG = {
     "punc":1,
     "letters":1,
     "common_emojis":1,
-    "embedding_vector":0,
+    "embedding_vector":0, # do not activate for authorship attribution; this is only a control vector
     "document_stats":1,
     "dep_labels":1,
     "mixed_bigrams":1,
     "morph_tags":1
 }  
-
-class DocumentVector:
-    """
-    This class provides access to the large concatenated feature vector,
-    as well as each individual smaller one. Additionally, provides access to
-    the exact counts each featurizer extracted from the given document
-    """
-    def __init__(self, doc:Document):
-        self.doc = doc
-        self.vector_map : Dict[str, np.ndarray] = {} 
-        self.count_map  : Dict[str, Dict] = {} 
      
-    @property
-    def vector(self) -> np.ndarray:
-        """Concatenates all individual feature vectors into one"""
-        return np.concatenate(list(self.vector_map.values()))
-    
-    def get_vector_by_feature(self, feature_name:str) -> np.ndarray:
-        """Retrieves an individual feature vector by name from self.vector_map"""
-        if feature_name in self.vector_map:
-            return self.vector_map[feature_name]
-        else:
-            raise KeyError(f"Feature '{feature_name}' not in current configuration")
-        
-    def get_counts_by_feature(self, feature_name:str) -> Dict[str, int]:
-        """Retrieves an individual feature count dict by name from self.count_map"""
-        if feature_name in self.count_map:
-            return self.count_map[feature_name]
-        else:
-            raise KeyError(f"Feature '{feature_name} not in current configuration: See config.toml'")
-        
-    def get_expanded_feature_names(self) -> List[str]:
-        """Prepends the featurizer name to each individual feature ("ADJ" -> "pos_unigram:ADJ")"""
-        all_feat_names = []
-        for featurizer, count_dict in self.count_map.items():
-            for feat in count_dict.keys():
-                all_feat_names.append(f"{featurizer}:{feat}")
-        return all_feat_names
-    
-    def _update_vector_map(self, feature_name:str, vector:np.ndarray):
-        """Adds a feature mapped to that feature's vector to self.vector_map"""
-        if feature_name not in self.vector_map:
-            self.vector_map[feature_name] = vector
-        else:
-            raise Exception(f"Feature {feature_name} already in this instance")
-        
-    def _update_count_map(self, feature_name:str, counts:Dict[str, int]):
-        """Adds a feature mapped to that feature's count dict to self.count_map"""
-        if feature_name not in self.count_map:
-            self.count_map[feature_name] = counts
-        else:
-            raise Exception(f"Feature {feature_name} already in this instance")
-        
 class GrammarVectorizer:
     """
     Houses all featurizers to apply to a text document according to a given config.
@@ -401,6 +353,10 @@ class GrammarVectorizer:
         self._config = self._process_config(config)
         os.system("./clear_logs.sh")
         
+    def get_config(self) -> List[str]:
+        """Retrieves the names of all activated features"""
+        return [feat.__name__ for feat in self._config]
+        
     def _process_config(self, passed_config: Optional[Dict]) -> List:
         """Reads which features to activate and returns a list of featurizer functions"""
         current_config = DEFAULT_CONFIG if not passed_config else passed_config
@@ -412,63 +368,44 @@ class GrammarVectorizer:
             except KeyError:
                 raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
         return activated_feats
-        
-    def get_config(self) -> List[str]:
-        """Retrieves the names of all activated features"""
-        return [feat.__name__ for feat in self._config]
-        
-    def _vectorize_document(self, document:str, return_obj=False) -> Union[np.ndarray, DocumentVector]:
-        """
-        Applies featurizers to a document and returns either a numpy array or DocumentVector object depending on the return_obj flag
-        
-        Params
-        ------
-            document (str): string to be vectorized
-            return_obj (bool): Defaults to False. Option to return DocumentVector object instead of a numpy array 
-            
-        Returns
-        -------
-            Union[np.ndarray, DocumentVector]: 1-D array or DocumentVector object
-        """
+     
+    def _apply_featurizers(self, document:str) -> List[Feature]:
+        """Applies featurizers to a document and returns a list of features for a single document"""
         doc = make_document(document, self.nlp)
-        doc_vector = DocumentVector(doc)
+        features = []
         for featurizer in self._config:
-            
             feature = featurizer(doc)
             counts = feature.feature_counts
             vector = feature.counts_to_vector()
 
-            doc_vector._update_vector_map(featurizer.__name__, vector)
-            doc_vector._update_count_map(featurizer.__name__, counts)
+            features.append(feature)
             feature_logger(featurizer.__name__, f"{counts}\n{vector}\n\n") 
 
-        if not return_obj:
-            return doc_vector.vector
-        else:
-            return doc_vector
+        return features
+
+    def _concat_vectors(self, features:List[Feature]) -> np.ndarray:
+        """Concatenates a list of vectorized feature counts"""
+        return np.concatenate([feat.counts_to_vector() for feat in features])
+    
+    def _get_all_feature_names(self, features:List[Feature]) -> List[str]:
+        """Gets all feature names from a list of document features"""
+        feature_names = []
+        for feat in features:
+            feature_names.extend(feat.get_feature_names())
+        return feature_names
         
-    def vectorize_documents(self, documents:List[str], return_obj=False) -> Union[np.ndarray, List[DocumentVector]]:
-        """
-        Applies featurizers to a list of documents and returns either a numpy matrix
-        or FeatureVector object depending on the return_obj flag
-        
-        Params
-        ------
-            document (List[str]): list of strings to be vectorized
-            return_obj (bool): Defaults to False. Option to return FeatureVector objects instead of a numpy matrix
-            
-        Returns
-        -------
-            Union[np.ndarray, List[DocumentVector]]: numpy matrix or DocumentVector object
-        """
+    def create_vector_df(self, documents:List[str]) -> pd.DataFrame:
+        """Applies featurizers to all documents and stores the resulting matrix as a dataframe"""
         all_vectors = []
+        feature_names = None
         for document in documents:
-            grammar_vector = self._vectorize_document(document, return_obj)
-            all_vectors.append(grammar_vector)
+            doc_features = self._apply_featurizers(document)
+            all_vectors.append(self._concat_vectors(doc_features))
             
-        if not return_obj:
-            return np.stack(all_vectors)
-        else:
-            return all_vectors
-        
-        
+            if feature_names is None:
+                # hacky way of doing this, but it works well
+                feature_names = self._get_all_feature_names(doc_features)  
+             
+        df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
+        df.insert(0, "doc_id", [f"doc_{i+1}" for i in range(len(all_vectors))])
+        return df
