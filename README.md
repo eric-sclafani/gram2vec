@@ -29,7 +29,7 @@ python3 -m spacy download en_core_web_md
 
 Import the **GrammarVectorizer** class and create an instance like so:
 ```python
->>> from gram2vec.featurizers import GrammarVectorizer # exact import may vary depending on where you're calling this module from
+>>> from gram2vec.vectorizer import GrammarVectorizer # exact import may vary depending on where you're calling this module from
 >>> g2v = GrammarVectorizer() 
 ```
 
