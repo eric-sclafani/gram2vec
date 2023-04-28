@@ -220,6 +220,7 @@ class Feature:
         return np.array(counts).flatten() / self.normalize_by
     
     def get_feature_names(self) -> List[str]:
+        """Prepends the feature type to each individual feature"""
         return [f"{self.featurizer_name}: {feat}" for feat in self.feature_counts.keys()]
     
         
