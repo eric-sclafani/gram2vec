@@ -408,5 +408,4 @@ class GrammarVectorizer:
                 feature_names = self._get_all_feature_names(doc_features)  
              
         df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
-        df.insert(0, "doc_id", [f"doc_{i+1}" for i in range(len(all_vectors))])
         return df
