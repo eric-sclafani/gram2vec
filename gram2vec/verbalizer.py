@@ -4,21 +4,15 @@ from scipy.stats import zscore
 from pathlib import Path
 from typing import List
 import pickle as pkl
-import os
 
 # project imports
 from vectorizer import GrammarVectorizer
-
-
-def save_to_disk():
-    pass
-
 
 class Verbalizer:
     
     def __init__(self, data_dir:str):
         
-        self._text_df = self._load_data(data_dir)
+        self.text_df = self._load_data(data_dir)
         self.docs_df = self._make_docs_df()
         self.author_df = self._make_author_df()
         
@@ -30,9 +24,9 @@ class Verbalizer:
             dfs.append(df)
         return pd.concat(dfs)
     
-    def _exclude_columns(self, df:pd.DataFrame, exclude:List[str]) -> pd.DataFrame:
-        """Excludes given columns from a dataframe. Used when calculating statistics in a df with text columns"""
-        return df.loc[:, ~df.columns.isin(exclude)]
+    def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
+        """Excludes given columns from a dataframe. Used when doing numerical operations"""
+        return df.loc[:, ~df.columns.isin(cols)]
     
     def get_author_docs(self, author_id:str) -> pd.DataFrame:
         """Retrieves an authors documents from self.docs_df"""
@@ -41,9 +35,9 @@ class Verbalizer:
     def _make_docs_df(self) -> pd.DataFrame:
         """Creates a document-level feature vector dataframe and preserves documentIDs"""
         g2v = GrammarVectorizer()
-        all_documents = self._text_df["fullText"]
-        author_ids = self._text_df["authorIDs"]
-        doc_ids = self._text_df["documentID"]
+        all_documents = self.text_df["fullText"]
+        author_ids = self.text_df["authorIDs"]
+        doc_ids = self.text_df["documentID"]
         
         vector_df = g2v.create_vector_df(all_documents.to_list())
         vector_df.insert(0, "authorIDs", author_ids)
@@ -52,18 +46,21 @@ class Verbalizer:
 
     def _make_author_df(self) -> pd.DataFrame:
         """Creates an author level dataframe. Each author entry is the average of that author's document vectors"""
-        author_ids = set(self._text_df["authorIDs"])
+        author_ids = set(self.text_df["authorIDs"])
         author_ids_to_avs = {}
         
         for author_id in author_ids:
             author_doc_entries = self.get_author_docs(author_id)
-            author_doc_vectors = self._exclude_columns(author_doc_entries, ['documentID', 'authorIDs'])
+            author_doc_vectors = self._exclude_columns(author_doc_entries, cols=['documentID', 'authorIDs'])
             author_ids_to_avs[author_id] = np.mean(author_doc_vectors, axis=0)
 
-        return pd.DataFrame(author_ids_to_avs).T
+        df = pd.DataFrame(author_ids_to_avs).T      
+        df.reset_index(inplace=True)
+        df = df.rename(columns = {'index':'authorIDs'})
+        return df
     
-    def _get_threshold_zscores_idxs(zscores, threshold:float):
-        """Gets indices for abs(zscores) that meet a threshold"""
+    def _get_threshold_zscores_idxs(self, zscores, threshold=2.0) -> List[int]:
+        """Gets indices for zscores that are +- threshold from the mean"""
         selected = []
         for i, zscore in enumerate(zscores):
             if abs(zscore) > threshold:
@@ -71,34 +68,38 @@ class Verbalizer:
         return selected 
     
     def _get_df_record(self, df:pd.DataFrame, column:str, id:str) -> int:
-        """Retrieves a single record index from a df according to a column value"""
+        """Retrieves the index of a record from a given df according to a column value"""
         return df.loc[df[column] == id].index[0] 
     
-    def _get_identifying_features(self, df:pd.DataFrame, id:str, threshold=2.0):
-        """
-        Given an id, calculates their zscores for all features and selects the ones that deviate the most from the 
-        mean. These features are what separate this document/author from the average
+    def _get_identifying_features(self, id:str, df:pd.DataFrame, to_verbalize:str):
         """
         
-        
-        author_zscores = zscores.iloc[author_idx]
-        selected_zscores = get_threshold_zscores_idxs(author_zscores, threshold)
-        return author_zscores.iloc[selected_zscores]
+        """
 
-    def features_to_show(author_id:str) -> List[str]:
-        """Given an author id, returns n amount of this author's most identifying features"""
-        features = get_identifying_features(author_id).index.to_list()
-        if len(features) > 10:
-            return features[:10]
-        return features
+
+        all_zscores = zscore(self._exclude_columns(df, cols=["documentID", "authorIDs"]))
+        idx = self._get_df_record(df, to_verbalize, id) 
+        extracted_zscores_from_idx = all_zscores.iloc[idx]
+        chosen_zscores = self._get_threshold_zscores_idxs(extracted_zscores_from_idx)
+        return extracted_zscores_from_idx.iloc[chosen_zscores]
+
     
-    def verbalize_document(self, document:str):
-        raise NotImplementedError("Document handling not yet implemented")
+    def verbalize(self, id:str, to_verbalize="authorIDs"):
+        """
         
-    
-    def verbalize_author(self, author_id:str):
-        zscores = zscore(self._exclude_columns(self.docs_df, ["documentID"]))
-        idx = self._get_df_record(self.docs_df, "documentID") 
+        """
+        if to_verbalize not in ["authorIDs", "documentID"]:
+            raise ValueError("Only accepted values for to_verbalize: {'authorIDs', 'documentID'} ")
+        
+        df = self.author_df if to_verbalize == "authorIDs" else self.docs_df
+        selected_id_zscores = self._get_identifying_features(id, df, to_verbalize)
+        print(selected_id_zscores)
+        
+        
+        
+        
+        
+
     
 
     
@@ -111,11 +112,6 @@ class Verbalizer:
     
 
 
-
-
-
-
-
 def main():
 
     
@@ -125,6 +121,7 @@ def main():
     }
     
     verb = Verbalizer(datapaths["pan"])
+    verb.verbalize("ed5ec66c-d70f-11ed-8cc6-76349838619d", to_verbalize="documentID")
 
 
     
