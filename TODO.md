@@ -26,7 +26,7 @@ This file contains ideas for future additions/improvements
 - 
 
 ## Other:
-- Regenerate requirements.txt
+- Start preparing the features for when they need to be multilingual (likely requires a significant refactor)
 
 
 

@@ -59,7 +59,7 @@ class Verbalizer:
         df = df.rename(columns = {'index':'authorIDs'})
         return df
     
-    def _get_threshold_zscores_idxs(self, zscores, threshold=2.0) -> List[int]:
+    def _get_threshold_zscores_idxs(self, zscores:np.ndarray, threshold=2.0) -> List[int]:
         """Gets indices for zscores that are +- threshold from the mean"""
         selected = []
         for i, zscore in enumerate(zscores):
@@ -67,24 +67,42 @@ class Verbalizer:
                 selected.append(i)
         return selected 
     
-    def _get_df_record(self, df:pd.DataFrame, column:str, id:str) -> int:
+    def _get_record_from_id(self, df:pd.DataFrame, column:str, id:str) -> int:
         """Retrieves the index of a record from a given df according to a column value"""
-        return df.loc[df[column] == id].index[0] 
+        try:
+            return df.loc[df[column] == id].index[0] 
+        except (KeyError, IndexError):
+            raise Exception(f"id '{id}' not found in dataframe. Check if provided id or to_verbalize flag is correct ")
     
-    def _get_identifying_features(self, id:str, df:pd.DataFrame, to_verbalize:str):
+    def _get_zscores(self, df:pd.DataFrame) -> np.ndarray:
+        """Calculates zscores for a given df"""
+        return zscore(self._exclude_columns(df, cols=["documentID", "authorIDs"]))
+    
+    def _get_identifying_features(self, id:str, df:pd.DataFrame, to_verbalize:str) -> pd.Series:
         """
-        
+        Given a unique id (document or author), calculate the feature zscores for that id and keep
+        the ones that meet a given threshold (> 2 by default)
         """
-
-
-        all_zscores = zscore(self._exclude_columns(df, cols=["documentID", "authorIDs"]))
-        idx = self._get_df_record(df, to_verbalize, id) 
+        all_zscores = self._get_zscores(df)
+        idx = self._get_record_from_id(df, to_verbalize, id) 
         extracted_zscores_from_idx = all_zscores.iloc[idx]
         chosen_zscores = self._get_threshold_zscores_idxs(extracted_zscores_from_idx)
         return extracted_zscores_from_idx.iloc[chosen_zscores]
 
+    def _template(self, doc_or_author:str, feat_name:str, direction:str) -> str:
+        """Template for the zscore verbalizer"""
+        return f"This {doc_or_author} uses {direction} {feat_name} than the average"
     
-    def verbalize(self, id:str, to_verbalize="authorIDs"):
+    def _verbalize_zscores(self, zscores:pd.DataFrame, to_verbalize:str) -> List[str]:
+        """Creates a list of verbalized zscores"""
+        converted = []
+        doc_or_author = "author" if to_verbalize == "authorIDs" else "document"
+        for feat_name, zscore in zscores.items():
+            direction = "less" if zscore < 0 else "more"
+            converted.append(self._template(doc_or_author, feat_name, direction))
+        return converted
+    
+    def verbalize(self, id:str, to_verbalize="authorIDs") -> pd.DataFrame:
         """
         
         """
@@ -93,17 +111,21 @@ class Verbalizer:
         
         df = self.author_df if to_verbalize == "authorIDs" else self.docs_df
         selected_id_zscores = self._get_identifying_features(id, df, to_verbalize)
-        print(selected_id_zscores)
+        verbs = self._verbalize_zscores(selected_id_zscores, to_verbalize)
+        
+        verbalized_df = pd.DataFrame({
+            "feature_name":selected_id_zscores.index,
+            "zscore": selected_id_zscores.values,
+            "verbalized":verbs
+        })
+        return verbalized_df
+
         
         
         
         
         
 
-    
-
-    
-        
         
     #strategy = threshold or n_best
     # add a warning statement if an author or document has no indicative features with threshold
@@ -121,7 +143,8 @@ def main():
     }
     
     verb = Verbalizer(datapaths["pan"])
-    verb.verbalize("ed5ec66c-d70f-11ed-8cc6-76349838619d", to_verbalize="documentID")
+    v = verb.verbalize("en_110", to_verbalize="authorIDs")
+    print(v["verbalized"])
 
 
     
