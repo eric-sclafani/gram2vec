@@ -281,13 +281,13 @@ def embedding_vector(doc:Document) -> Feature:
 
 def document_stats(doc:Document) -> Feature:
     words = doc.words
-    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words), 
-                      "large_words" : len([1 for word in words if len(word) > 4])/len(words),
+    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
+                      "large_words" : len([1 for word in words if len(word) > 4])/len(words) if len(words) else 0,
                       "word_len_avg": np.mean([len(word) for word in words]),
                       "word_len_std": np.std([len(word) for word in words]),
                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
-                      "hapaxes"     : len(FreqDist(words).hapaxes())/len(words)}
+                      "hapaxes"     : len(FreqDist(words).hapaxes())/len(words) if len(words) else 0}
     return Feature("Document statistic", doc_statistics)
 
 def dep_labels(doc:Document) -> Feature:
