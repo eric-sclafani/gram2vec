@@ -220,6 +220,7 @@ class Feature:
         return np.array(counts).flatten() / self.normalize_by
     
     def get_feature_names(self) -> List[str]:
+        """Prepends the feature type to each individual feature"""
         return [f"{self.featurizer_name}: {feat}" for feat in self.feature_counts.keys()]
     
         
@@ -407,5 +408,4 @@ class GrammarVectorizer:
                 feature_names = self._get_all_feature_names(doc_features)  
              
         df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
-        df.insert(0, "doc_id", [f"doc_{i+1}" for i in range(len(all_vectors))])
         return df

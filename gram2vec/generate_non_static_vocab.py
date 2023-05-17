@@ -11,8 +11,8 @@ import pickle
 import json
 
 # project imports
-import featurizers as feats
-from featurizers import Document
+import vectorizer
+from vectorizer import Document
 
 
 @dataclass
@@ -32,7 +32,7 @@ def get_all_documents(train_path:str, nlp) -> List[Document]:
     documents = []
     for author_entries in data.values():
         for author_dict in author_entries:
-            document = feats.make_document(author_dict["fixed_text"], nlp)
+            document = vectorizer.make_document(author_dict["fixed_text"], nlp)
             documents.append(document)
     return documents
 
@@ -55,12 +55,12 @@ def combine_counters(counters:List[Counter]) -> Counter:
 
 def count_pos_bigrams(doc:Document):
     """Counter function: counts the POS bigrams in a doc"""
-    counter = Counter(feats.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
+    counter = Counter(vectorizer.get_bigrams_with_boundary_syms(doc, doc.pos_tags))
     return counter
 
 def count_mixed_bigrams(doc:Document):
     """Counter function: counts the mixed bigrams in a doc"""
-    return Counter(feats.bigrams(feats.replace_openclass(doc.tokens, doc.pos_tags)))
+    return Counter(vectorizer.bigrams(vectorizer.replace_openclass(doc.tokens, doc.pos_tags)))
         
 
 def generate_most_common(documents:List[Document], n:int, count_function) -> Tuple[str]:

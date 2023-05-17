@@ -3,10 +3,6 @@ This file contains ideas for future additions/improvements
 
 ------
 
-## Major TODOs:
-- index to feature map
-- 
-
 ## Verbalizer
 - Generate a quantitative description of count, OR
 - Compare each feature to each feature in an averaged document feature vector (measure with how many standard deviations)(only extract features with n amount of stds from mean)
@@ -16,8 +12,6 @@ This file contains ideas for future additions/improvements
 
 ## Features:
 
-- For FV dataset, rename all features cols (examples: "Letter:i", "pos_unigram:VERB") <- useful for verbalizer AND vector dataset
-- work more on syntactic feats
 - Contraction counts
 - John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
 - relook at Document statistics feature (split into two vectors)
@@ -29,7 +23,10 @@ This file contains ideas for future additions/improvements
 ## Code improvements:
 - Make `featurizers.py` call `generate_non_static_vocab` on the fly for when new datasets are used
 - Revise all doc strings to use numpy format
-- fix generate_tabular_vector_dataset.py
+- 
+
+## Other:
+- Start preparing the features for when they need to be multilingual (likely requires a significant refactor)
 
 
 
