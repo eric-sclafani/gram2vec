@@ -18,11 +18,15 @@ class Verbalizer:
         
     def _load_data(self, data_dir:str) -> pd.DataFrame:
         """Loads a directory of .jsonl files"""
-        dfs = []
-        for filename in Path(data_dir).glob("*.jsonl"):
-            df = pd.read_json(filename, lines=True)
-            dfs.append(df)
-        return pd.concat(dfs)
+        
+        #! disabled for now because of performance reasons (takes over 15 mins to process ALL hrs data)
+        # dfs = []
+        # for filename in Path(data_dir).glob("*.jsonl"):
+        #     df = pd.read_json(filename, lines=True)
+        #     dfs.append(df)
+        # df = pd.concat(dfs)
+        
+        return pd.read_json(data_dir, lines=True)
     
     def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
         """Excludes given columns from a dataframe. Used when doing numerical operations"""
@@ -46,7 +50,7 @@ class Verbalizer:
 
     def _make_author_df(self) -> pd.DataFrame:
         """Creates an author level dataframe. Each author entry is the average of that author's document vectors"""
-        author_ids = set(self.text_df["authorIDs"])
+        author_ids = self.text_df["authorIDs"]
         author_ids_to_avs = {}
         
         for author_id in author_ids:
@@ -104,7 +108,16 @@ class Verbalizer:
     
     def verbalize(self, id:str, to_verbalize="authorIDs") -> pd.DataFrame:
         """
+        Current implementation: 
+                - Does verbalization besded off of zscores & a threshold
+                - Drawbacks: 
+                        - indices across verbalized vectors not comparable (vectors of diff sizes)
+                        - possible to get no significant zscores 
+                        - requires entire dataset to calculate zscores
         
+        Other possibilities: 
+                - get top n highest feature values looking at the normalized counts? (would mean indices across all vectors wont be comparable)
+                - verbalize ALL features? (vectors WILL be comparable)
         """
         if to_verbalize not in ["authorIDs", "documentID"]:
             raise ValueError("Only accepted values for to_verbalize: {'authorIDs', 'documentID'} ")
@@ -120,31 +133,14 @@ class Verbalizer:
         })
         return verbalized_df
 
-        
-        
-        
-        
-        
 
-        
-    #strategy = threshold or n_best
-    # add a warning statement if an author or document has no indicative features with threshold
     
     
     
 
 
 def main():
-
-    
-    datapaths = {
-        "hrs": "data/hrs_release_03-20-23/raw",
-        "pan":"data/pan22/preprocessed"
-    }
-    
-    verb = Verbalizer(datapaths["pan"])
-    v = verb.verbalize("en_110", to_verbalize="authorIDs")
-    print(v["verbalized"])
+    pass
 
 
     
