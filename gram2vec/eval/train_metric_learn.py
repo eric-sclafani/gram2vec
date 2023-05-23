@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+
+###############################################################################################################
+#                                      THIS SCRIPT IS DEPRECATED. 
+###############################################################################################################
+raise DeprecationWarning("Module deprecated for now")
+
+
+
 from metric_learn import MMC
 import numpy as np
 import os
@@ -12,6 +20,11 @@ from typing import Tuple, List
 
 # project imports
 from featurizers import GrammarVectorizer
+
+
+
+
+
 
 @dataclass
 class Pair:

@@ -9,14 +9,16 @@ import numpy as np
 import pandas as pd
 import os
 import spacy
-from typing import Union, Optional, Tuple, List, Dict
+from spacy.tokens import Doc
+from typing import Optional, Tuple, List, Dict
 import pickle
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logging, type aliases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SentenceSpan = Tuple[int,int]
-Vocab = Tuple[str]
 
+
+
+
+#! POTENTIAL BOTTLENECK
 def feature_logger(filename, writable):
     """Custom logging function. Was having issues with standard logging library"""
     if not os.path.exists("logs"):
@@ -25,47 +27,64 @@ def feature_logger(filename, writable):
     with open(f"logs/{filename}.log", "a") as fout: 
         fout.write(writable)
         
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-@dataclass
-class Document:
+class UniversalDocument:
     """
-    This class represents elements from a spaCy Doc object. Different featurizers looks for different
-    elements, so this class stores these elements at once rather than calculating them in numerous places
+    This class allows for a universal object type that gets passed through all feature extractors.
     
-    Params
-    ------
-        text (str): text before being processed by spaCy
-        spacy_doc (spacy.tokens.doc.Doc): spaCy's document object
-        tokens (List[str]): list of tokens
-        words (List[str]): list of words (no punc tokens)
-        pos_tags (List[str]): list of pos tags
-        dep_labels (List[str]): list of dependency parse labels
-        sentences (List[spacy.tokens.span.Span]: list of spaCy-sentencized sentences
+    When making a new feature, create a new property method following the same format
+    
+    """
+    def __init__(self, raw_text:str, nlp_doc:Doc):
+        self.raw_text = raw_text
+        self.nlp_doc = nlp_doc
         
-    Note
-    ----
-        Instances should only be created using the 'make_document' function 
-"""
-    text       :str
-    spacy_doc  :spacy.tokens.doc.Doc
-    tokens     :List[str]
-    words      :List[str]
-    pos_tags   :List[str]
-    dep_labels :List[str]
-    sentences  :List[spacy.tokens.span.Span]
+    @property
+    def tokens(self) -> List[str]:
+        return [token.text for token in self.nlp_doc]
+    
+    @property
+    def words(self) -> List[str]:
+        return [token.text for token in self.nlp_doc if not token.is_punct]
+    
+    @property
+    def pos_tags(self) -> List[str]:
+        return [token.pos_ for token in self.nlp_doc]
+    
+    @property
+    def dependency_labels(self) -> List[str]:
+        return [token.dep_ for token in self.nlp_doc]
+    
+    def parse_morph(self) -> List[str]:
+        """Extracts all occurences of UD morphological tags in a spaCy document"""
+        morphs = [token.morph for token in self.nlp_doc]
+        doc_morph_tags = []
+        for morphs in morphs:
+            for morph in morphs:
+                doc_morph_tags.append(morph.split("=")[1])
+        return doc_morph_tags
+        
+    
+        
+
+    
+    
+    
     
 def make_document(text:str, nlp) -> Document:
     """Converts raw text into a Document object"""
     text   = deepcopy(text)
     spacy_doc  = nlp(demojify_text(text)) # dep parser hates emojis
-    tokens     = [token.text for token in spacy_doc]
-    words      = [token.text for token in spacy_doc if not token.is_punct]
-    pos_tags   = [token.pos_ for token in spacy_doc]
-    dep_labels = [token.dep_ for token in spacy_doc]
+
+    words      = 
+    pos_tags   = 
+    dep_labels = 
     sentences  = list(spacy_doc.sents)
     return Document(text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
 
+
+
+#! make a vocab class
 def load_vocab(path:str, type="static") -> Tuple[str]:
     """
     Loads in a vocabulary file as a tuple of strings
@@ -98,16 +117,13 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
         raise ValueError(f"Vocab type '{type}' doesn't exist. Check your vocab call")
 
 
-def demojify_text(text:str) -> str:
-    """Strips text of its emojis (used only when making spaCy object, since dep parser seems to hate emojis)"""
-    return demoji.replace(text, "")
-
-
+#? used in pos bigrams
 def get_sentence_spans(doc:Document) -> List[SentenceSpan]:
     """Gets each start and end index of all sentences in a document"""
     return [(sent.start, sent.end) for sent in doc.sentences]
 
-   
+
+#? used in pos bigrams 
 def insert_sentence_boundaries(spans:List[SentenceSpan], tokens:List[str]) -> List[str]:
     """Inserts sentence boundaries into a list of tokens"""
     new_tokens = []
@@ -122,6 +138,7 @@ def insert_sentence_boundaries(spans:List[SentenceSpan], tokens:List[str]) -> Li
     new_tokens.append("EOS")  
     return new_tokens
 
+#? used in pos bigrams
 def get_bigrams_with_boundary_syms(doc:Document, tokens:List[str]):
     """Gets the bigrams from given list of tokens, including sentence boundaries"""
     sent_spans = get_sentence_spans(doc)
@@ -130,6 +147,7 @@ def get_bigrams_with_boundary_syms(doc:Document, tokens:List[str]):
     return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
 
 
+#? used in mixed bigrams
 def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str]:
     """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
     filtered = []
@@ -141,6 +159,8 @@ def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str
             filtered.append(pair[0])
     return filtered
     
+
+#? used in mixed bigrams
 def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
     """Replaces all open class tokens with corresponding POS tags"""
     OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
@@ -151,13 +171,8 @@ def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
 
     return remove_openclass_bigrams(tokens_replaced, OPEN_CLASS)
 
-def parse_morph(morphs_list:List) -> List[str]:
-    """Extracts all occurences of UD morphological tags in a spaCy document"""
-    doc_morph_tags = []
-    for morphs in morphs_list:
-        for morph in morphs:
-            doc_morph_tags.append(morph.split("=")[1])
-    return doc_morph_tags
+
+
 
 def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict[str, int]:
     """
@@ -280,6 +295,7 @@ def embedding_vector(doc:Document) -> Feature:
     embedding = {"embedding_vector" : doc.spacy_doc.vector}
     return Feature(None, embedding)
 
+#! doc.words causing crash
 def document_stats(doc:Document) -> Feature:
     words = doc.words
     doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
@@ -332,24 +348,22 @@ DEFAULT_CONFIG = {
 }  
      
 class GrammarVectorizer:
-    """
-    Houses all featurizers to apply to a text document according to a given config.
     
-    Initializes the spaCy nlp object and activated featurizers with each instance
-    """
+    nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
+    register = (pos_unigrams,
+                pos_bigrams,
+                func_words,
+                punc,
+                letters,
+                common_emojis,
+                embedding_vector,
+                document_stats,
+                dep_labels,
+                mixed_bigrams,
+                morph_tags)
+    
     def __init__(self, config:Dict[str,int]=None):
-        self.nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
-        self.register = (pos_unigrams,
-                         pos_bigrams,
-                         func_words,
-                         punc,
-                         letters,
-                         common_emojis,
-                         embedding_vector,
-                         document_stats,
-                         dep_labels,
-                         mixed_bigrams,
-                         morph_tags)
+        
         
         self._config = self._process_config(config)
         os.system("./clear_logs.sh")
@@ -409,3 +423,20 @@ class GrammarVectorizer:
              
         df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
         return df
+    
+    
+    @classmethod
+    def from_jsonlines(cls, path:str):
+        """Generate a dataframe given a jsonlines file containing authorIDs and documentID fields"""
+        pass
+    
+    @classmethod
+    def from_list(cls, documents:List[str]):
+        """Generate a dataframe given a list of documents."""
+        
+        documents = map(lambda x: demoji.replace(x, ""))
+        docs = cls.nlp.pipe(documents)
+        for i, doc in enumerate(docs):
+            pass
+
+
