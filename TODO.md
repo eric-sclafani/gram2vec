@@ -3,10 +3,6 @@ This file contains ideas for future additions/improvements
 
 ------
 
-## Verbalizer
-- 
-
-
 ## Evals:
 - dim reduction experiments
 
@@ -20,15 +16,19 @@ This file contains ideas for future additions/improvements
 - https://ceur-ws.org/Vol-1178/CLEF2012wn-PAN-TanguyEt2012.pdf
 - mispellings?
 
-
-## Code improvements:
+## CURRENT REFACTOR:
 - Make `vectorizer.py` call `generate_non_static_vocab` on the fly for when new datasets are used
 - Revise all doc strings to use numpy format
-- Make gram2vec an installable package?
+- Look into better ways to package the code
 - For the **Document** class in `vectorizer.py`, change the attributes to be properties or methods instead
-- Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)??
+- Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)
 - Vocab: change non-static handling and convert pickle to text file delimited by newlines?
 - check out those odd edge cases Zack found
+- 
+
+
+## Code improvements:
+- Verbalizer is fine for now. Touch base with Ansh in near future
 
 ## Other:
 - Start preparing the features for when they need to be multilingual
