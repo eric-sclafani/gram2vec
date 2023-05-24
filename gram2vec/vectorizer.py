@@ -14,6 +14,8 @@ from typing import Optional, Tuple, List, Dict
 import pickle
 
 
+#? make a spacy pipe to remove emojis BEFORE dependency parse
+
 
 
 
@@ -33,7 +35,6 @@ class UniversalDocument:
     This class allows for a universal object type that gets passed through all feature extractors.
     
     When making a new feature, create a new property method following the same format
-    
     """
     def __init__(self, raw_text:str, nlp_doc:Doc):
         self.raw_text = raw_text
@@ -42,46 +43,22 @@ class UniversalDocument:
     @property
     def tokens(self) -> List[str]:
         return [token.text for token in self.nlp_doc]
-    
     @property
     def words(self) -> List[str]:
         return [token.text for token in self.nlp_doc if not token.is_punct]
-    
     @property
     def pos_tags(self) -> List[str]:
         return [token.pos_ for token in self.nlp_doc]
-    
     @property
-    def dependency_labels(self) -> List[str]:
+    def dep_labels(self) -> List[str]:
         return [token.dep_ for token in self.nlp_doc]
-    
-    def parse_morph(self) -> List[str]:
-        """Extracts all occurences of UD morphological tags in a spaCy document"""
-        morphs = [token.morph for token in self.nlp_doc]
-        doc_morph_tags = []
-        for morphs in morphs:
-            for morph in morphs:
-                doc_morph_tags.append(morph.split("=")[1])
-        return doc_morph_tags
+    @property
+    def morph_labels(self) -> List[str]:
+        return [morph for token in self.nlp_doc for morph in token.morph if morph != ""]
+
         
     
-        
-
     
-    
-    
-    
-def make_document(text:str, nlp) -> Document:
-    """Converts raw text into a Document object"""
-    text   = deepcopy(text)
-    spacy_doc  = nlp(demojify_text(text)) # dep parser hates emojis
-
-    words      = 
-    pos_tags   = 
-    dep_labels = 
-    sentences  = list(spacy_doc.sents)
-    return Document(text, spacy_doc, tokens, words, pos_tags, dep_labels, sentences)
-
 
 
 #! make a vocab class
@@ -118,13 +95,13 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
 
 
 #? used in pos bigrams
-def get_sentence_spans(doc:Document) -> List[SentenceSpan]:
+def get_sentence_spans(doc):
     """Gets each start and end index of all sentences in a document"""
     return [(sent.start, sent.end) for sent in doc.sentences]
 
 
 #? used in pos bigrams 
-def insert_sentence_boundaries(spans:List[SentenceSpan], tokens:List[str]) -> List[str]:
+def insert_sentence_boundaries(spans, tokens:List[str]) -> List[str]:
     """Inserts sentence boundaries into a list of tokens"""
     new_tokens = []
     
@@ -139,7 +116,7 @@ def insert_sentence_boundaries(spans:List[SentenceSpan], tokens:List[str]) -> Li
     return new_tokens
 
 #? used in pos bigrams
-def get_bigrams_with_boundary_syms(doc:Document, tokens:List[str]):
+def get_bigrams_with_boundary_syms(doc, tokens:List[str]):
     """Gets the bigrams from given list of tokens, including sentence boundaries"""
     sent_spans = get_sentence_spans(doc)
     tokens_with_boundary_syms = insert_sentence_boundaries(sent_spans, tokens)
@@ -174,7 +151,7 @@ def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
 
 
 
-def add_zero_vocab_counts(vocab:Vocab, counted_doc_features:Counter) -> Dict[str, int]:
+def add_zero_vocab_counts(vocab, counted_doc_features:Counter) -> Dict[str, int]:
     """
     Combines vocab and counted_doc_features into one dictionary such that
     any feature in vocab counted 0 times in counted_doc_features is preserved in the feature vector
@@ -241,7 +218,7 @@ class Feature:
         
     
     
-def pos_unigrams(doc:Document) -> Feature:
+def pos_unigrams(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/pos_unigrams.txt")
     doc_pos_tag_counts = Counter(doc.pos_tags)
@@ -249,7 +226,7 @@ def pos_unigrams(doc:Document) -> Feature:
     
     return Feature("POS Unigram", all_pos_tag_counts, len(doc.pos_tags))
 
-def pos_bigrams(doc:Document) -> Feature:
+def pos_bigrams(doc) -> Feature:
     
     vocab = load_vocab("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl", type="non_static")
     doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
@@ -257,7 +234,7 @@ def pos_bigrams(doc:Document) -> Feature:
     
     return Feature("POS Bigram", all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
 
-def func_words(doc:Document) -> Feature:
+def func_words(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/function_words.txt")
     doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
@@ -265,7 +242,7 @@ def func_words(doc:Document) -> Feature:
     
     return Feature("Function word", all_func_word_counts, sum_of_counts(doc_func_word_counts))
 
-def punc(doc:Document) -> Feature:
+def punc(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/punc_marks.txt")
     doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
@@ -273,7 +250,7 @@ def punc(doc:Document) -> Feature:
     
     return Feature("Punctuation", all_punc_counts, sum_of_counts(doc_punc_counts))
 
-def letters(doc:Document) -> Feature:
+def letters(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/letters.txt")
     doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
@@ -281,7 +258,7 @@ def letters(doc:Document) -> Feature:
     
     return Feature("Letter", all_letter_counts, sum_of_counts(doc_letter_counts))
 
-def common_emojis(doc:Document) -> Feature:
+def common_emojis(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/common_emojis.txt")
     extract_emojis = demoji.findall_list(doc.text, desc=False)
@@ -290,13 +267,13 @@ def common_emojis(doc:Document) -> Feature:
     
     return Feature("Emoji", all_emoji_counts, len(doc.tokens))
 
-def embedding_vector(doc:Document) -> Feature:
+def embedding_vector(doc) -> Feature:
     """spaCy word2vec (or glove?) document embedding"""
     embedding = {"embedding_vector" : doc.spacy_doc.vector}
     return Feature(None, embedding)
 
 #! doc.words causing crash
-def document_stats(doc:Document) -> Feature:
+def document_stats(doc) -> Feature:
     words = doc.words
     doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
                       "large_words" : len([1 for word in words if len(word) > 4])/len(words) if len(words) else 0,
@@ -307,7 +284,7 @@ def document_stats(doc:Document) -> Feature:
                       "hapaxes"     : len(FreqDist(words).hapaxes())/len(words) if len(words) else 0}
     return Feature("Document statistic", doc_statistics)
 
-def dep_labels(doc:Document) -> Feature:
+def dep_labels(doc) -> Feature:
 
     vocab = load_vocab("vocab/static/dep_labels.txt")
     doc_dep_labels = Counter([dep for dep in doc.dep_labels])
@@ -315,7 +292,7 @@ def dep_labels(doc:Document) -> Feature:
     
     return Feature("Dependency label", all_dep_labels, sum_of_counts(doc_dep_labels))
 
-def mixed_bigrams(doc:Document) -> Feature:
+def mixed_bigrams(doc) -> Feature:
     
     vocab = load_vocab("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl", type="non_static")
     doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
@@ -323,7 +300,7 @@ def mixed_bigrams(doc:Document) -> Feature:
     
     return Feature("Mixed Bigram", all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
 
-def morph_tags(doc:Document) -> Feature:
+def morph_tags(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/morph_tags.txt")
     doc_morph_tags = Counter(parse_morph([token.morph for token in doc.spacy_doc]))
@@ -436,7 +413,8 @@ class GrammarVectorizer:
         
         documents = map(lambda x: demoji.replace(x, ""))
         docs = cls.nlp.pipe(documents)
+        
         for i, doc in enumerate(docs):
-            pass
+            current_doc = UniversalDocument(documents[i], doc)
 
 

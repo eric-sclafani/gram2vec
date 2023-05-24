@@ -16,6 +16,7 @@ This file contains ideas for future additions/improvements
 - Vocab: change non-static handling and convert pickle to text file delimited by newlines?
 - check out those odd edge cases Zack found
 - At the end of refactor, if I use nlp.pipe, finetune the multiprocessing options
+- Possibly add unit tests?
 
 
 ## Code improvements:
