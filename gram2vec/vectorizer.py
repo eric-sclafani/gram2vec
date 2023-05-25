@@ -1,6 +1,6 @@
 
 from collections import Counter
-from copy import deepcopy
+from copy import copy
 from dataclasses import dataclass
 import demoji
 from nltk import bigrams
@@ -10,56 +10,25 @@ import pandas as pd
 import os
 import spacy
 from spacy.tokens import Doc
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Callable
 import pickle
 
+# ~~~ Spacy stuff ~~~
 
-#? make a spacy pipe to remove emojis BEFORE dependency parse
+nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"]) #! test time and performance between small and medium models
 
-
-
-
-
-#! POTENTIAL BOTTLENECK
-def feature_logger(filename, writable):
-    """Custom logging function. Was having issues with standard logging library"""
-    if not os.path.exists("logs"):
-        os.mkdir("logs")
-               
-    with open(f"logs/{filename}.log", "a") as fout: 
-        fout.write(writable)
+def set_spacy_extension(name:str, count_function:Callable) -> None:
+    """Creates spacy extensions to easily access certain information"""
+    if not Doc.has_extension(name):
+        Doc.set_extension(name, getter=count_function)
+   
+# add more extensions here as needed     
+set_spacy_extension("tokens", lambda doc: [token.text for token in doc])        
+set_spacy_extension("words", lambda doc: [token.text for token in doc if not token.is_punct])
+set_spacy_extension("pos_tags", lambda doc: [token.pos_ for token in doc])
+set_spacy_extension("dep_labels", lambda doc: [token.dep_ for token in doc])
+set_spacy_extension("morph_tags", lambda doc: [morph for token in doc for morph in token.morph if morph != ""])
         
-
-class UniversalDocument:
-    """
-    This class allows for a universal object type that gets passed through all feature extractors.
-    
-    When making a new feature, create a new property method following the same format
-    """
-    def __init__(self, raw_text:str, nlp_doc:Doc):
-        self.raw_text = raw_text
-        self.nlp_doc = nlp_doc
-        
-    @property
-    def tokens(self) -> List[str]:
-        return [token.text for token in self.nlp_doc]
-    @property
-    def words(self) -> List[str]:
-        return [token.text for token in self.nlp_doc if not token.is_punct]
-    @property
-    def pos_tags(self) -> List[str]:
-        return [token.pos_ for token in self.nlp_doc]
-    @property
-    def dep_labels(self) -> List[str]:
-        return [token.dep_ for token in self.nlp_doc]
-    @property
-    def morph_labels(self) -> List[str]:
-        return [morph for token in self.nlp_doc for morph in token.morph if morph != ""]
-
-        
-    
-    
-
 
 #! make a vocab class
 def load_vocab(path:str, type="static") -> Tuple[str]:
@@ -93,15 +62,17 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
     else:
         raise ValueError(f"Vocab type '{type}' doesn't exist. Check your vocab call")
 
+# ~~~ Helper functions ~~~
 
-#? used in pos bigrams
-def get_sentence_spans(doc):
+#pos bigrams
+def get_sentence_spans(doc) -> List[Tuple[int,int]]:
     """Gets each start and end index of all sentences in a document"""
     return [(sent.start, sent.end) for sent in doc.sentences]
 
-
-#? used in pos bigrams 
-def insert_sentence_boundaries(spans, tokens:List[str]) -> List[str]:
+#pos bigrams 
+def insert_sentence_boundaries(spans:List[Tuple[int,int]], 
+                               tokens:List[str]
+                               ) -> List[str]:
     """Inserts sentence boundaries into a list of tokens"""
     new_tokens = []
     
@@ -115,7 +86,7 @@ def insert_sentence_boundaries(spans, tokens:List[str]) -> List[str]:
     new_tokens.append("EOS")  
     return new_tokens
 
-#? used in pos bigrams
+# mixed bigrams
 def get_bigrams_with_boundary_syms(doc, tokens:List[str]):
     """Gets the bigrams from given list of tokens, including sentence boundaries"""
     sent_spans = get_sentence_spans(doc)
@@ -124,7 +95,7 @@ def get_bigrams_with_boundary_syms(doc, tokens:List[str]):
     return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
 
 
-#? used in mixed bigrams
+# mixed bigrams
 def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str]:
     """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
     filtered = []
@@ -136,19 +107,18 @@ def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str
             filtered.append(pair[0])
     return filtered
     
-
-#? used in mixed bigrams
+# mixed bigrams
 def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
     """Replaces all open class tokens with corresponding POS tags"""
     OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
-    tokens_replaced = deepcopy(tokens)
+    tokens_replaced = copy(tokens)
     for i in range(len(tokens_replaced)):
         if pos[i] in OPEN_CLASS:
             tokens_replaced[i] = pos[i]
 
     return remove_openclass_bigrams(tokens_replaced, OPEN_CLASS)
 
-
+#~~~ Features ~~~
 
 
 def add_zero_vocab_counts(vocab, counted_doc_features:Counter) -> Dict[str, int]:
@@ -189,7 +159,7 @@ def sum_of_counts(counts:Dict) -> int:
     count_sum = sum(counts.values())
     return count_sum if count_sum > 0 else 1
               
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Featurizers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 @dataclass
 class Feature:
@@ -310,23 +280,11 @@ def morph_tags(doc) -> Feature:
 
 # ~~~ Featurizers end ~~~
 
-DEFAULT_CONFIG = {
-    "pos_unigrams":1,
-    "pos_bigrams":1,
-    "func_words":1,
-    "punc":1,
-    "letters":1,
-    "common_emojis":1,
-    "embedding_vector":0, # do not activate for authorship attribution; this is only a control vector
-    "document_stats":1,
-    "dep_labels":1,
-    "mixed_bigrams":1,
-    "morph_tags":1
-}  
+
      
 class GrammarVectorizer:
     
-    nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"])
+    
     register = (pos_unigrams,
                 pos_bigrams,
                 func_words,

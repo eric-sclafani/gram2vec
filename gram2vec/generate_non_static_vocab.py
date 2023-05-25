@@ -20,11 +20,7 @@ class Vocab:
     name:str
     features:Tuple[str]
 
-def load_data(data_path:str) -> Dict[str, List[Dict]]:
-    """Loads in a JSON consisting of author_ids mapped to lists of dict entries as a dict"""
-    with open(data_path) as fin:
-        data = json.load(fin)
-    return data
+
 
 def get_all_documents(train_path:str, nlp) -> List[Document]:
     """Retrieves all training documents in training data"""

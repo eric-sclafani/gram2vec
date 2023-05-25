@@ -9,14 +9,14 @@ This file contains ideas for future additions/improvements
 ## CURRENT REFACTOR:
 - move config back to a toml file
 - Make `vectorizer.py` call `generate_non_static_vocab` on the fly for when new datasets are used
-- Revise all doc strings to use numpy format
-- Look into better ways to package the code
-- For the **Document** class in `vectorizer.py`, change the attributes to be properties or methods instead
+- Revise doc strings
 - Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)
 - Vocab: change non-static handling and convert pickle to text file delimited by newlines?
-- check out those odd edge cases Zack found
 - At the end of refactor, if I use nlp.pipe, finetune the multiprocessing options
 - Possibly add unit tests?
+- Look into better ways to package the code
+- Possible make gram2vec pip installable?
+- make grammarvectorize a function instead?
 
 
 ## Code improvements:
