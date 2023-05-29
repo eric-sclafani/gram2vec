@@ -17,6 +17,8 @@ This file contains ideas for future additions/improvements
 - Look into better ways to package the code
 - Possible make gram2vec pip installable?
 - make grammarvectorize a function instead?
+- test time and performance between small and medium spacy english models
+- after code is working, convert the lists in `load_spacy` to generators instead and see if that provides a speed boost
 
 
 ## Code improvements:
