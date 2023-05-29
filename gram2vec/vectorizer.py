@@ -10,45 +10,35 @@ import pandas as pd
 import os
 import spacy
 from spacy.tokens import Doc
-from typing import Optional, Tuple, List, Dict, Callable
-import pickle
+from typing import Optional, Tuple, List, Dict, Callable, Generator
 
 # ~~~ Spacy stuff ~~~
 
-nlp = spacy.load("en_core_web_md", disable=["ner", "lemmatizer"]) #! test time and performance between small and medium models
+#TODO: test time and performance between small and medium models
+nlp = spacy.load("en_core_web_md", exclude=["ner", "lemmatizer"])
+spacy.prefer_gpu()
 
-def set_spacy_extension(name:str, count_function:Callable) -> None:
+def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
-        Doc.set_extension(name, getter=count_function)
+        Doc.set_extension(name, getter=function)
    
-# add more extensions here as needed     
-set_spacy_extension("tokens", lambda doc: [token.text for token in doc])        
-set_spacy_extension("words", lambda doc: [token.text for token in doc if not token.is_punct])
-set_spacy_extension("pos_tags", lambda doc: [token.pos_ for token in doc])
-set_spacy_extension("dep_labels", lambda doc: [token.dep_ for token in doc])
-set_spacy_extension("morph_tags", lambda doc: [morph for token in doc for morph in token.morph if morph != ""])
-        
+# add more extensions here as needed
+custom_extensions = {
+    ("tokens", lambda doc: [token.text for token in doc]),
+    ("words", lambda doc: [token.text for token in doc if not token.is_punct]),
+    ("pos_tags", lambda doc: [token.pos_ for token in doc]),
+    ("dep_labels", lambda doc: [token.dep_ for token in doc]),
+    ("morph_tags", lambda doc: [morph for token in doc for morph in token.morph if morph != ""])
+}
+for name, function in custom_extensions:
+    set_spacy_extension(name, function)
+    
+# ~~~ Vocab ~~~
 
-#! make a vocab class
+#! make a vocab loader (func or class)
 def load_vocab(path:str, type="static") -> Tuple[str]:
-    """
-    Loads in a vocabulary file as a tuple of strings
     
-    Params
-    -----
-        path (str): path of vocab file
-        type (str, default="static"): determines what type of vocab is to be loaded
-        
-    Note
-    ----
-        static: dataset-agnostic vocabulary; it looks for the same exact elements for any dataset
-        non-static: vocabulary generated from a dataset, which is stored as a pickle file
-    
-    Returns
-    -------
-        tuple[str]: tuple of vocabulary elements
-    """
     
     if type == "static":
         assert path.endswith(".txt")
@@ -61,8 +51,11 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
             return pickle.load(fin)
     else:
         raise ValueError(f"Vocab type '{type}' doesn't exist. Check your vocab call")
+    
+    
 
 # ~~~ Helper functions ~~~
+# Note: each helper is annotated with which feature is using that helper
 
 #pos bigrams
 def get_sentence_spans(doc) -> List[Tuple[int,int]]:
@@ -245,6 +238,11 @@ def embedding_vector(doc) -> Feature:
 #! doc.words causing crash
 def document_stats(doc) -> Feature:
     words = doc.words
+    
+    #! GETTING SPLIT INTO SEPARATE VECTORS
+    #! REPLACE ALL STATISTICAL CALCULATIONS WITH BUILT IN
+    
+    
     doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
                       "large_words" : len([1 for word in words if len(word) > 4])/len(words) if len(words) else 0,
                       "word_len_avg": np.mean([len(word) for word in words]),
@@ -359,20 +357,41 @@ class GrammarVectorizer:
         df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
         return df
     
+    def _remove_emojis(documents:List[str]) -> List[str]:
+        """Removes emojis. Needed because spacy dependency parser hates emojis."""
+        return list(map(lambda x: demoji.replace(x, "")))
     
-    @classmethod
-    def from_jsonlines(cls, path:str):
-        """Generate a dataframe given a jsonlines file containing authorIDs and documentID fields"""
-        pass
+    def _doc_generator(self, documents:List[str]) -> Generator[Doc, None, None]:
+        """Converts a list of strings into a spacy Doc generator"""
+        return nlp.pipe(documents, disable=["ner", "lemmatizer"])
     
-    @classmethod
-    def from_list(cls, documents:List[str]):
+    def from_jsonlines(self, path:str):
+        """
+        Generate a dataframe given a jsonlines file containing authorIDs and documentID fields
+        
+        This is done to make processing data in the T&E format easier
+        """
+        assert path.endswith(".jsonl"), f"Invalid file path: '{path}'. File must be specified as a jsonlines file (.jsonl) with the correct fields"
+        df = pd.read_json(path, lines=True)
+        try:
+            documents = df["fullText"]
+            author_ids = df["authorIDs"]
+            document_ids = df["documentID"]
+        except KeyError:
+            raise KeyError("Specified jsonlines file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
+        
+        
+
+    def from_list(self, documents:List[str]):
         """Generate a dataframe given a list of documents."""
         
-        documents = map(lambda x: demoji.replace(x, ""))
-        docs = cls.nlp.pipe(documents)
+        docs_demojified = self._remove_emojis(documents)
         
         for i, doc in enumerate(docs):
-            current_doc = UniversalDocument(documents[i], doc)
+            pass
 
 
+
+if __name__ == "__main__":
+    
+    print(nlp.pipeline)

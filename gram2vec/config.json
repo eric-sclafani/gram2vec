@@ -1,0 +1,13 @@
+{
+    "pos_unigrams":1,
+    "pos_bigrams":1,
+    "func_words":1,
+    "punc":1,
+    "letters":1,
+    "common_emojis":1,
+    "embedding_vector":0, 
+    "document_stats":1,
+    "dep_labels":1,
+    "mixed_bigrams":1,
+    "morph_tags":1
+}  
