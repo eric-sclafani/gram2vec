@@ -1,6 +1,6 @@
 import spacy
 from spacy.tokens import Doc
-from typing import Callable, List, Tuple, Generator
+from typing import Callable, List, Tuple
 from nltk import bigrams
 
 # ~~~ Type aliases ~~~
@@ -25,9 +25,9 @@ def get_morph_tags(doc):
 def get_sentences(doc):
     return list(doc.sents)
 
-def get_pos_bigrams(doc:Doc) -> List[Bigram]:
+def get_pos_bigrams(doc) -> List[Bigram]:
 
-    def get_sentence_spans(doc:Doc) -> List[SentenceSpan]:
+    def get_sentence_spans(doc) -> List[SentenceSpan]:
         """Gets each start and end index of all sentences in a document"""
         return [(sent.start, sent.end) for sent in doc._.sentences]
 
@@ -52,7 +52,7 @@ def get_pos_bigrams(doc:Doc) -> List[Bigram]:
     
 def get_mixed_bigrams(doc):
     
-    def replace_openclass(doc:Doc, open_class:List[str]) -> List[str]:
+    def replace_openclass(doc, open_class:List[str]) -> List[str]:
         """Replaces all open class tokens with corresponding POS tags and returns a new list"""
         tokens_with_replacements = doc._.tokens
         for i, _ in enumerate(tokens_with_replacements):
@@ -60,8 +60,8 @@ def get_mixed_bigrams(doc):
                 tokens_with_replacements[i] = doc._.pos_tags[i]
         return tokens_with_replacements
 
-    def remove_openclass_bigrams(bigrams, open_class:List[str]) -> List[Bigram]:
-        """Filters out (OPEN_CLASS, OPEN_CLASS) and (CLOSED_CLASS, CLOSED_CLASS) bigrams that inadvertently get created in replace_openclass"""
+    def remove_illicit_bigrams(bigrams, open_class:List[str]) -> List[Bigram]:
+        """Ensures that only (OPEN_CLASS, CLOSED_CLASS) and (CLOSED_CLASS, OPEN_CLASS) bigrams are included in mixed bigrams"""
         filtered = []
         for pair in bigrams:
             if pair[0] not in open_class and pair[1] in open_class or \
@@ -72,22 +72,15 @@ def get_mixed_bigrams(doc):
     OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
     tokens_with_replacements = replace_openclass(doc, OPEN_CLASS)
     mixed_bigrams = bigrams(tokens_with_replacements)
-    mixed_bigrams = remove_openclass_bigrams(mixed_bigrams, OPEN_CLASS)
+    mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
     return mixed_bigrams
     
-
-
-
-
-
 def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
    
-   
-
-   
+     
 # Add more extensions here as needed!
 # Extension syntax: (extension_name, function that returns a list)
 custom_extensions = {
@@ -100,22 +93,8 @@ custom_extensions = {
     ("pos_bigrams", get_pos_bigrams),
     ("mixed_bigrams", get_mixed_bigrams)
 }
-nlp = spacy.load("en_core_web_md", exclude=["ner", "lemmatizer"])
+nlp = spacy.load("en_core_web_md", exclude=["ner"])
 spacy.prefer_gpu()
 
 for name, function in custom_extensions:
     set_spacy_extension(name, function)
-    
-    
-    
-if __name__ == "__main__":
-    test_docs = [
-        "It was Jane's car that got stolen last night. She is odd.",
-        "I ate the pineapple"
-        ]
-
-    doc = nlp(test_docs[1])
-    
-    print(doc._.mixed_bigrams)
-    
-

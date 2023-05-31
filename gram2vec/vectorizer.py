@@ -8,31 +8,11 @@ from nltk import FreqDist
 import numpy as np 
 import pandas as pd
 import os
-import spacy
-from spacy.tokens import Doc
 from typing import Optional, Tuple, List, Dict, Callable, Generator
 
-# ~~~ Spacy stuff ~~~
+from load_spacy import nlp
 
-#TODO: test time and performance between small and medium models
-nlp = spacy.load("en_core_web_md", exclude=["ner", "lemmatizer"])
-spacy.prefer_gpu()
 
-def set_spacy_extension(name:str, function:Callable) -> None:
-    """Creates spacy extensions to easily access certain information"""
-    if not Doc.has_extension(name):
-        Doc.set_extension(name, getter=function)
-   
-# add more extensions here as needed
-custom_extensions = {
-    ("tokens", lambda doc: [token.text for token in doc]),
-    ("words", lambda doc: [token.text for token in doc if not token.is_punct]),
-    ("pos_tags", lambda doc: [token.pos_ for token in doc]),
-    ("dep_labels", lambda doc: [token.dep_ for token in doc]),
-    ("morph_tags", lambda doc: [morph for token in doc for morph in token.morph if morph != ""])
-}
-for name, function in custom_extensions:
-    set_spacy_extension(name, function)
     
 # ~~~ Vocab ~~~
 
@@ -54,62 +34,6 @@ def load_vocab(path:str, type="static") -> Tuple[str]:
     
     
 
-# ~~~ Helper functions ~~~
-# Note: each helper is annotated with which feature is using that helper
-
-#pos bigrams
-def get_sentence_spans(doc) -> List[Tuple[int,int]]:
-    """Gets each start and end index of all sentences in a document"""
-    return [(sent.start, sent.end) for sent in doc.sentences]
-
-#pos bigrams 
-def insert_sentence_boundaries(spans:List[Tuple[int,int]], 
-                               tokens:List[str]
-                               ) -> List[str]:
-    """Inserts sentence boundaries into a list of tokens"""
-    new_tokens = []
-    
-    for i, item in enumerate(tokens):
-        for start, end in spans:
-            if i == start:
-                new_tokens.append("BOS")
-            elif i == end:
-                new_tokens.append("EOS")    
-        new_tokens.append(item)
-    new_tokens.append("EOS")  
-    return new_tokens
-
-# mixed bigrams
-def get_bigrams_with_boundary_syms(doc, tokens:List[str]):
-    """Gets the bigrams from given list of tokens, including sentence boundaries"""
-    sent_spans = get_sentence_spans(doc)
-    tokens_with_boundary_syms = insert_sentence_boundaries(sent_spans, tokens)
-    token_bigrams = bigrams(tokens_with_boundary_syms)
-    return list(filter(lambda x: x != ("EOS","BOS"), token_bigrams))
-
-
-# mixed bigrams
-def remove_openclass_bigrams(tokens:List[str], OPEN_CLASS:List[str]) -> List[str]:
-    """Removes (OPEN_CLASS, OPEN_CLASS) bigrams that inadvertently get created in replace_openclass """
-    filtered = []
-    for pair in bigrams(tokens):
-        if pair[0] not in OPEN_CLASS and pair[1] in OPEN_CLASS:
-            filtered.append(pair[0])
-            
-        if pair[0] in OPEN_CLASS and pair[1] not in OPEN_CLASS:
-            filtered.append(pair[0])
-    return filtered
-    
-# mixed bigrams
-def replace_openclass(tokens:List[str], pos:List[str]) -> List[str]:
-    """Replaces all open class tokens with corresponding POS tags"""
-    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
-    tokens_replaced = copy(tokens)
-    for i in range(len(tokens_replaced)):
-        if pos[i] in OPEN_CLASS:
-            tokens_replaced[i] = pos[i]
-
-    return remove_openclass_bigrams(tokens_replaced, OPEN_CLASS)
 
 #~~~ Features ~~~
 

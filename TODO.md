@@ -7,8 +7,7 @@ This file contains ideas for future additions/improvements
 - dim reduction experiments
 
 ## CURRENT REFACTOR:
-- move config back to a toml file
-- Make `vectorizer.py` call `generate_non_static_vocab` on the fly for when new datasets are used
+- move config to json
 - Revise doc strings
 - Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)
 - Vocab: change non-static handling and convert pickle to text file delimited by newlines?
@@ -19,6 +18,8 @@ This file contains ideas for future additions/improvements
 - make grammarvectorize a function instead?
 - test time and performance between small and medium spacy english models
 - after code is working, convert the lists in `load_spacy` to generators instead and see if that provides a speed boost
+- refresh non_static_vocab parameter
+- have vectorizer import generate_non_static_vocab
 
 
 ## Code improvements:
