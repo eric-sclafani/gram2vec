@@ -133,3 +133,4 @@ dmypy.json
 */logs/*
 .DS_Store
 data
+testing.ipynb

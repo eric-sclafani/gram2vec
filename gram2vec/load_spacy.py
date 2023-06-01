@@ -7,6 +7,14 @@ from nltk import bigrams
 SentenceSpan = Tuple[int,int]
 Bigram = Tuple[str,str]
 
+# ~~~ Helper funcs ~~~
+
+def convert_bigrams_to_strings(bigrams) -> List[str]:
+    """Converts nltk bigrams into a list of bigram strings"""
+    return [" ".join(bigram) for bigram in bigrams]
+
+# ~~~ Getters ~~~
+
 def get_tokens(doc):
     return [token.text for token in doc]
 
@@ -43,12 +51,13 @@ def get_pos_bigrams(doc) -> List[Bigram]:
             new_tokens.append(pos)
         new_tokens.append("EOS")  
         return new_tokens
+    
 
     sent_spans = get_sentence_spans(doc)
     pos_tags_with_boundary_syms = insert_sentence_boundaries(sent_spans)
     pos_bigrams = bigrams(pos_tags_with_boundary_syms)
     
-    return list(pos_bigrams)
+    return convert_bigrams_to_strings(pos_bigrams)
     
 def get_mixed_bigrams(doc):
     
@@ -69,11 +78,11 @@ def get_mixed_bigrams(doc):
                 filtered.append(pair)
         return filtered
         
-    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ"]
+    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ", "PROPN"]
     tokens_with_replacements = replace_openclass(doc, OPEN_CLASS)
     mixed_bigrams = bigrams(tokens_with_replacements)
     mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
-    return mixed_bigrams
+    return convert_bigrams_to_strings(mixed_bigrams)
     
 def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
@@ -82,7 +91,7 @@ def set_spacy_extension(name:str, function:Callable) -> None:
    
      
 # Add more extensions here as needed!
-# Extension syntax: (extension_name, function that returns a list)
+# Extension syntax: (extension_name, getter function that returns a list)
 custom_extensions = {
     ("tokens", get_tokens),
     ("words", get_words),
@@ -94,7 +103,5 @@ custom_extensions = {
     ("mixed_bigrams", get_mixed_bigrams)
 }
 nlp = spacy.load("en_core_web_md", exclude=["ner"])
-spacy.prefer_gpu()
-
 for name, function in custom_extensions:
     set_spacy_extension(name, function)

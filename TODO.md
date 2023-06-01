@@ -20,7 +20,7 @@ This file contains ideas for future additions/improvements
 - after code is working, convert the lists in `load_spacy` to generators instead and see if that provides a speed boost
 - refresh non_static_vocab parameter
 - have vectorizer import generate_non_static_vocab
-
+- experiment with size of n for mixex bigrams and pos bigrams
 
 ## Code improvements:
 - Verbalizer is fine for now. Touch base with Ansh in near future
