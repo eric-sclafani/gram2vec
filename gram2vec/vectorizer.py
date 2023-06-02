@@ -1,6 +1,5 @@
 
 from collections import Counter
-from copy import copy
 from dataclasses import dataclass
 import demoji
 from nltk import bigrams
@@ -8,103 +7,90 @@ from nltk import FreqDist
 import numpy as np 
 import pandas as pd
 import os
-from typing import Optional, Tuple, List, Dict, Callable, Generator
-
+from typing import Optional, Tuple, List, Dict, Callable
 from load_spacy import nlp
 
-
-    
 # ~~~ Vocab ~~~
 
-#! make a vocab loader (func or class)
-def load_vocab(path:str, type="static") -> Tuple[str]:
-    
-    
-    if type == "static":
-        assert path.endswith(".txt")
-        with open (path, "r") as fin:
-            return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
-        
-    elif type == "non_static":
-        assert path.endswith(".pkl")
-        with open (path, "rb") as fin:
-            return pickle.load(fin)
-    else:
-        raise ValueError(f"Vocab type '{type}' doesn't exist. Check your vocab call")
+def load_txt_file(path:str) -> Tuple[str]:
+    with open (path, "r") as fin:
+        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+
+def vocab_loader(name:str, refresh_non_static_vocab:False) -> Tuple[str]:
+    """Given a feature name, loads that feature's vocabulary from disk"""
     
     
 
-
+            
 #~~~ Features ~~~
 
 
-def add_zero_vocab_counts(vocab, counted_doc_features:Counter) -> Dict[str, int]:
-    """
-    Combines vocab and counted_doc_features into one dictionary such that
-    any feature in vocab counted 0 times in counted_doc_features is preserved in the feature vector
-       
-    Params
-    -------
-        vocab (Vocab): vocabulary of elements to look for in documents
-        counted_doc_features (Counter): features counted from document
-        
-    Example
-    -------
-            >> vocab = ("a", "b", "c", "d")
-            
-            >> counted_doc_features = Counter({"a":5, "c":2})
-            
-            >> add_zero_vocab_counts(vocab, counted_doc_features)
-            
-                '{"a": 5, "b" : 0, "c" : 2, "d" : 0}'
-                
-    Returns
-    -------
-        Dict[str,int]: counts of every element in vocab with 0 counts preserved
-    """
-    count_dict = {}
-    for feature in vocab:
-        if feature in counted_doc_features:
-            count = counted_doc_features[feature] 
-        else:
-            count = 0
-        count_dict[feature] = count
-    return count_dict
+REGISTERD_FEATURES = {}
 
-def sum_of_counts(counts:Dict) -> int:
-    """Sums the counts of a count dictionary. Returns 1 if counts sum to 0"""
-    count_sum = sum(counts.values())
-    return count_sum if count_sum > 0 else 1
-              
-
-
-@dataclass
 class Feature:
-    """
-    This class represents the output of each featurizer. Gives access to both the counts themselves and vector
     
-    Params
-    ------
-        featurizer_name (str): featurizer name to prepend to features in self.get_feature_names()
-        feature_counts (Dict[str,int]): dictionary of counts
-        normalize_by (int): option to normalize. Defaults to 1
-    """
-    featurizer_name:str
-    feature_counts:Dict[str,int]
-    normalize_by:int = 1
-    
-    def counts_to_vector(self) -> np.ndarray:
-        """Converts a dictionary of counts into a numpy array and normalizes"""
-        counts = list(self.feature_counts.values())
-        return np.array(counts).flatten() / self.normalize_by
-    
-    def get_feature_names(self) -> List[str]:
-        """Prepends the feature type to each individual feature"""
-        return [f"{self.featurizer_name}: {feat}" for feat in self.feature_counts.keys()]
-    
+    def __init__(self, func):
+        self.func = func    
+        self.name = func.__name__
         
+    def __call__(self, doc):
+        counted_features = self.func(doc)
+        return self.include_zero_vocab_counts(counted_features)
+
+    def include_zero_vocab_counts(self, counted_features:Counter, vocab:Tuple[str]) -> Dict[str, int]:
+        count_dict = {}
+        for feature in vocab:
+            if feature in counted_features:
+                count = counted_features[feature] 
+            else:
+                count = 0
+            count_dict[feature] = count
+        return count_dict
+
+    @classmethod
+    def register(cls, func):
+        func = cls(func)
+        REGISTERD_FEATURES[func.name] = func
+        return func
+
+
+
+
+
+# @dataclass
+# class Feature:
     
+#     featurizer_name:str
+#     feature_counts:Counter
+#     vocab:Tuple[str]
     
+#     def counts_to_df(self) -> pd.DataFrame:
+#         """Converts a dictionary of counts into a numpy array and normalizes"""
+#         counts = list(self.feature_counts.values())
+#         return np.array(counts).flatten() / self.normalize_by
+    
+#     def _is_counted(self, feature:str) -> bool:
+#         return feature in self.feature_counts
+
+#     def include_zero_vocab_counts(self, vocab:Tuple[str]) -> Dict[str, int]:
+#         """Creates count dict that includes counted items in self._feature_counts and items counted 0 times (to ensure consistent vector lengths)"""
+#         count_dict = {}
+#         for feature in vocab:
+#             if self._is_counted(feature):
+#                 count = self._feature_counts[feature] 
+#             else:
+#                 count = 0
+#             count_dict[feature] = count
+#         return count_dict
+
+#     def sum_of_counts(counts:Dict) -> int:
+#         """Sums the counts of a count dictionary. Returns 1 if counts sum to 0"""
+#         count_sum = sum(counts.values())
+#         return count_sum if count_sum > 0 else 1
+
+
+      
+@Feature.register
 def pos_unigrams(doc) -> Feature:
     
     vocab = load_vocab("vocab/static/pos_unigrams.txt")
@@ -154,10 +140,11 @@ def common_emojis(doc) -> Feature:
     
     return Feature("Emoji", all_emoji_counts, len(doc.tokens))
 
-def embedding_vector(doc) -> Feature:
-    """spaCy word2vec (or glove?) document embedding"""
-    embedding = {"embedding_vector" : doc.spacy_doc.vector}
-    return Feature(None, embedding)
+#! DISABLED FOR NOW (only used for experimentation, NOT feature extraction)
+# def embedding_vector(doc) -> Feature:
+#     """spaCy word2vec (or glove?) document embedding"""
+#     embedding = {"embedding_vector" : doc.spacy_doc.vector}
+#     return Feature(None, embedding)
 
 #! doc.words causing crash
 def document_stats(doc) -> Feature:
@@ -200,8 +187,10 @@ def morph_tags(doc) -> Feature:
     
     return Feature("Morphology tag", all_morph_tags, sum_of_counts(doc_morph_tags))
 
-# ~~~ Featurizers end ~~~
+# ~~~ Processing ~~~
 
+
+#! need a refresh parameter
 
      
 class GrammarVectorizer:
@@ -295,7 +284,7 @@ class GrammarVectorizer:
         
         This is done to make processing data in the T&E format easier
         """
-        assert path.endswith(".jsonl"), f"Invalid file path: '{path}'. File must be specified as a jsonlines file (.jsonl) with the correct fields"
+        assert path.endswith(".jsonl"), f"Invalid file path: '{path}'. File must be specified as a jsonlines file (.jsonl)."
         df = pd.read_json(path, lines=True)
         try:
             documents = df["fullText"]
@@ -306,7 +295,7 @@ class GrammarVectorizer:
         
         
 
-    def from_list(self, documents:List[str]):
+    def from_document_list(self, documents:List[str]):
         """Generate a dataframe given a list of documents."""
         
         docs_demojified = self._remove_emojis(documents)

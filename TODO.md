@@ -10,17 +10,17 @@ This file contains ideas for future additions/improvements
 - move config to json
 - Revise doc strings
 - Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)
-- Vocab: change non-static handling and convert pickle to text file delimited by newlines?
 - At the end of refactor, if I use nlp.pipe, finetune the multiprocessing options
 - Possibly add unit tests?
 - Look into better ways to package the code
-- Possible make gram2vec pip installable?
+    - make gram2vec pip installable?
 - make grammarvectorize a function instead?
 - test time and performance between small and medium spacy english models
 - after code is working, convert the lists in `load_spacy` to generators instead and see if that provides a speed boost
 - refresh non_static_vocab parameter
 - have vectorizer import generate_non_static_vocab
-- experiment with size of n for mixex bigrams and pos bigrams
+- experiment with size of n for mixed bigrams and pos bigrams
+- add subsection about vocab to the readme
 
 ## Code improvements:
 - Verbalizer is fine for now. Touch base with Ansh in near future
