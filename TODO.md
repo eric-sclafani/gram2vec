@@ -21,6 +21,7 @@ This file contains ideas for future additions/improvements
 - have vectorizer import generate_non_static_vocab
 - experiment with size of n for mixed bigrams and pos bigrams
 - add subsection about vocab to the readme
+    - also, mentioned that vocab files have to have the same name as counting function
 
 ## Code improvements:
 - Verbalizer is fine for now. Touch base with Ansh in near future

@@ -1,6 +1,5 @@
 
 from collections import Counter
-from dataclasses import dataclass
 import demoji
 from nltk import bigrams
 from nltk import FreqDist
@@ -8,36 +7,58 @@ import numpy as np
 import pandas as pd
 import os
 from typing import Optional, Tuple, List, Dict, Callable
+
 from load_spacy import nlp
+from generate_non_static_vocab import generate_non_static_vocab
 
 # ~~~ Vocab ~~~
 
-def load_txt_file(path:str) -> Tuple[str]:
+def load_from_txt(path:str) -> Tuple[str]:
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
-
-def vocab_loader(name:str, refresh_non_static_vocab:False) -> Tuple[str]:
-    """Given a feature name, loads that feature's vocabulary from disk"""
     
+def vocab_loader() -> Dict[str, Tuple[str]]:
+    """Loads in all feature vocabs. For any new vocabs, add them to this function"""
+    static = "vocab/static/"
+    non_static = "vocab/non_static/"
+    return {
+        "pos_unigrams": load_from_txt(static+"pos_unigrams.txt"),
+        "pos_bigrams": load_from_txt(non_static+"pos_bigrams.txt"),
+        "func_words": load_from_txt(static+"func_words.txt"),
+        "punctuation": load_from_txt(static+"punctuation.txt"),
+        "letters": load_from_txt(static+"letters.txt"),
+        "common_emojis":load_from_txt(static+"common_emojis.txt"),
+        "dep_labels": load_from_txt(static+"dep_labels.txt"),
+        "mixed_bigrams":load_from_txt(non_static+"mixed_bigrams.txt"),
+        "morph_tags":load_from_txt(static+"morph_tags.txt")
+    }
     
-
-            
+VOCABS = vocab_loader()  
+   
 #~~~ Features ~~~
-
 
 REGISTERD_FEATURES = {}
 
 class Feature:
-    
-    def __init__(self, func):
+    """Encapsulates a feature counting function. When the function is called, normalization is applied to the counted features"""
+    def __init__(self, func:Callable):
         self.func = func    
         self.name = func.__name__
         
-    def __call__(self, doc):
+    def __call__(self, doc, vocab):
         counted_features = self.func(doc)
-        return self.include_zero_vocab_counts(counted_features)
+        all_counts = self._include_zero_vocab_counts(counted_features, vocab)
+        return self._normalize(all_counts)
+    
+    @classmethod
+    def register(cls, func):
+        """Creates a Feature object and registers it to the REGISTERED_FEATURES dict"""
+        func = cls(func)
+        REGISTERD_FEATURES[func.name] = func
+        return func
 
-    def include_zero_vocab_counts(self, counted_features:Counter, vocab:Tuple[str]) -> Dict[str, int]:
+    def _include_zero_vocab_counts(self, counted_features:Counter, vocab:Tuple[str]) -> pd.Series:
+        """Includes the vocabulary items that were not counted in the document (to ensure the same size vector for all documents)"""
         count_dict = {}
         for feature in vocab:
             if feature in counted_features:
@@ -45,100 +66,62 @@ class Feature:
             else:
                 count = 0
             count_dict[feature] = count
-        return count_dict
-
-    @classmethod
-    def register(cls, func):
-        func = cls(func)
-        REGISTERD_FEATURES[func.name] = func
-        return func
-
-
-
-
-
-# @dataclass
-# class Feature:
+        return pd.Series(count_dict)
     
-#     featurizer_name:str
-#     feature_counts:Counter
-#     vocab:Tuple[str]
-    
-#     def counts_to_df(self) -> pd.DataFrame:
-#         """Converts a dictionary of counts into a numpy array and normalizes"""
-#         counts = list(self.feature_counts.values())
-#         return np.array(counts).flatten() / self.normalize_by
-    
-#     def _is_counted(self, feature:str) -> bool:
-#         return feature in self.feature_counts
+    def _get_sum(self, counts:np.ndarray) -> int:
+        """Gets sum of counts. Accounts for possible zero counts"""
+        return sum(counts) if sum(counts) > 0 else 1
 
-#     def include_zero_vocab_counts(self, vocab:Tuple[str]) -> Dict[str, int]:
-#         """Creates count dict that includes counted items in self._feature_counts and items counted 0 times (to ensure consistent vector lengths)"""
-#         count_dict = {}
-#         for feature in vocab:
-#             if self._is_counted(feature):
-#                 count = self._feature_counts[feature] 
-#             else:
-#                 count = 0
-#             count_dict[feature] = count
-#         return count_dict
+    def _normalize(self, counts:pd.Series) -> pd.Series:
+        """Normalizes all counts"""
+        return counts / self._get_sum(counts)
+        
 
-#     def sum_of_counts(counts:Dict) -> int:
-#         """Sums the counts of a count dictionary. Returns 1 if counts sum to 0"""
-#         count_sum = sum(counts.values())
-#         return count_sum if count_sum > 0 else 1
-
-
-      
 @Feature.register
 def pos_unigrams(doc) -> Feature:
+    return Counter(doc._.pos_tags)
     
-    vocab = load_vocab("vocab/static/pos_unigrams.txt")
-    doc_pos_tag_counts = Counter(doc.pos_tags)
-    all_pos_tag_counts = add_zero_vocab_counts(vocab, doc_pos_tag_counts)
-    
-    return Feature("POS Unigram", all_pos_tag_counts, len(doc.pos_tags))
-
+@Feature.register
 def pos_bigrams(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/non_static/pan/pos_bigrams/pos_bigrams.pkl", type="non_static")
-    doc_pos_bigram_counts = Counter(get_bigrams_with_boundary_syms(doc, doc.pos_tags))
-    all_pos_bigram_counts = add_zero_vocab_counts(vocab, doc_pos_bigram_counts)
-    
-    return Feature("POS Bigram", all_pos_bigram_counts, sum_of_counts(doc_pos_bigram_counts))
+    return Counter(doc._.pos_bigrams)
 
+@Feature.register
 def func_words(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/static/function_words.txt")
-    doc_func_word_counts = Counter([token for token in doc.tokens if token in vocab])
-    all_func_word_counts = add_zero_vocab_counts(vocab, doc_func_word_counts)
-    
-    return Feature("Function word", all_func_word_counts, sum_of_counts(doc_func_word_counts))
+    return Counter([token for token in doc.tokens if token in VOCABS["func_words"]])
+ 
+@Feature.register
+def punctuation(doc) -> Feature:
+    vocab = VOCABS["punctuation"]
+    return Counter([punc for token in doc.tokens for punc in token if punc in vocab])
 
-def punc(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/static/punc_marks.txt")
-    doc_punc_counts = Counter([punc for token in doc.tokens for punc in token if punc in vocab])
-    all_punc_counts = add_zero_vocab_counts(vocab, doc_punc_counts)
-    
-    return Feature("Punctuation", all_punc_counts, sum_of_counts(doc_punc_counts))
-
+@Feature.register
 def letters(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/static/letters.txt")
-    doc_letter_counts = Counter([letter for token in doc.tokens for letter in token if letter in vocab])
-    all_letter_counts = add_zero_vocab_counts(vocab, doc_letter_counts)
-    
-    return Feature("Letter", all_letter_counts, sum_of_counts(doc_letter_counts))
+    vocab = VOCABS["letters"]
+    return Counter([letter for token in doc.tokens for letter in token if letter in vocab])
 
-def common_emojis(doc) -> Feature:
+@Feature.register
+def dep_labels(doc) -> Feature:
+    return Counter([dep for dep in doc.dep_labels])
+
+@Feature.register
+def mixed_bigrams(doc) -> Feature:
+    return Counter(doc._.mixed_bigrams)
+
+@Feature.register
+def morph_tags(doc) -> Feature:
+    return Counter(doc._.morph_tags)
+
+
+#! MAJOR WIP
+# @Feature.register
+# def common_emojis(doc) -> Feature:
     
-    vocab = load_vocab("vocab/static/common_emojis.txt")
-    extract_emojis = demoji.findall_list(doc.text, desc=False)
-    doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
-    all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
+#     vocab = load_vocab("vocab/static/common_emojis.txt")
+#     extract_emojis = demoji.findall_list(doc.text, desc=False)
+#     doc_emoji_counts = Counter(filter(lambda x: x in vocab, extract_emojis))
+#     all_emoji_counts = add_zero_vocab_counts(vocab, doc_emoji_counts)
     
-    return Feature("Emoji", all_emoji_counts, len(doc.tokens))
+#     return Feature("Emoji", all_emoji_counts, len(doc.tokens))
 
 #! DISABLED FOR NOW (only used for experimentation, NOT feature extraction)
 # def embedding_vector(doc) -> Feature:
@@ -146,46 +129,24 @@ def common_emojis(doc) -> Feature:
 #     embedding = {"embedding_vector" : doc.spacy_doc.vector}
 #     return Feature(None, embedding)
 
-#! doc.words causing crash
-def document_stats(doc) -> Feature:
-    words = doc.words
+#! MAJOR WIP
+# @Feature.register
+# def document_stats(doc) -> Feature:
+#     words = doc.words #!doc.words causing crash
     
-    #! GETTING SPLIT INTO SEPARATE VECTORS
-    #! REPLACE ALL STATISTICAL CALCULATIONS WITH BUILT IN
+#     #! GETTING SPLIT INTO SEPARATE VECTORS
+#     #! REPLACE ALL STATISTICAL CALCULATIONS WITH BUILT IN
     
     
-    doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
-                      "large_words" : len([1 for word in words if len(word) > 4])/len(words) if len(words) else 0,
-                      "word_len_avg": np.mean([len(word) for word in words]),
-                      "word_len_std": np.std([len(word) for word in words]),
-                      "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
-                      "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
-                      "hapaxes"     : len(FreqDist(words).hapaxes())/len(words) if len(words) else 0}
-    return Feature("Document statistic", doc_statistics)
+#     doc_statistics = {"short_words" : len([1 for word in words if len(word) < 5])/len(words) if len(words) else 0, 
+#                       "large_words" : len([1 for word in words if len(word) > 4])/len(words) if len(words) else 0,
+#                       "word_len_avg": np.mean([len(word) for word in words]),
+#                       "word_len_std": np.std([len(word) for word in words]),
+#                       "sent_len_avg": np.mean([len(sent) for sent in doc.sentences]),
+#                       "sent_len_std": np.std([len(sent) for sent in doc.sentences]),
+#                       "hapaxes"     : len(FreqDist(words).hapaxes())/len(words) if len(words) else 0}
+#     return Feature("Document statistic", doc_statistics)
 
-def dep_labels(doc) -> Feature:
-
-    vocab = load_vocab("vocab/static/dep_labels.txt")
-    doc_dep_labels = Counter([dep for dep in doc.dep_labels])
-    all_dep_labels = add_zero_vocab_counts(vocab, doc_dep_labels)
-    
-    return Feature("Dependency label", all_dep_labels, sum_of_counts(doc_dep_labels))
-
-def mixed_bigrams(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/non_static/pan/mixed_bigrams/mixed_bigrams.pkl", type="non_static")
-    doc_mixed_bigrams = Counter(bigrams(replace_openclass(doc.tokens, doc.pos_tags)))
-    all_mixed_bigrams = add_zero_vocab_counts(vocab, doc_mixed_bigrams)
-    
-    return Feature("Mixed Bigram", all_mixed_bigrams, sum_of_counts(doc_mixed_bigrams))
-
-def morph_tags(doc) -> Feature:
-    
-    vocab = load_vocab("vocab/static/morph_tags.txt")
-    doc_morph_tags = Counter(parse_morph([token.morph for token in doc.spacy_doc]))
-    all_morph_tags = add_zero_vocab_counts(vocab, doc_morph_tags)
-    
-    return Feature("Morphology tag", all_morph_tags, sum_of_counts(doc_morph_tags))
 
 # ~~~ Processing ~~~
 
@@ -195,18 +156,7 @@ def morph_tags(doc) -> Feature:
      
 class GrammarVectorizer:
     
-    
-    register = (pos_unigrams,
-                pos_bigrams,
-                func_words,
-                punc,
-                letters,
-                common_emojis,
-                embedding_vector,
-                document_stats,
-                dep_labels,
-                mixed_bigrams,
-                morph_tags)
+  
     
     def __init__(self, config:Dict[str,int]=None):
         
@@ -274,7 +224,7 @@ class GrammarVectorizer:
         """Removes emojis. Needed because spacy dependency parser hates emojis."""
         return list(map(lambda x: demoji.replace(x, "")))
     
-    def _doc_generator(self, documents:List[str]) -> Generator[Doc, None, None]:
+    def _doc_generator(self, documents:List[str]):
         """Converts a list of strings into a spacy Doc generator"""
         return nlp.pipe(documents, disable=["ner", "lemmatizer"])
     
@@ -306,5 +256,8 @@ class GrammarVectorizer:
 
 
 if __name__ == "__main__":
+    s = "it was Jane’s car that got stolen last night."
+    doc = nlp(s)
     
-    print(nlp.pipeline)
+    
+    print(pos_bigrams(doc, vocabs["pos_bigrams"]))
