@@ -68,7 +68,7 @@ class Feature:
             count_dict[feature] = count
         return pd.Series(count_dict)
     
-    def _get_sum(self, counts:np.ndarray) -> int:
+    def _get_sum(self, counts:pd.Series) -> int:
         """Gets sum of counts. Accounts for possible zero counts"""
         return sum(counts) if sum(counts) > 0 else 1
 
