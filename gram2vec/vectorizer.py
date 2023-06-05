@@ -1,19 +1,19 @@
 
 from collections import Counter
 import demoji
-from nltk import bigrams
-from nltk import FreqDist
 import numpy as np 
 import pandas as pd
-import os
-from typing import Optional, Tuple, List, Dict, Callable
+from pathlib import Path
+import json
+from dataclasses import dataclass
+from typing import Optional, Tuple, List, Dict, Callable, Generator
 
-from load_spacy import nlp
+from load_spacy import nlp, Doc
 from generate_non_static_vocab import generate_non_static_vocab
 
 # ~~~ Vocab ~~~
 
-def load_from_txt(path:str) -> Tuple[str]:
+def _load_from_txt(path:str) -> Tuple[str]:
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
     
@@ -22,15 +22,15 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
     static = "vocab/static/"
     non_static = "vocab/non_static/"
     return {
-        "pos_unigrams": load_from_txt(static+"pos_unigrams.txt"),
-        "pos_bigrams": load_from_txt(non_static+"pos_bigrams.txt"),
-        "func_words": load_from_txt(static+"func_words.txt"),
-        "punctuation": load_from_txt(static+"punctuation.txt"),
-        "letters": load_from_txt(static+"letters.txt"),
-        "common_emojis":load_from_txt(static+"common_emojis.txt"),
-        "dep_labels": load_from_txt(static+"dep_labels.txt"),
-        "mixed_bigrams":load_from_txt(non_static+"mixed_bigrams.txt"),
-        "morph_tags":load_from_txt(static+"morph_tags.txt")
+        "pos_unigrams": _load_from_txt(static+"pos_unigrams.txt"),
+        "pos_bigrams": _load_from_txt(non_static+"pos_bigrams.txt"),
+        "func_words": _load_from_txt(static+"func_words.txt"),
+        "punctuation": _load_from_txt(static+"punctuation.txt"),
+        "letters": _load_from_txt(static+"letters.txt"),
+        "common_emojis":_load_from_txt(static+"common_emojis.txt"),
+        "dep_labels": _load_from_txt(static+"dep_labels.txt"),
+        "mixed_bigrams":_load_from_txt(non_static+"mixed_bigrams.txt"),
+        "morph_tags":_load_from_txt(static+"morph_tags.txt")
     }
     
 VOCABS = vocab_loader()  
@@ -76,7 +76,6 @@ class Feature:
         """Normalizes all counts"""
         return counts / self._get_sum(counts)
         
-
 @Feature.register
 def pos_unigrams(doc) -> Feature:
     return Counter(doc._.pos_tags)
@@ -150,35 +149,88 @@ def morph_tags(doc) -> Feature:
 
 # ~~~ Processing ~~~
 
+@dataclass
+class Document:
+    """
+    Encapsulates the raw text and spacy doc. Needed because emojis must be taken out of the spacy doc before 
+    the dependency parse, but the common_emoji feature still needs access to the emojis from the text
+    """
+    raw_text:str
+    nlp_doc:Doc
 
-#! need a refresh parameter
 
-     
+def config(path="config.json") -> List[str]:
+    """Reads in the """
+    with open(path) as config_file:
+        config = json.load(config_file)
+        return [feat for feat, option in config.items() if option == 1]
+
+def get_activated_features() -> List[Feature]:
+    """Retrieves the activated features from the register according to the config file"""
+    return [REGISTERD_FEATURES[feat_name] for feat_name in config()]
+    
+def load_jsonlines(path:str) -> pd.DataFrame:
+    """Loads 1 or more .jsonl files into a dataframe"""
+    if path.endswith(".jsonl"):
+        return pd.read_json(path, lines=True)
+    else:
+        dfs = [pd.read_json(file, lines=True) for file in Path(path).glob("*.jsonl")]
+        return pd.concat(dfs).reset_index().drop(columns=["index"])
+    
+def remove_emojis(document:str) -> str:
+    """Removes emojis from a string and fixes spacing issue caused by emoji removal"""
+    new_string = demoji.replace(document, "").split()
+    return " ".join(new_string)
+ 
+def process_documents(documents:List[str]) -> List[Document]:
+    """Converts all provided documents into Document instances"""
+    nlp_docs = nlp.pipe([remove_emojis(doc) for doc in documents])
+    processed = []
+    for raw_text, nlp_doc in zip(documents, nlp_docs):
+        processed.append(Document(raw_text, nlp_doc))
+    return processed
+        
+    
+    
+    
+
+
+   
+   
+   
+   
+   
+
+
+def from_jsonlines(
+    path:str, 
+    refresh_vocab=False, 
+    include_content_vector=False
+    ):
+    df = load_jsonlines(path)
+    try:
+        documents = df["fullText"]
+        author_ids = df["authorIDs"]
+        document_ids = df["documentID"]
+    except KeyError:
+        raise KeyError("Specified jsonlines file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
+    
+    
+    
+    
+
+def from_document_list(
+    documents:List[str], 
+    refresh_vocab=False, 
+    include_content_vector=False
+    ):
+    pass 
+
 class GrammarVectorizer:
     
   
     
-    def __init__(self, config:Dict[str,int]=None):
-        
-        
-        self._config = self._process_config(config)
-        os.system("./clear_logs.sh")
-        
-    def get_config(self) -> List[str]:
-        """Retrieves the names of all activated features"""
-        return [feat.__name__ for feat in self._config]
-        
-    def _process_config(self, passed_config: Optional[Dict]) -> List:
-        """Reads which features to activate and returns a list of featurizer functions"""
-        current_config = DEFAULT_CONFIG if not passed_config else passed_config
-        activated_feats = []
-        for feat in self.register:
-            try:
-                if current_config[feat.__name__] == 1:
-                    activated_feats.append(feat)
-            except KeyError:
-                raise KeyError(f"Feature '{feat.__name__}' does not exist in given configuration")
-        return activated_feats
+    
      
     def _apply_featurizers(self, document:str) -> List[Feature]:
         """Applies featurizers to a document and returns a list of features for a single document"""
@@ -220,13 +272,8 @@ class GrammarVectorizer:
         df = pd.DataFrame(np.vstack(all_vectors), columns=feature_names)
         return df
     
-    def _remove_emojis(documents:List[str]) -> List[str]:
-        """Removes emojis. Needed because spacy dependency parser hates emojis."""
-        return list(map(lambda x: demoji.replace(x, "")))
     
-    def _doc_generator(self, documents:List[str]):
-        """Converts a list of strings into a spacy Doc generator"""
-        return nlp.pipe(documents, disable=["ner", "lemmatizer"])
+    
     
     def from_jsonlines(self, path:str):
         """
@@ -236,12 +283,7 @@ class GrammarVectorizer:
         """
         assert path.endswith(".jsonl"), f"Invalid file path: '{path}'. File must be specified as a jsonlines file (.jsonl)."
         df = pd.read_json(path, lines=True)
-        try:
-            documents = df["fullText"]
-            author_ids = df["authorIDs"]
-            document_ids = df["documentID"]
-        except KeyError:
-            raise KeyError("Specified jsonlines file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
+        
         
         
 
