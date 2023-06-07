@@ -102,6 +102,9 @@ custom_extensions = {
     ("pos_bigrams", get_pos_bigrams),
     ("mixed_bigrams", get_mixed_bigrams)
 }
+
+
+
 nlp = spacy.load("en_core_web_md", exclude=["ner"])
 for name, function in custom_extensions:
     set_spacy_extension(name, function)
