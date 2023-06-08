@@ -133,4 +133,3 @@ dmypy.json
 */logs/*
 .DS_Store
 data
-gram2vec/testing.ipynb

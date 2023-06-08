@@ -18,9 +18,6 @@ def convert_bigrams_to_strings(bigrams) -> List[str]:
 def get_tokens(doc):
     return [token.text for token in doc]
 
-def get_words(doc):
-    return [token.text for token in doc if not token.is_punct]
-
 def get_pos_tags(doc):
     return [token.pos_ for token in doc]
 
@@ -52,7 +49,6 @@ def get_pos_bigrams(doc) -> List[Bigram]:
         new_tokens.append("EOS")  
         return new_tokens
     
-
     sent_spans = get_sentence_spans(doc)
     pos_tags_with_boundary_syms = insert_sentence_boundaries(sent_spans)
     pos_bigrams = bigrams(pos_tags_with_boundary_syms)
@@ -84,17 +80,12 @@ def get_mixed_bigrams(doc):
     mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
     return convert_bigrams_to_strings(mixed_bigrams)
     
-def set_spacy_extension(name:str, function:Callable) -> None:
-    """Creates spacy extensions to easily access certain information"""
-    if not Doc.has_extension(name):
-        Doc.set_extension(name, getter=function)
-   
-     
+
+    
 # Add more extensions here as needed!
 # Extension syntax: (extension_name, getter function that returns a list)
 custom_extensions = {
     ("tokens", get_tokens),
-    ("words", get_words),
     ("pos_tags", get_pos_tags),
     ("dep_labels", get_dep_labels),
     ("morph_tags", get_morph_tags),
@@ -103,7 +94,10 @@ custom_extensions = {
     ("mixed_bigrams", get_mixed_bigrams)
 }
 
-
+def set_spacy_extension(name:str, function:Callable) -> None:
+    """Creates spacy extensions to easily access certain information"""
+    if not Doc.has_extension(name):
+        Doc.set_extension(name, getter=function)
 
 nlp = spacy.load("en_core_web_md", exclude=["ner"])
 for name, function in custom_extensions:
