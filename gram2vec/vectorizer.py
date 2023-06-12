@@ -86,7 +86,7 @@ class Feature:
         return sum(counts) if sum(counts) > 0 else 1
 
     def _normalize(self, counts:pd.Series) -> pd.Series:
-        """Normalizes all counts"""
+        """Normalizes each count by the sum of counts for that feature"""
         return counts / self._get_sum(counts)
     
     def _prefix_feature_names(self, features:pd.Series) -> pd.Series:
@@ -145,13 +145,13 @@ def emojis(doc) -> Feature:
 class Document:
     """
     Encapsulates the raw text and spacy doc. Needed because emojis must be taken out of the spacy doc before 
-    the dependency parse, but the common_emoji feature still needs access to the emojis from the text
+    the dependency parse, but the emojis feature still needs access to the emojis from the text
     """
     raw:str
     doc:Doc
 
 def _config(path="config.json") -> List[str]:
-    """Reads in the """
+    """Reads in the feature configuration"""
     with open(path) as config_file:
         config = json.load(config_file)
         return [feat for feat, option in config.items() if option == 1]
