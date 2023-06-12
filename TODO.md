@@ -10,16 +10,15 @@ This file contains ideas for future additions/improvements
 
 - At the end of refactor finetune the multiprocessing options in nlp.pipe
 - add polars into the string calculations https://pola-rs.github.io/polars-book/user-guide/
+- check out https://github.com/vi3k6i5/flashtext for potential speed improvements
 
 - add subsection about vocab to the readme
     - also, mentioned that vocab files have to have the same name as counting function
-- add subsection in readme about how some features need access to vocab, while some others dont
+    - add subsection in readme about how some features need access to vocab, while some others dont
 
 ## Code improvements:
 - Verbalizer is fine for now. Touch base with Ansh in near future
 - add unit tests
-- test time and performance between small and medium spacy english models
-- check out https://github.com/vi3k6i5/flashtext for potential speed improvements
 - Look into better ways to package the code
     - make gram2vec pip installable?
 

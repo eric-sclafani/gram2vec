@@ -1,7 +1,7 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a feature extraction algorithm that extracts grammatical properties from a given document and returns vectors representing that document's grammatical footprint. This is one part of PAUSIT team's stylistic feature vectors for TA1. 
+`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. More specifically, Gram2Vec vectorizes based off feartures pertaining to grammar, such as POS tags, syntactic constructions, and much more.
 
 ## Setup
 
@@ -18,24 +18,36 @@ Which will install all the dependencies for the project.
 
 Note: for the `spacy` installation, I have the M1 mac version installed. If spacy throws you an error, you may need to install the version specific to your PC [https://spacy.io/usage](https://spacy.io/usage)
 
-
-Next, you need to download spacy's medium size English language model:
-```bash
-python3 -m spacy download en_core_web_md   
-```
 ## Usage
 
-### `GrammarVectorizer`
+Before using the vectorizer, you can enable or disable select feature extractors. By default, the `config.json` file to do this is located in `./gram2vec/gram2vec/`. 1 indicates the feature is activated, 0 means its deactivated:
 
-Import the **GrammarVectorizer** class and create an instance like so:
-```python
->>> from gram2vec.vectorizer import GrammarVectorizer # exact import may vary depending on where you're calling this module from
->>> g2v = GrammarVectorizer() 
+<small>config.json</small>
+```json
+{
+    "pos_unigrams":1,
+    "pos_bigrams":0,
+    "func_words":1,
+    "punctuation":0,
+    "letters":1,
+    "emojis":1,
+    "dep_labels":0,
+    "mixed_bigrams":1,
+    "morph_tags":1
+}  
 ```
 
-The **GrammarVectorizer** instance can also be supplied a configuration to disable or enable features from activating. This configuration is a dictionary that maps `activated` features to `1` and `deactivated` features to `0`. 
+There are two options for calling the vectorizer.
 
-By default, all features are activated. You can access the currently activated features through the `.config` attribute, which returns a list of strings.
+The first option, `vectorizer.from_jsonlines()`, can be used to generate a matrix from either a single .jsonl file OR a directory of .jsonl files:
+
+```python
+>>> from gram2vec.gram2vec import vectorizer # exact import may vary depending on where you're calling this module from
+>>> my_matrix = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
+>>> my_matrix = vectorizer.from_jsonlines("path/to/dataset/directory/")
+```
+
+
 
 For example:
 ```python

@@ -1,6 +1,6 @@
 import spacy
 from spacy.tokens import Doc
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Iterable
 from nltk import bigrams
 
 # ~~~ Type aliases ~~~
@@ -98,7 +98,7 @@ def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
-
-nlp = spacy.load("en_core_web_md", exclude=["ner"])
+    
+nlp = spacy.load("en_core_web_sm", exclude=["ner"])
 for name, function in custom_extensions:
     set_spacy_extension(name, function)
