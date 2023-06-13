@@ -8,10 +8,6 @@ This file contains ideas for future additions/improvements
 
 ## CURRENT REFACTOR:
 
-- At the end of refactor finetune the multiprocessing options in nlp.pipe
-- add polars into the string calculations https://pola-rs.github.io/polars-book/user-guide/
-- check out https://github.com/vi3k6i5/flashtext for potential speed improvements
-
 - add subsection about vocab to the readme
     - also, mentioned that vocab files have to have the same name as counting function
     - add subsection in readme about how some features need access to vocab, while some others dont
@@ -23,12 +19,13 @@ This file contains ideas for future additions/improvements
     - make gram2vec pip installable?
 
 ## Other:
-- Start preparing the features for when they need to be multilingual
+- multilingual 
 
 
 
 ## To check out
-- None
+- add polars into the string calculations https://pola-rs.github.io/polars-book/user-guide/
+- check out https://github.com/vi3k6i5/flashtext for potential speed improvements
 
 ## PAN22 paper
 https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf
