@@ -1,0 +1,34 @@
+[build-system]
+requires = [
+    "setuptools >= 65", 
+    "wheel >= 0.38",
+    "setuptools-scm"
+    ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gram2vec"
+version = "0.1.0"
+description="Gram2vec is a document embedding software that maps strings to high-dimensional vectors based off stylistic features."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE.md"}
+#urls = {source = "https://github.com/iarpa-hiatus/eric-gram2vec"} #! will need to be updated
+dependencies = [
+    "numpy",
+    "pandas", 
+    "spacy",
+    "nltk",
+    "demoji",
+    "scikit-learn"
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",        
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    ]
+
+[tool.setuptools.package-data]
+"*" = [ "*.txt"]

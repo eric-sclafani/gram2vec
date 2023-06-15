@@ -5,22 +5,18 @@ This file contains ideas for future additions/improvements
 
 ## Evals:
 - dim reduction experiments
+- experiment with spotify annoy
 
-## CURRENT REFACTOR:
-
-- add subsection about vocab to the readme
+## TODO before pip installation:
+- Make unit tests
+- update readme
+    - add subsection about vocab to the readme
     - also, mentioned that vocab files have to have the same name as counting function
     - add subsection in readme about how some features need access to vocab, while some others dont
 
-## Code improvements:
-- Verbalizer is fine for now. Touch base with Ansh in near future
-- add unit tests
-- Look into better ways to package the code
-    - make gram2vec pip installable?
 
 ## Other:
 - multilingual 
-
 
 
 ## To check out

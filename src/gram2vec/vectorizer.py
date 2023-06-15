@@ -2,16 +2,13 @@
 from collections import Counter
 import demoji
 import time
+import os
 import pandas as pd
 from pathlib import Path
-import json
 from dataclasses import dataclass
-from typing import Tuple, List, Dict, Callable, Iterable
+from typing import Tuple, List, Dict, Callable, Iterable, Optional
 
-try:
-    from load_spacy import nlp, Doc
-except ModuleNotFoundError: # bandaid for loading into pausit-eval
-    from gram2vec.gram2vec.load_spacy import nlp, Doc
+from .load_spacy import nlp, Doc
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -30,19 +27,27 @@ def load_from_txt(path:str) -> Tuple[str]:
     """Loads a .txt file delimited by newlines"""
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+
     
 def vocab_loader() -> Dict[str, Tuple[str]]:
     """Loads in all feature vocabs. For any new vocabs, add them to this function"""
+    g2v_file = os.path.abspath(__name__)
+    g2v_path = os.path.dirname(g2v_file) 
+    vocab_path = os.path.join(g2v_path, "gram2vec/src/gram2vec/vocab/")
+ 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    import ipdb;ipdb.set_trace()
+    
     return {
-        "pos_unigrams": load_from_txt("vocab/pos_unigrams.txt"),
-        "pos_bigrams": load_from_txt("vocab/pos_bigrams.txt"),
-        "func_words": load_from_txt("vocab/func_words.txt"),
-        "punctuation": load_from_txt("vocab/punctuation.txt"),
-        "letters": load_from_txt("vocab/letters.txt"),
-        "emojis":load_from_txt("vocab/emojis.txt"),
-        "dep_labels": load_from_txt("vocab/dep_labels.txt"),
-        "mixed_bigrams":load_from_txt("vocab/mixed_bigrams.txt"),
-        "morph_tags":load_from_txt("vocab/morph_tags.txt")
+        "pos_unigrams": load_from_txt(f"{vocab_path}pos_unigrams.txt"),
+        "pos_bigrams": load_from_txt(f"{vocab_path}pos_bigrams.txt"),
+        "func_words": load_from_txt(f"{vocab_path}func_words.txt"),
+        "punctuation": load_from_txt(f"{vocab_path}punctuation.txt"),
+        "letters": load_from_txt(f"{vocab_path}letters.txt"),
+        "emojis":load_from_txt(f"{vocab_path}emojis.txt"),
+        "dep_labels": load_from_txt(f"{vocab_path}dep_labels.txt"),
+        "mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
+        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt")
     }
     
 VOCABS = vocab_loader()  
@@ -149,16 +154,23 @@ class Document:
     """
     raw:str
     doc:Doc
-
-def _config(path="config.json") -> List[str]:
-    """Reads in the feature configuration"""
-    with open(path) as config_file:
-        config = json.load(config_file)
-        return [feat for feat, option in config.items() if option == 1]
-
-def _get_activated_features() -> List[Feature]:
-    """Retrieves the activated features from the register according to the config file"""
-    return [REGISTERD_FEATURES[feat_name] for feat_name in _config()]
+    
+def _get_activated_features(config:Optional[Dict]) -> List[Feature]:
+    """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
+    if config is None:
+        default_config = {
+            "pos_unigrams":1,
+            "pos_bigrams":1,
+            "func_words":1,
+            "punctuation":1,
+            "letters":1,
+            "emojis":1,
+            "dep_labels":1,
+            "mixed_bigrams":0,
+            "morph_tags":1
+            }
+        config = default_config
+    return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
     
 def _load_jsonlines(path:str) -> pd.DataFrame:
     """Loads 1 or more .jsonl files into a dataframe"""
@@ -173,7 +185,6 @@ def _remove_emojis(document:str) -> str:
     new_string = demoji.replace(document, "").split()
     return " ".join(new_string)
  
-@measure_time
 def _process_documents(documents:Iterable[str]) -> List[Document]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
     nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])
@@ -197,10 +208,10 @@ def _content_embedding(doc:Document) -> pd.Series:
     """Retrieves the spacy document embedding and returns it as a Series object"""
     return pd.Series(doc.doc.vector).add_prefix("Embedding dim: ")
     
-def _apply_features(doc:Document, include_content_embedding:bool) -> pd.Series:
+def _apply_features(doc:Document, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
     """Applies all feature extractors to a given document, optionally adding the spaCy emedding vector"""
     features = []
-    for feature in _get_activated_features():
+    for feature in _get_activated_features(config):
         vocab = VOCABS[feature.name]
         features.append(feature(doc, vocab))
         
@@ -208,16 +219,17 @@ def _apply_features(doc:Document, include_content_embedding:bool) -> pd.Series:
         features.append(_content_embedding(doc))
     return pd.concat(features, axis=0)
 
-def _apply_features_to_docs(docs:List[Document], include_content_embedding:bool) -> pd.DataFrame:
+def _apply_features_to_docs(docs:List[Document],
+                            config:Optional[Dict], 
+                            include_content_embedding:bool) -> pd.DataFrame:
     """Applies the feature extractors to all documents and creates a style vector matrix"""
     feature_vectors = []
     for doc in docs:
-        vector = _apply_features(doc, include_content_embedding)
+        vector = _apply_features(doc, config, include_content_embedding)
         feature_vectors.append(vector)
     return pd.concat(feature_vectors, axis=1).T
 
-@measure_time
-def from_jsonlines(path:str, include_content_embedding=False) -> pd.DataFrame:
+def from_jsonlines(path:str, config=None, include_content_embedding=False) -> pd.DataFrame:
     """
     Given a path to either a jsonlines file OR directory of jsonlines files, creates a stylistic feature 
     vector matrix. Document IDs and author IDs are included, retrieved from the provided jsonlines file(s)\n
@@ -237,12 +249,12 @@ def from_jsonlines(path:str, include_content_embedding=False) -> pd.DataFrame:
     if include_content_embedding:
         print("Gram2Vec: 'include_content_embedding' flag set to True. Including document word2vec embedding...")
         print("Gram2Vec: (WARNING) embedding should only be used for experiments, not attribution")
-    vector_df = _apply_features_to_docs(documents, include_content_embedding)
+    vector_df = _apply_features_to_docs(documents, config, include_content_embedding)
     vector_df.insert(0, "authorIDs", author_ids)
     vector_df.set_index(document_ids, inplace=True)
     return vector_df
     
-def from_documents(documents:Iterable[str], include_content_embedding=False) -> pd.DataFrame:
+def from_documents(documents:Iterable[str], config=None, include_content_embedding=False) -> pd.DataFrame:
     """
     Given an iterable of documents, creates a stylistic feature vector matrix. Document IDs and author IDs are NOT included\n
     Args:
@@ -259,6 +271,6 @@ def from_documents(documents:Iterable[str], include_content_embedding=False) -> 
     if include_content_embedding:
         print("Gram2Vec: 'include_content_embedding' flag set to True. Including document word2vec embedding...")
         print("Gram2Vec: (WARNING) embedding should only be used for experiments, not attribution")
-    vector_df = _apply_features_to_docs(documents, include_content_embedding)
+    vector_df = _apply_features_to_docs(documents, config, include_content_embedding)
     return vector_df
 
