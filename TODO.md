@@ -13,6 +13,7 @@ This file contains ideas for future additions/improvements
     - add subsection about vocab to the readme
     - also, mentioned that vocab files have to have the same name as counting function
     - add subsection in readme about how some features need access to vocab, while some others dont
+- fix vocab loading
 
 
 ## Other:

@@ -31,13 +31,8 @@ def load_from_txt(path:str) -> Tuple[str]:
     
 def vocab_loader() -> Dict[str, Tuple[str]]:
     """Loads in all feature vocabs. For any new vocabs, add them to this function"""
-    g2v_file = os.path.abspath(__name__)
-    g2v_path = os.path.dirname(g2v_file) 
-    vocab_path = os.path.join(g2v_path, "gram2vec/src/gram2vec/vocab/")
- 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    import ipdb;ipdb.set_trace()
-    
+    vocab_path = os.path.join(dir_path, "vocab/")
     return {
         "pos_unigrams": load_from_txt(f"{vocab_path}pos_unigrams.txt"),
         "pos_bigrams": load_from_txt(f"{vocab_path}pos_bigrams.txt"),
