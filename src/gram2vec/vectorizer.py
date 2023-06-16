@@ -173,7 +173,7 @@ def _load_jsonlines(path:str) -> pd.DataFrame:
         return pd.read_json(path, lines=True)
     else:
         dfs = [pd.read_json(file, lines=True) for file in Path(path).glob("*.jsonl")]
-        return pd.concat(dfs).reset_index().drop(columns=["index"])
+        return pd.concat(dfs).reset_index(drop=True)
     
 def _remove_emojis(document:str) -> str:
     """Removes emojis from a string and fixes spacing issue caused by emoji removal"""
