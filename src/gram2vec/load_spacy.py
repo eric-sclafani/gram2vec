@@ -99,15 +99,14 @@ def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
-
-#! NEEDS TESTING     
+ 
 try:
     nlp = spacy.load("en_core_web_md", exclude=["ner"])
 except OSError:
     print("Downloading spaCy language model 'en_core_web_md' (don't worry, this will only happen once)", file=stderr)
     from spacy.cli import download
     download("en_core_web_md")
-    nlp = spacy.load("en_core_web_sm", exclude=["ner"])
     
+nlp = spacy.load("en_core_web_md", exclude=["ner"])
 for name, function in custom_extensions:
     set_spacy_extension(name, function)
