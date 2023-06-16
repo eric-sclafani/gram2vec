@@ -130,6 +130,5 @@ dmypy.json
 
 
 # project
-*/logs/*
 .DS_Store
 data

@@ -5,48 +5,31 @@ from pathlib import Path
 from typing import List
 import pickle as pkl
 
+
+raise Exception("Verbalizer is currently undergoing maintanence. Please check back in a later version")
+
 # project imports
-from vectorizer import GrammarVectorizer
+from gram2vec import vectorizer
 
 class Verbalizer:
     
     def __init__(self, data_dir:str):
         
-        self.text_df = self._load_data(data_dir)
-        self.docs_df = self._make_docs_df()
+        self.docs_df = self._make_docs_df(data_dir)
         self.author_df = self._make_author_df()
         
-    def _load_data(self, data_dir:str) -> pd.DataFrame:
-        """Loads a directory of .jsonl files"""
-        
-        #! disabled for now because of performance reasons (takes over 15 mins to process ALL hrs data)
-        # dfs = []
-        # for filename in Path(data_dir).glob("*.jsonl"):
-        #     df = pd.read_json(filename, lines=True)
-        #     dfs.append(df)
-        # df = pd.concat(dfs)
-        
-        return pd.read_json(data_dir, lines=True)
-    
     def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
         """Excludes given columns from a dataframe. Used when doing numerical operations"""
         return df.loc[:, ~df.columns.isin(cols)]
     
     def get_author_docs(self, author_id:str) -> pd.DataFrame:
         """Retrieves an authors documents from self.docs_df"""
-        return self.docs_df.loc[self.docs_df['authorIDs'] == author_id]
+        return self.docs_df.loc[self.docs_df["authorIDs"] == author_id]
     
-    def _make_docs_df(self) -> pd.DataFrame:
-        """Creates a document-level feature vector dataframe and preserves documentIDs"""
-        g2v = GrammarVectorizer()
-        all_documents = self.text_df["fullText"]
-        author_ids = self.text_df["authorIDs"]
-        doc_ids = self.text_df["documentID"]
-        
-        vector_df = g2v.create_vector_df(all_documents.to_list())
-        vector_df.insert(0, "authorIDs", author_ids)
-        vector_df.insert(1, "documentID", doc_ids)
-        return vector_df
+    def _make_docs_df(self, data_dir:str) -> pd.DataFrame:
+        """Creates a document-level feature vector dataframe given a jsonl file or directory of jsonl files"""
+        docs_df = vectorizer.from_jsonlines(data_dir)
+        return docs_df
 
     def _make_author_df(self) -> pd.DataFrame:
         """Creates an author level dataframe. Each author entry is the average of that author's document vectors"""
@@ -107,18 +90,7 @@ class Verbalizer:
         return converted
     
     def verbalize(self, id:str, to_verbalize="authorIDs") -> pd.DataFrame:
-        """
-        Current implementation: 
-                - Does verbalization besded off of zscores & a threshold
-                - Drawbacks: 
-                        - indices across verbalized vectors not comparable (vectors of diff sizes)
-                        - possible to get no significant zscores 
-                        - requires entire dataset to calculate zscores
-        
-        Other possibilities: 
-                - get top n highest feature values looking at the normalized counts? (would mean indices across all vectors wont be comparable)
-                - verbalize ALL features? (vectors WILL be comparable)
-        """
+        """"""
         if to_verbalize not in ["authorIDs", "documentID"]:
             raise ValueError("Only accepted values for to_verbalize: {'authorIDs', 'documentID'} ")
         

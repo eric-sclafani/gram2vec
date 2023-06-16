@@ -3,40 +3,26 @@ This file contains ideas for future additions/improvements
 
 ------
 
-## Verbalizer
-- 
-
-
 ## Evals:
 - dim reduction experiments
+- experiment with spotify annoy
 
-## Features:
+## TODO before pip installation:
+- Make unit tests
+- update readme
+    - add subsection about vocab to the readme
+    - also, mentioned that vocab files have to have the same name as counting function
+    - add subsection in readme about how some features need access to vocab, while some others dont
+- fix vocab loading
 
-- Contraction counts
-- John David’s distinction between post-speech, co-speech and pro-speech emoji could be a cool feature
-- relook at Document statistics feature (split into two vectors)
-- https://aclanthology.org/2021.findings-emnlp.359/
-- https://onlinelibrary.wiley.com/doi/full/10.1002/asi.21001?casa_token=yw5ePLow8pMAAAAA%3Al7T1qxyPzwjoxBcAc3uDE9RqFUSZTqaSJVoAmTkY3sUTy5iCAaWSF3dIe3YKmX1PLUaRceSH1QnvSP3Z
-- https://ceur-ws.org/Vol-1178/CLEF2012wn-PAN-TanguyEt2012.pdf
-- mispellings?
-
-
-## Code improvements:
-- Make `vectorizer.py` call `generate_non_static_vocab` on the fly for when new datasets are used
-- Revise all doc strings to use numpy format
-- Make gram2vec an installable package?
-- For the **Document** class in `vectorizer.py`, change the attributes to be properties or methods instead
-- Option to vectorize a list of documents (independent of IDs) OR a directory of JSONL files (will expect IDs)??
-- Vocab: change non-static handling and convert pickle to text file delimited by newlines?
-- check out those odd edge cases Zack found
 
 ## Other:
-- Start preparing the features for when they need to be multilingual
-
+- multilingual 
 
 
 ## To check out
-- None
+- add polars into the string calculations https://pola-rs.github.io/polars-book/user-guide/
+- check out https://github.com/vi3k6i5/flashtext for potential speed improvements
 
 ## PAN22 paper
 https://publications.aston.ac.uk/id/eprint/44368/1/Stamatatos_2022_VoR.pdf

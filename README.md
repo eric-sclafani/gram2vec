@@ -1,129 +1,91 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a feature extraction algorithm that extracts grammatical properties from a given document and returns vectors representing that document's grammatical footprint. This is one part of PAUSIT team's stylistic feature vectors for TA1. 
+`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. More specifically, Gram2Vec vectorizes based off feartures pertaining to grammar, such as POS tags, punctuation, syntactic constructions (WIP), and much more.
 
 ## Setup
 
-Create an environment by running:
+In your working directory, create an environment by running (I think any version > 3.9 should work, not 100% sure though):
 ```bash
 python3.11 -m venv venv/
 source venv/bin/activate
 ```
-Which will create a directory called `venv/` which will store all the dependencies. Now run:
+which will create a directory called `venv/` which will store all the dependencies. 
+
+After cloning `gram2vec` into your working directory, run:
 ```bash
-pip3 install -r requirements.txt
+pip install gram2vec/
 ```
-Which will install all the dependencies for the project.
+which will install gram2vec into your environment, as well as all of its dependencies.
 
-Note: for the `spacy` installation, I have the M1 mac version installed. If spacy throws you an error, you may need to install the version specific to your PC [https://spacy.io/usage](https://spacy.io/usage)
-
-
-Next, you need to download spacy's medium size English language model:
-```bash
-python3 -m spacy download en_core_web_md   
-```
 ## Usage
 
-### `GrammarVectorizer`
+There are two options for calling the vectorizer.
 
-Import the **GrammarVectorizer** class and create an instance like so:
+The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe from **either a single .jsonl file** _OR_ **a directory of .jsonl files**.
+
 ```python
->>> from gram2vec.vectorizer import GrammarVectorizer # exact import may vary depending on where you're calling this module from
->>> g2v = GrammarVectorizer() 
+>>> from gram2vec import vectorizer
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/")
 ```
 
-The **GrammarVectorizer** instance can also be supplied a configuration to disable or enable features from activating. This configuration is a dictionary that maps `activated` features to `1` and `deactivated` features to `0`. 
-
-By default, all features are activated. You can access the currently activated features through the `.config` attribute, which returns a list of strings.
-
-For example:
+The second option,`vectorizer.from_documents()`, is used to generate a dataframe **from a list of strings**. Note that this does NOT take into account author or document IDs, unlike the `.from_jsonlines()` function.
 ```python
->>> G2V_CONFIG = {
-    "pos_unigrams":0,
-    "pos_bigrams":1,
-    "func_words":1,
-    "punc":0,
-    "letters":1,
-    "common_emojis":0,
-    "embedding_vector":0,
-    "document_stats":0,
-    "dep_labels":1,
-    "mixed_bigrams":1,
-} 
->>> g2v = GrammarVectorizer(G2V_CONFIG)
->>> g2v.get_config()
-["pos_bigrams", "func_words", "letters", "dep_labels", "mixed_bigrams"]
-```
-
-From here, you can use the **g2v.create_vector_df()** method to vectorize a list of documents and store everything in a dataframe:
-```python
->>> docs = [
-    "This is an extremely wonderful string",
+>>> from gram2vec import vectorizer
+>>> documents = [
+    "This is a test string 😄!!!",
     "The string below me is false.",
-    "The string above me is true"
-    ]
->>> df = g2v.create_vector_df(docs)
->>> df.shape
-(3, 429) # 3 document vectors, 429 features each
+    "The string above me is true 😱!"
+]
+>>> my_df = vectorizer.from_documents(documents)
 ```
 
 
+You can also enable or disable select feature extractors by using the `config` parameter, which takes a dictionary of feature names mapped to 1 or 0 (1 = ON, 0 = OFF). 
 
+By default, `all features are activated` **EXCEPT** for `mixed_bigrams`, which adds 1200 dimensions and slows the processing speed down considerably. I recommend leaving it off. Here's an example of what a configuration looks like:
 
-### `Internal KNN Evaluation`
-
---------------
-
-NOTE: The evaluation setup inside this repository is no longer being used for TA1. That has been moved to the `pausit-eval` repository.
-
----------------
-
-
-There are two ways to evaluate using `kNN` currently. The second one is specific to PAN 2022. 
-
- > **Note**: Both evaluation scripts below `must` be ran from the **~/gram2vec/gram2vec/** directory
-
-### **1. Overall scores**
-
-To get the R@1 or R@8 scores, use the `knn_classifier.py` module:
-```
-python3 eval/knn_classifer.py -h
-
-usage: knn_classifer.py [-h] [-k K_VALUE] [-m {R@1,R@8}] [-train TRAIN_PATH] [-eval EVAL_PATH]
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-  -k K_VALUE, --k_value K_VALUE
-                        k value to calculate R@1. Is ignored when --metric == R@8
-                        default=6
-
-  -m {R@1,R@8}, --metric {R@1,R@8}
-                        Metric to calculate
-                        default="R@1"
-
-  -train TRAIN_PATH, --train_path TRAIN_PATH
-                        Path to train directory
-                        default="eval/pan22_splits/knn/train.json"
-
-  -eval EVAL_PATH, --eval_path EVAL_PATH
-                        Path to eval directory
-                        default="eval/pan22_splits/knn/dev.json"
+```python
+config = {
+    "pos_unigrams":1,
+    "pos_bigrams":0,
+    "func_words":1,
+    "punctuation":1,
+    "letters":0,
+    "emojis":1,
+    "dep_labels":1,
+    "mixed_bigrams":0,
+    "morph_tags":1
+    }
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
 ```
 
+Additionally, there is an option to include the document embedding produced by **word2vec**. This option should `ONLY` be used for experimenting, `NOT` official authorship attribution evaluations. 
 
+The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `completely independent of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to compare `gram2vec` vectors to.
+```python
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
+```
 
+## Vocab
 
-### **2. PAN2022 Bin scores**
+This section provides more details about how vocabulary works in `gram2vec` and is not needed to understand how to use the software.
 
-Additionally, you can run `./eval/evaluate_bins.sh` to evaluate the development bins. The script just loops through the bins located in the **eval_bins/sorted_by_doc_freq/** directory and applies kNN classification. You can modify the arguments inside the script if desired. The results are stored in **eval/results/pan_dev_bin_results.csv**. 
+In general, each feature is frequency based (I will be adding regex matching ones soon). A **vocab** is therefore the collection of items that get counted for a feature. Each vocab is stored in a local `vocab/` directory. These files are read by `gram2vec` and used in the feature extractors.
 
-> **Note**: Each time the script is ran, **eval/results/pan_dev_bin_results.csv** gets overridden with the newest 8 bin evaluation scores.
+If new vocabularies are added, for the sake of consistency, the vocabulary files should have the same name as the feature function. Examples of this can be seen in `vectorizer.py`.
 
+Some vocabularies require more explanation. The following subsections go into more detail about them
 
+### POS Bigrams
 
-## Slides
-(from site visit)
+From the list of POS tags from <a href="https://universaldependencies.org/u/pos/">Universal dependencies</a> (18 total tags), I create all possible combinations. 
+> So $18^2$ = 324 possible POS bigrams
 
-https://docs.google.com/presentation/d/1zAbZ7iwBXwmOo-y-QxSauo8PD5CwHpueToR6yXpnmLM/edit#slide=id.p
+### Mixed bigrams
+
+From a list of closed class words aggregated from the internet, I take all possible combinations of them (100 words) with open class POS tags (6 tags). Order is also important, i.e. ("the", "NOUN") is _not_ the same as ("NOUN", "the")
+> So 100 closed class words * 6 POS tags * 2 possible orderings per bigram = 1200 possible mixed bigrams 
+
+`NOTE`: this feature is heavily WIP and is disabled by default due to it's size. It increases the processing time significantly. 
