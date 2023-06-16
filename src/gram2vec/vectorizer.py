@@ -28,11 +28,15 @@ def load_from_txt(path:str) -> Tuple[str]:
     with open (path, "r") as fin:
         return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
 
+def get_user_vocab_path():
+    """Gets the user's path to the vocabulary files"""
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    vocab_path = os.path.join(dir_path, "vocab/")
+    return vocab_path
     
 def vocab_loader() -> Dict[str, Tuple[str]]:
     """Loads in all feature vocabs. For any new vocabs, add them to this function"""
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    vocab_path = os.path.join(dir_path, "vocab/")
+    vocab_path = get_user_vocab_path()
     return {
         "pos_unigrams": load_from_txt(f"{vocab_path}pos_unigrams.txt"),
         "pos_bigrams": load_from_txt(f"{vocab_path}pos_bigrams.txt"),
@@ -150,7 +154,7 @@ class Document:
     raw:str
     doc:Doc
     
-def _get_activated_features(config:Optional[Dict]) -> List[Feature]:
+def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
     if config is None:
         default_config = {
@@ -206,7 +210,7 @@ def _content_embedding(doc:Document) -> pd.Series:
 def _apply_features(doc:Document, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
     """Applies all feature extractors to a given document, optionally adding the spaCy emedding vector"""
     features = []
-    for feature in _get_activated_features(config):
+    for feature in get_activated_features(config):
         vocab = VOCABS[feature.name]
         features.append(feature(doc, vocab))
         
@@ -224,19 +228,23 @@ def _apply_features_to_docs(docs:List[Document],
         feature_vectors.append(vector)
     return pd.concat(feature_vectors, axis=1).T
 
-def from_jsonlines(path:str, config=None, include_content_embedding=False) -> pd.DataFrame:
+def from_jsonlines(path:str, 
+                   config:Optional[Dict]=None, 
+                   include_content_embedding=False) -> pd.DataFrame:
     """
     Given a path to either a jsonlines file OR directory of jsonlines files, creates a stylistic feature 
     vector matrix. Document IDs and author IDs are included, retrieved from the provided jsonlines file(s)\n
     Args:
     -----
-        path (str):  
+        path (str): 
             path to a jsonlines file OR directory of jsonlines files
-        include_content_embedding (bool): 
+        config(Dict | None): 
+            Feature activation configuration. Uses a default if none is provided
+        include_content_embedding (bool):
             option to include the word2vec document embedding\n
     Returns:
     -------
-        pd.DataFrame: dataframe where each row is a document and column is a low level feature
+        pd.DataFrame: dataframe where rows are documents and columns are low level features
     """
     df = _load_jsonlines(path)
     documents, author_ids, document_ids = _get_json_entries(df)
@@ -249,14 +257,18 @@ def from_jsonlines(path:str, config=None, include_content_embedding=False) -> pd
     vector_df.set_index(document_ids, inplace=True)
     return vector_df
     
-def from_documents(documents:Iterable[str], config=None, include_content_embedding=False) -> pd.DataFrame:
+def from_documents(documents:Iterable[str], 
+                   config:Optional[Dict]=None, 
+                   include_content_embedding=False) -> pd.DataFrame:
     """
     Given an iterable of documents, creates a stylistic feature vector matrix. Document IDs and author IDs are NOT included\n
     Args:
     -----
         documents(Iterable):
             iterable of strings to be converted into a matrix
-        include_content_embedding(bool):
+        config(Dict | None): 
+            Feature activation configuration. Uses a default if none is provided
+        include_content_embedding (bool):
             option to include the word2vec document embedding\n
     Returns:
     --------

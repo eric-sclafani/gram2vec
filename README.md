@@ -1,55 +1,82 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. More specifically, Gram2Vec vectorizes based off feartures pertaining to grammar, such as POS tags, syntactic constructions, and much more.
+`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. More specifically, Gram2Vec vectorizes based off feartures pertaining to grammar, such as POS tags, punctuation, syntactic constructions (WIP), and much more.
 
 ## Setup
 
-Create an environment by running:
+In your working directory, create an environment by running (I think any version > 3.9 should work, not 100% sure though):
 ```bash
 python3.11 -m venv venv/
 source venv/bin/activate
 ```
-Which will create a directory called `venv/` which will store all the dependencies. Now run:
-```bash
-pip3 install -r requirements.txt
-```
-Which will install all the dependencies for the project.
+which will create a directory called `venv/` which will store all the dependencies. 
 
-Note: for the `spacy` installation, I have the M1 mac version installed. If spacy throws you an error, you may need to install the version specific to your PC [https://spacy.io/usage](https://spacy.io/usage)
+After cloning `gram2vec` into your working directory, run:
+```bash
+pip install gram2vec/
+```
+which will install gram2vec into your environment, as well as all of its dependencies.
 
 ## Usage
 
-
-
-
 There are two options for calling the vectorizer.
 
-The first option, `vectorizer.from_jsonlines()`, can be used to generate a matrix from either a single .jsonl file OR a directory of .jsonl files:
+The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe from **either a single .jsonl file** _OR_ **a directory of .jsonl files**.
 
 ```python
->>> from gram2vec.gram2vec import vectorizer # exact import may vary depending on where you're calling this module from
->>> my_matrix = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
->>> my_matrix = vectorizer.from_jsonlines("path/to/dataset/directory/")
+>>> from gram2vec import vectorizer
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/")
 ```
-You can enable or disable select feature extractors by using the `config` parameter, which takes a dictionary like so:
 
-
-
-
-From here, you can use the **g2v.create_vector_df()** method to vectorize a list of documents and store everything in a dataframe:
+The second option,`vectorizer.from_documents()`, is used to generate a dataframe **from a list of strings**. Note that this does NOT take into account author or document IDs, unlike the `.from_jsonlines()` function.
 ```python
->>> docs = [
-    "This is an extremely wonderful string",
+>>> from gram2vec import vectorizer
+>>> documents = [
+    "This is a test string 😄!!!",
     "The string below me is false.",
-    "The string above me is true"
-    ]
->>> df = g2v.create_vector_df(docs)
->>> df.shape
-(3, 429) # 3 document vectors, 429 features each
+    "The string above me is true 😱!"
+]
+>>> my_df = vectorizer.from_documents(documents)
+```
+
+
+You can also enable or disable select feature extractors by using the `config` parameter, which takes a dictionary of feature names mapped to 1 or 0 (1 = ON, 0 = OFF). 
+
+By default, all are on **EXCEPT** for `mixed_bigrams`, which adds 1200 dimensions and slows the processing speed down considerably. I recommend leaving it off. Here's an example of what a configuration looks like:
+
+```python
+config = {
+    "pos_unigrams":1,
+    "pos_bigrams":0,
+    "func_words":1,
+    "punctuation":1,
+    "letters":0,
+    "emojis":1,
+    "dep_labels":1,
+    "mixed_bigrams":0,
+    "morph_tags":1
+    }
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
+```
+
+Additionally, there is an option to include the document embedding produced by **word2vec**. This option should `ONLY` be used for experimenting, `NOT` official authorship attribution evaluations. 
+
+The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `100% agnostic of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to comparse `gram2vec` vectors to.
+```python
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
 ```
 
 ## Vocab
+
+This section provides more details about how vocabulary works in `gram2vec` and is not needed to understand how to use the software.
+
+In general, each feature is frequency based (I will be adding regex matching ones soon). A **vocab** is therefore the collection of items that get counted for a feature. Each vocab is stored in a local `vocab/` directory. These files are read by `gram2vec` and used in the feature extractors.
+
+If new vocabularies are added, for the sake of consistancy, the vocabulary files should have the same name as the feature function. Examples of this can be seen in `vectorizer.py`.
+
+Some vocabularies require more explanation. The following subsections go into more detail about them
 
 ### POS Bigrams
 
