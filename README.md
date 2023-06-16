@@ -44,7 +44,7 @@ The second option,`vectorizer.from_documents()`, is used to generate a dataframe
 
 You can also enable or disable select feature extractors by using the `config` parameter, which takes a dictionary of feature names mapped to 1 or 0 (1 = ON, 0 = OFF). 
 
-By default, all are on **EXCEPT** for `mixed_bigrams`, which adds 1200 dimensions and slows the processing speed down considerably. I recommend leaving it off. Here's an example of what a configuration looks like:
+By default, `all features are activated` **EXCEPT** for `mixed_bigrams`, which adds 1200 dimensions and slows the processing speed down considerably. I recommend leaving it off. Here's an example of what a configuration looks like:
 
 ```python
 config = {
@@ -63,7 +63,7 @@ my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
 
 Additionally, there is an option to include the document embedding produced by **word2vec**. This option should `ONLY` be used for experimenting, `NOT` official authorship attribution evaluations. 
 
-The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `100% agnostic of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to comparse `gram2vec` vectors to.
+The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `completely independent of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to compare `gram2vec` vectors to.
 ```python
 my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
 ```
@@ -74,7 +74,7 @@ This section provides more details about how vocabulary works in `gram2vec` and 
 
 In general, each feature is frequency based (I will be adding regex matching ones soon). A **vocab** is therefore the collection of items that get counted for a feature. Each vocab is stored in a local `vocab/` directory. These files are read by `gram2vec` and used in the feature extractors.
 
-If new vocabularies are added, for the sake of consistancy, the vocabulary files should have the same name as the feature function. Examples of this can be seen in `vectorizer.py`.
+If new vocabularies are added, for the sake of consistency, the vocabulary files should have the same name as the feature function. Examples of this can be seen in `vectorizer.py`.
 
 Some vocabularies require more explanation. The following subsections go into more detail about them
 
