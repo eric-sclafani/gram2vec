@@ -176,11 +176,13 @@ def display_incorrect_predictions(sentences, regex:re.Pattern):
 
 #doc = nlp("If it were John who is the candidate, I would vote for him.")
 # displacy.serve(doc, auto_select_port=True)
-
-doc = list(nlp("It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished.").sents)[0]
-# tree_string = tree_to_string(doc)
-# print(it_cleft_regex.findall(tree_string))
-#displacy.serve(doc, auto_select_port=True)
+s = "It was yesterday that John saw me last."
+s = "It's only recently that he started playing guitar."
+s = "If it were John who is the candidate, I would vote for him."
+s = "If it was butter that I bought yesterday, you should buy cheese."
+doc = list(nlp(s).sents)[0]
+tree_string = tree_to_string(doc)
+displacy.serve(doc, auto_select_port=True)
 
 
 
