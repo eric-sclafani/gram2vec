@@ -26,7 +26,7 @@ def measure_time(func):
 def load_from_txt(path:str) -> Tuple[str]:
     """Loads a .txt file delimited by newlines"""
     with open (path, "r") as fin:
-        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+        return [line.strip("\n") for line in fin.readlines()]
 
 def get_user_vocab_path():
     """Gets the user's path to the vocabulary files"""
@@ -165,7 +165,7 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "letters":1,
             "emojis":1,
             "dep_labels":1,
-            "mixed_bigrams":0,
+            "mixed_bigrams":0, # keep off
             "morph_tags":1
             }
         config = default_config
