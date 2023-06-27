@@ -73,10 +73,6 @@ def findall(document:str):
             matches.extend([Match(pattern.name, tree_string, sent.text) for _ in match])
     return matches
     
-
-
-
-
 def main():
     
     @dataclass
@@ -117,6 +113,30 @@ def main():
     ]
     
     there_cleft_sents = [
+        TestSentence("TRUE", "There's this orphan kid that I'm trying to adopt."),
+        TestSentence("TRUE", "There is a new car Camille wanted to buy"),
+        TestSentence("TRUE", "There comes a day in life that you have to give up everything"),
+        TestSentence("TRUE", "There‘s a new car that Mary wants to buy."),
+        TestSentence("TRUE", "There is a new James Bond movie that I want to watch tomorrow."),
+        TestSentence("TRUE", "Is there a new TV show that Mary wants to watch? "),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+    ]
+    
+    if_because_cleft_sents = [
+        TestSentence("TRUE", "If he wants to be a millionaire, it's because he wants to help poor children"),
+        TestSentence("TRUE", "If it seems that she is meddling, it's just because she's just trying to help the family."),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+    ]
+    
+    template = [
         TestSentence("TRUE", ""),
         TestSentence("TRUE", ""),
         TestSentence("TRUE", ""),
@@ -127,7 +147,6 @@ def main():
         TestSentence("FALSE", ""),
         TestSentence("FALSE", ""),
     ]
-    
     
     save_test_sentences()
 
