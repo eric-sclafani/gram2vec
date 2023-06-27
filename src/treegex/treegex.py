@@ -1,4 +1,5 @@
 import spacy
+from spacy import displacy
 from dataclasses import dataclass
 from typing import Tuple
 from sys import stderr
@@ -17,7 +18,8 @@ def load_spacy(model="en_core_web_md"):
 nlp = load_spacy()  
 
 PATTERNS = {
-    "it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-relcl"
+    "it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-relcl",
+    "wh-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-W[^-]*-(dobj|advmod)"
 }
 
 @dataclass
@@ -59,12 +61,6 @@ def tree_to_string(sentence):
     return add_ending_parenthesis(sentence, result)
 
 
-
-def search_tree_with_pattern(tree_string:str, regex:re.Pattern) -> bool:
-    matches = regex.findall(tree_string)
-
-
-
 def findall(document:str):
     
     doc = nlp(document)
@@ -83,9 +79,34 @@ def findall(document:str):
 
 def main():
     
-    d = "It was Jane's car that got stolen last night. It was my truck that got stolen yesterday."
-    matches = findall(d)
-    print(matches)
+    @dataclass
+    class TestSentence:
+        truth:str
+        text:str
+    
+    test_sents = [
+        TestSentence("TRUE", "All Jimmy wants for Christmas is a brand new bicycle."),
+        TestSentence("TRUE", "All the girl does is complain about everything"),
+        TestSentence("TRUE", "Was all she wanted a good job?"),
+        TestSentence("TRUE", "Was all Jeff saw blue and yellow?"),
+        TestSentence("TRUE", "All the dog in the tree knew was that the bone was on the grass."),
+        TestSentence("TRUE", "While riding her bike, all Sarah though about was seeing her friends at the ball game."),
+        TestSentence("FALSE", "I want all of these shirts"),
+        TestSentence("FALSE", "The boxes were all filled with potatoes"),
+        TestSentence("FALSE", "In all of this time, I have never seen a goose."),
+    ]
+    
+    with open("temp.txt", "w") as fout:
+        for test in test_sents:
+            doc = nlp(test.text)
+            for sent in doc.sents:
+                fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
+
+    # matches = findall(" ".join(bad_sents))
+    # for match in matches:
+    #     print(match.captured_tree_string)
+
+
 
 
 if __name__ == "__main__":
