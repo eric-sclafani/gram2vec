@@ -83,31 +83,55 @@ def main():
     class TestSentence:
         truth:str
         text:str
+        
+    def save_test_sentences(sentences):
+        with open("temp.txt", "w") as fout:
+            for test in sentences:
+                doc = nlp(test.text)
+                for sent in doc.sents:
+                    fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
+                    
+                    
+    template = [
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+    ]
     
-    test_sents = [
+    all_cleft_sents = [
         TestSentence("TRUE", "All Jimmy wants for Christmas is a brand new bicycle."),
         TestSentence("TRUE", "All the girl does is complain about everything"),
         TestSentence("TRUE", "Was all she wanted a good job?"),
         TestSentence("TRUE", "Was all Jeff saw blue and yellow?"),
         TestSentence("TRUE", "All the dog in the tree knew was that the bone was on the grass."),
-        TestSentence("TRUE", "While riding her bike, all Sarah though about was seeing her friends at the ball game."),
+        TestSentence("TRUE", "While riding her bike, all Sarah thought about was seeing her friends at the ball game."),
         TestSentence("FALSE", "I want all of these shirts"),
         TestSentence("FALSE", "The boxes were all filled with potatoes"),
         TestSentence("FALSE", "In all of this time, I have never seen a goose."),
     ]
     
-    with open("temp.txt", "w") as fout:
-        for test in test_sents:
-            doc = nlp(test.text)
-            for sent in doc.sents:
-                fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
+    there_cleft_sents = [
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("TRUE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+        TestSentence("FALSE", ""),
+    ]
+    
+    
+    save_test_sentences()
 
-    # matches = findall(" ".join(bad_sents))
-    # for match in matches:
-    #     print(match.captured_tree_string)
-
-
-
+    
 
 if __name__ == "__main__":
     main()
