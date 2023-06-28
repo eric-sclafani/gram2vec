@@ -132,3 +132,4 @@ dmypy.json
 # project
 .DS_Store
 data
+src/*sents.txt
