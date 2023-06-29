@@ -199,7 +199,7 @@ def _get_json_entries(df) -> Tuple[pd.Series, pd.Series, pd.Series]:
         author_ids = df["authorIDs"]
         document_ids = df["documentID"]
     except KeyError:
-        raise KeyError("Specified jsonlines file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
+        raise KeyError("Specified jsonline(s) file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
     
     return documents, author_ids, document_ids
 

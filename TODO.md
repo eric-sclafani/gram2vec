@@ -15,6 +15,11 @@ This file contains ideas for future additions/improvements
 - For now, the focus is on getting a working system for linear dependency tree matching. Code simplification and refinement can be focused on at a later time
 - Experiment with spacy large en model
     - this would require updating regex to match the large model's parse trees
+- Two user endpoints: 
+    1. Feed in one or more spaCy docs (if user already has an nlp instance elsewhere in their code) (useful for g2v)
+    2. Feed in one or more strings (this will instantiate a new nlp instance)
+
+- Remember to import the user api into __init__ in order to have a convenient import system
 ## Other:
 - multilingual 
 

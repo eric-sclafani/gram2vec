@@ -2,11 +2,16 @@ import spacy
 from spacy.language import Doc
 from spacy.tokens import Span
 from dataclasses import dataclass
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, Dict
 from sys import stderr
 import re
 
-from patterns import PATTERNS
+PATTERNS = {
+    
+}
+
+
+
 
 #! will get replaced when uploaded to Pypi
 def load_spacy(model="en_core_web_md"):
@@ -21,19 +26,6 @@ def load_spacy(model="en_core_web_md"):
 
 nlp = load_spacy()  
 
-
-def save_test_sentences(sentences, fname):
-    with open(f"{fname}.txt", "w") as fout:
-        for test in sentences:
-            doc = nlp(test.text)
-            for sent in doc.sents:
-                fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
-
-
-@dataclass
-class Treegex:    
-    name:str
-    pattern:str
     
 @dataclass
 class Match:
@@ -44,14 +36,10 @@ class Match:
     def __repr__(self) -> str:
         return f"{self.pattern_name} : {self.sentence}"
 
-def load_patterns() -> Tuple[Treegex]:
-    return tuple([Treegex(name, pattern) for name, pattern in PATTERNS.items()])
         
 
 def linearlize_tree(sentence:Span) -> str:
-    """
-    Converts a spaCy-produced dependency parse into a linear tree string while preserving dependency relations
-    """
+    """Converts a spaCy dependency-parsed sentence into a linear tree string while preserving dependency relations"""
     
     def get_NT_count(sentence) -> int:
         """Returns the number of non-terminal nodes in a dep tree"""
@@ -81,38 +69,52 @@ def linearlize_tree(sentence:Span) -> str:
     return f"{parse}{ending_parenthesis(nt_count)}"
 
 
-
-
-
-def find_treegex_matches(document:str):
+class TreegexPatternMatcher:
     
-    doc = nlp(document)
-    patterns = load_patterns()
-    matches = []
-    for sent in doc.sents:
-        tree_string = linearlize_tree(sent)
-        for pattern in patterns:
-            match = re.findall(pattern.pattern, tree_string)
-            matches.extend([Match(pattern.name, tree_string, sent.text) for _ in match])
-    return matches
-
-
- 
- 
- 
- 
-
-def findall(documents:Iterable[str|Doc]):
-    pass
+    def __init__(self):
+        self.patterns = {
+            "it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-relcl",
+            "psuedo-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-(WP|WRB)-(dobj|advmod)",
+            "all-cleft" : r"(\([^-]*-be-[^-]*-[^-]*\([^-]*-all-(P)?DT-[^-]*.*)|(\([^-]*-all-(P)?DT-[^-]*.*\([^-]*-be-VB[^-]*-[^-]*)",
+            "there-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-there-EX-expl.*\([^-]*-[^-]*-[^-]*-attr",
+            "if-because-cleft" : r"\([^-]*-be-[^-]*-ROOT\([^-]*-[^-]*-[^-]*-advcl\([^-*]*-if-IN-mark",
+            "passive" : r"\([^-]*-[^-]*-(NN[^-]*|PRP)-nsubjpass.*\([^-]*-be-[^-]*-auxpass"
+        }
+    
+    def add_patterns(self, patterns:Dict[str,str]) -> None:
+        """Updates the default patterns dictionary with a user supplied dictionary of {pattern_name:regex} pairs"""
+        self.patterns.update(patterns)
+        
+    
+    def _find_treegex_matches(self, doc:Doc):
+        """Iterates through a document's sentences, applying every regex to each sentence"""
+        matches = []
+        for sent in doc.sents:
+            tree_string = linearlize_tree(sent)
+            for name, pattern in self.patterns.items():
+                match = re.findall(pattern, tree_string)
+                matches.extend([Match(name, tree_string, sent.text) for _ in match])
+        return matches  
+            
+        
+    def match_spacy_docs(self):
+        pass
+    
+    def match_strings(self):
+        pass
     
 
+        
     
         
-        
-        
-   
-   
+
+
+
+
+
+
  
+
 def main():
 
     doc = nlp("this is a string")

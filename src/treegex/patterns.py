@@ -8,15 +8,12 @@ class TestSentence:
     text:str
 
 
-PATTERNS = {
-"it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-relcl",
-"psuedo-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-(WP|WRB)-(dobj|advmod)",
-"all-cleft" : r"(\([^-]*-be-[^-]*-[^-]*\([^-]*-all-(P)?DT-[^-]*.*)|(\([^-]*-all-(P)?DT-[^-]*.*\([^-]*-be-VB[^-]*-[^-]*)",
-"there-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-there-EX-expl.*\([^-]*-[^-]*-[^-]*-attr",
-"if-because-cleft" : r"\([^-]*-be-[^-]*-ROOT\([^-]*-[^-]*-[^-]*-advcl\([^-*]*-if-IN-mark",
-"passive" : r"\([^-]*-[^-]*-(NN[^-]*|PRP)-nsubjpass.*\([^-]*-be-[^-]*-auxpass"
-}
-
+def save_test_sentences(sentences, fname):
+    with open(f"{fname}.txt", "w") as fout:
+        for test in sentences:
+            doc = nlp(test.text)
+            for sent in doc.sents:
+                fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
 template = [
     TestSentence("TRUE", ""),
     TestSentence("TRUE", ""),
