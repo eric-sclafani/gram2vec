@@ -127,7 +127,7 @@ def main():
     nlp = spacy.load("en_core_web_md")
     docs = nlp.pipe(DOCS)
     treegex = TreegexPatternMatcher()
-
+    treegex.add_patterns({"test-pattern": r"\w+"})
     for match in treegex.match_documents(docs):
         print(match)
     
