@@ -2,20 +2,10 @@ import spacy
 from spacy.language import Doc
 from spacy.tokens import Span
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Tuple
 from collections.abc import Container
-from sys import stderr
 import re
 
-def load_spacy(model="en_core_web_md"):
-    try:
-        nlp = spacy.load(model, exclude=["ner"])
-    except OSError:
-        print(f"Downloading spaCy language model '{model}' (don't worry, this will only happen once)", file=stderr)
-        from spacy.cli import download
-        download(model)
-        nlp = spacy.load(model, exclude=["ner"])
-    return nlp 
 
 def linearlize_tree(sentence:Span) -> str:
     """Converts a spaCy dependency-parsed sentence into a linear tree string while preserving dependency relations"""
@@ -50,7 +40,7 @@ def linearlize_tree(sentence:Span) -> str:
 @dataclass
 class Match:
     pattern_name:str
-    captured_tree_string:str
+    matched:str
     sentence:str
     
     def __repr__(self) -> str:
@@ -60,25 +50,24 @@ class TreegexPatternMatcher:
     
     def __init__(self):
         self.patterns = {
-            "it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-relcl",
-            "psuedo-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-(WP|WRB)-(dobj|advmod)",
+            "it-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-(relcl|advcl)",
+            "pseudo-cleft": r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-(WP|WRB)-(dobj|advmod)",
             "all-cleft" : r"(\([^-]*-be-[^-]*-[^-]*\([^-]*-all-(P)?DT-[^-]*.*)|(\([^-]*-all-(P)?DT-[^-]*.*\([^-]*-be-VB[^-]*-[^-]*)",
             "there-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-there-EX-expl.*\([^-]*-[^-]*-[^-]*-attr",
-            "if-because-cleft" : r"\([^-]*-be-[^-]*-ROOT\([^-]*-[^-]*-[^-]*-advcl\([^-*]*-if-IN-mark",
+            "if-because-cleft" : r"\([^-]*-be-[^-]*-ROOT.*\([^-]*-[^-]*-[^-]*-advcl\([^-*]*-if-IN-mark",
             "passive" : r"\([^-]*-[^-]*-(NN[^-]*|PRP)-nsubjpass.*\([^-]*-be-[^-]*-auxpass"
         }
-    
-    
         
-    def _find_treegex_matches(self, doc:Doc):
+    def _find_treegex_matches(self, doc:Doc) -> Tuple[Match]:
         """Iterates through a document's sentences, applying every regex to each sentence"""
         matches = []
         for sent in doc.sents:
             tree_string = linearlize_tree(sent)
             for name, pattern in self.patterns.items():
-                match = re.findall(pattern, tree_string)
-                matches.extend([Match(name, tree_string, sent.text) for _ in match])
-        return matches  
+                match = re.search(pattern, tree_string)
+                if match:
+                    matches.append(Match(name, match.group(), sent.text))
+        return tuple(matches)
     
     def _has_correct_type(self, documents:Doc|Container[Doc]) -> bool:
         """Messy way to ensure correct types (if there's a cleaner way, please lmk)"""
@@ -100,27 +89,21 @@ class TreegexPatternMatcher:
             raise TypeError("'documents' arg must be a spaCy doc or container of spaCy docs")
             
 
-        
-        
     
-
-        
-    
-        
-
-
-
-
-
-
- 
 
 def main():
 
-    nlp = load_spacy()
-    doc = nlp("this is a string")  
-    
+    nlp = spacy.load("en_core_web_md")
+    doc1 = nlp("It was the dog that John bought and if he bought the dog, it is because he likes animals. ")  
+    doc2 = nlp("It was the dog that John bought.")
+    doc3 = nlp("It was the dog the man adopted and it was the cat the woman adopted.")
     treegex = TreegexPatternMatcher()
+    
+    
+
+    
+    
+    
 
     
 
