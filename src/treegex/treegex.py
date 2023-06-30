@@ -2,18 +2,11 @@ import spacy
 from spacy.language import Doc
 from spacy.tokens import Span
 from dataclasses import dataclass
-from typing import Tuple, Iterable, Dict
+from typing import Dict
+from collections.abc import Container
 from sys import stderr
 import re
 
-PATTERNS = {
-    
-}
-
-
-
-
-#! will get replaced when uploaded to Pypi
 def load_spacy(model="en_core_web_md"):
     try:
         nlp = spacy.load(model, exclude=["ner"])
@@ -23,20 +16,6 @@ def load_spacy(model="en_core_web_md"):
         download(model)
         nlp = spacy.load(model, exclude=["ner"])
     return nlp 
-
-nlp = load_spacy()  
-
-    
-@dataclass
-class Match:
-    pattern_name:str
-    captured_tree_string:str
-    sentence:str
-    
-    def __repr__(self) -> str:
-        return f"{self.pattern_name} : {self.sentence}"
-
-        
 
 def linearlize_tree(sentence:Span) -> str:
     """Converts a spaCy dependency-parsed sentence into a linear tree string while preserving dependency relations"""
@@ -68,6 +47,14 @@ def linearlize_tree(sentence:Span) -> str:
     nt_count = get_NT_count(sentence)
     return f"{parse}{ending_parenthesis(nt_count)}"
 
+@dataclass
+class Match:
+    pattern_name:str
+    captured_tree_string:str
+    sentence:str
+    
+    def __repr__(self) -> str:
+        return f"{self.pattern_name} : {self.sentence}"
 
 class TreegexPatternMatcher:
     
@@ -81,11 +68,8 @@ class TreegexPatternMatcher:
             "passive" : r"\([^-]*-[^-]*-(NN[^-]*|PRP)-nsubjpass.*\([^-]*-be-[^-]*-auxpass"
         }
     
-    def add_patterns(self, patterns:Dict[str,str]) -> None:
-        """Updates the default patterns dictionary with a user supplied dictionary of {pattern_name:regex} pairs"""
-        self.patterns.update(patterns)
-        
     
+        
     def _find_treegex_matches(self, doc:Doc):
         """Iterates through a document's sentences, applying every regex to each sentence"""
         matches = []
@@ -95,13 +79,29 @@ class TreegexPatternMatcher:
                 match = re.findall(pattern, tree_string)
                 matches.extend([Match(name, tree_string, sent.text) for _ in match])
         return matches  
-            
-        
-    def match_spacy_docs(self):
-        pass
     
-    def match_strings(self):
-        pass
+    def _has_correct_type(self, documents:Doc|Container[Doc]) -> bool:
+        """Messy way to ensure correct types (if there's a cleaner way, please lmk)"""
+        try:
+            if not isinstance(documents, Doc) and not isinstance(documents[0], Doc):
+                return False
+        except IndexError:
+            return False
+        return True
+    
+    
+    def add_patterns(self, patterns:Dict[str,str]) -> None:
+        """Updates the default patterns dictionary with a user supplied dictionary of {pattern_name:regex} pairs"""
+        self.patterns.update(patterns)
+            
+    def match_documents(self, documents:Doc|Container[Doc]):
+        
+        if not self._has_correct_type(documents):
+            raise TypeError("'documents' arg must be a spaCy doc or container of spaCy docs")
+            
+
+        
+        
     
 
         
@@ -117,9 +117,11 @@ class TreegexPatternMatcher:
 
 def main():
 
-    doc = nlp("this is a string")
+    nlp = load_spacy()
+    doc = nlp("this is a string")  
     
-    print(linearlize_tree(list(doc.sents)[0]))    
+    treegex = TreegexPatternMatcher()
+
     
 
 if __name__ == "__main__":
