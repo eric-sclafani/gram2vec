@@ -6,8 +6,7 @@ import os
 import pandas as pd
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Tuple, List, Dict, Callable, Optional
-from collections.abc import Container
+from typing import Tuple, List, Dict, Callable, Optional, Iterable
 
 from .load_spacy import nlp, Doc
 
@@ -185,7 +184,7 @@ def _remove_emojis(document:str) -> str:
     new_string = demoji.replace(document, "").split()
     return " ".join(new_string)
  
-def _process_documents(documents:Container[str]) -> List[Document]:
+def _process_documents(documents:Iterable[str]) -> List[Document]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
     nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])
     processed = []
@@ -258,7 +257,7 @@ def from_jsonlines(path:str,
     vector_df.set_index(document_ids, inplace=True)
     return vector_df
     
-def from_documents(documents:Container[str], 
+def from_documents(documents:Iterable[str], 
                    config:Optional[Dict]=None, 
                    include_content_embedding=False) -> pd.DataFrame:
     """

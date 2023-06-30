@@ -2,8 +2,7 @@ import spacy
 from spacy.language import Doc
 from spacy.tokens import Span
 from dataclasses import dataclass
-from typing import Dict, Tuple
-from collections.abc import Container
+from typing import Dict, Tuple, Iterable, List
 import re
 
 
@@ -68,37 +67,69 @@ class TreegexPatternMatcher:
                 if match:
                     matches.append(Match(name, match.group(), sent.text))
         return tuple(matches)
-    
-    def _has_correct_type(self, documents:Doc|Container[Doc]) -> bool:
-        """Messy way to ensure correct types (if there's a cleaner way, please lmk)"""
-        try:
-            if not isinstance(documents, Doc) and not isinstance(documents[0], Doc):
-                return False
-        except IndexError:
-            return False
-        return True
-    
-    
+
+    #! needs testing
     def add_patterns(self, patterns:Dict[str,str]) -> None:
         """Updates the default patterns dictionary with a user supplied dictionary of {pattern_name:regex} pairs"""
         self.patterns.update(patterns)
-            
-    def match_documents(self, documents:Doc|Container[Doc]):
         
-        if not self._has_correct_type(documents):
-            raise TypeError("'documents' arg must be a spaCy doc or container of spaCy docs")
+    #! needs testing
+    def remove_patterns(self, to_remove:Iterable[str]) -> None:
+        
+        for pattern_name in to_remove:
+            try:
+                del self.patterns[pattern_name]
+            except KeyError:
+                print(f"Pattern '{pattern_name}' not in registered patterns.\n Currently registered patterns:\n {self.patterns}")
+            
+            
+    def match_document(self, document:Doc) -> Tuple[Match]:
+        """
+        Applies all registered treegexes to one spaCy-generated document
+        
+        Args
+        ----
+            - document - a single spaCy document\n
+        Returns
+        -------
+            - a tuple of sentence matches for a single document
+        """
+        return self._find_treegex_matches(document)
+
+    def match_documents(self, documents:Iterable[Doc]) -> List[Tuple[Match]]:
+        """
+        Applies all registered treegexes to a collection of spaCy-generated documents
+        
+        Args
+        ----
+            - documents - iterable of spacy documents\n
+        Returns
+        -------
+            - A list of tuples such that each tuple contains one document's sentence matches
+        """
+        all_matches = []
+        for document in documents:
+            all_matches.append(self._find_treegex_matches(document))
+        return all_matches
+
+            
             
 
     
 
 def main():
 
+    DOCS = [
+        "It was the dog that John bought and if he bought the dog, it is because he likes animals",
+        "It was the dog that John bought.",
+        "It was the dog the man adopted and it was the cat the woman adopted."
+    ]
     nlp = spacy.load("en_core_web_md")
-    doc1 = nlp("It was the dog that John bought and if he bought the dog, it is because he likes animals. ")  
-    doc2 = nlp("It was the dog that John bought.")
-    doc3 = nlp("It was the dog the man adopted and it was the cat the woman adopted.")
+    docs = nlp.pipe(DOCS)
     treegex = TreegexPatternMatcher()
-    
+
+    for match in treegex.match_documents(docs):
+        print(match)
     
 
     
