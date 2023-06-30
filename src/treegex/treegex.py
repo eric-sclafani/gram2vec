@@ -68,19 +68,17 @@ class TreegexPatternMatcher:
                     matches.append(Match(name, match.group(), sent.text))
         return tuple(matches)
 
-    #! needs testing
     def add_patterns(self, patterns:Dict[str,str]) -> None:
         """Updates the default patterns dictionary with a user supplied dictionary of {pattern_name:regex} pairs"""
         self.patterns.update(patterns)
         
-    #! needs testing
     def remove_patterns(self, to_remove:Iterable[str]) -> None:
-        
+        """Given an iterable of pattern names, removes those patterns from the registered pattens list"""
         for pattern_name in to_remove:
             try:
                 del self.patterns[pattern_name]
             except KeyError:
-                print(f"Pattern '{pattern_name}' not in registered patterns.\n Currently registered patterns:\n {self.patterns}")
+                raise KeyError(f"Pattern '{pattern_name}' not in registered patterns.")
             
             
     def match_document(self, document:Doc) -> Tuple[Match]:
@@ -127,7 +125,6 @@ def main():
     nlp = spacy.load("en_core_web_md")
     docs = nlp.pipe(DOCS)
     treegex = TreegexPatternMatcher()
-    treegex.add_patterns({"test-pattern": r"\w+"})
     for match in treegex.match_documents(docs):
         print(match)
     
