@@ -8,7 +8,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Tuple, List, Dict, Callable, Optional, Iterable
 
-from .load_spacy import nlp, Doc
+from .load_spacy import nlp, Doc, matcher
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -46,7 +46,8 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
         "emojis":load_from_txt(f"{vocab_path}emojis.txt"),
         "dep_labels": load_from_txt(f"{vocab_path}dep_labels.txt"),
         "mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
-        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt")
+        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt"),
+        "syntactic_patterns":tuple(matcher.patterns.keys())
     }
     
 VOCABS = vocab_loader()  
@@ -142,6 +143,10 @@ def emojis(doc) -> Feature:
     doc_emoji_counts = [emoji for emoji in extracted_emojis if emoji in vocab]
     return Counter(doc_emoji_counts)
 
+@Feature.register
+def syntactic_patterns(doc) -> Feature:
+    return Counter(doc.doc._.syntactic_patterns)
+
 
 # ~~~ Processing ~~~
 
@@ -158,15 +163,16 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
     if config is None:
         default_config = {
-            "pos_unigrams":1,
-            "pos_bigrams":1,
-            "func_words":1,
-            "punctuation":1,
-            "letters":1,
-            "emojis":1,
-            "dep_labels":1,
-            "mixed_bigrams":0, # keep off
-            "morph_tags":1
+            #"pos_unigrams":1,
+            #"pos_bigrams":1,
+            #"func_words":1,
+            #"punctuation":1,
+            #"letters":1,
+            #"emojis":1,
+           # "dep_labels":1,
+            #"mixed_bigrams":0, # keep off
+            #"morph_tags":1,
+            "syntactic_patterns":1
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
@@ -280,4 +286,3 @@ def from_documents(documents:Iterable[str],
         print("Gram2Vec: (WARNING) embedding should only be used for experiments, not attribution")
     vector_df = _apply_features_to_docs(documents, config, include_content_embedding)
     return vector_df
-

@@ -45,7 +45,10 @@ class Match:
     def __repr__(self) -> str:
         return f"{self.pattern_name} : {self.sentence}"
 
-class TreegexPatternMatcher:
+class SentenceRegexMatcher:
+    """
+    This class encapsulates the sentence regex patterns and methods to apply them to target documents
+    """
     
     def __init__(self):
         self.patterns = {
@@ -83,7 +86,7 @@ class TreegexPatternMatcher:
             
     def match_document(self, document:Doc) -> Tuple[Match]:
         """
-        Applies all registered treegexes to one spaCy-generated document
+        Applies all registered patterns to one spaCy-generated document
         
         Args
         ----
@@ -96,7 +99,7 @@ class TreegexPatternMatcher:
 
     def match_documents(self, documents:Iterable[Doc]) -> List[Tuple[Match]]:
         """
-        Applies all registered treegexes to a collection of spaCy-generated documents
+        Applies all registered patterns to a collection of spaCy-generated documents
         
         Args
         ----
@@ -124,16 +127,7 @@ def main():
     ]
     nlp = spacy.load("en_core_web_md")
     docs = nlp.pipe(DOCS)
-    treegex = TreegexPatternMatcher()
-    for match in treegex.match_documents(docs):
-        print(match)
-    
-
-    
-    
-    
-
-    
-
+    matcher = SentenceRegexMatcher()
+   
 if __name__ == "__main__":
     main()

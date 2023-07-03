@@ -8,11 +8,12 @@ This file contains ideas for future additions/improvements
 
 ## TODO before pip installation:
 - Make unit tests
+- Clean up vocab handling
 - https://carpentries-incubator.github.io/python_packaging/instructor/05-publishing.html
 
 
-## Treegex:
-- Treegex will eventually be ported to its own repo and thus be its own module
+## SRM:
+- SRM will eventually be ported to its own repo and thus be its own module
 - For now, the focus is on getting a working system for linear dependency tree matching. Code simplification and refinement can be focused on at a later time
 - Experiment with spacy large en model
     - this would require updating regex to match the large model's parse trees
