@@ -1,4 +1,3 @@
-import spacy
 from spacy.language import Doc
 from spacy.tokens import Span
 from dataclasses import dataclass
@@ -112,22 +111,3 @@ class SentenceRegexMatcher:
         for document in documents:
             all_matches.append(self._find_treegex_matches(document))
         return all_matches
-
-            
-            
-
-    
-
-def main():
-
-    DOCS = [
-        "It was the dog that John bought and if he bought the dog, it is because he likes animals",
-        "It was the dog that John bought.",
-        "It was the dog the man adopted and it was the cat the woman adopted."
-    ]
-    nlp = spacy.load("en_core_web_md")
-    docs = nlp.pipe(DOCS)
-    matcher = SentenceRegexMatcher()
-   
-if __name__ == "__main__":
-    main()

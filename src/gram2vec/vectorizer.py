@@ -45,7 +45,7 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
         "letters": load_from_txt(f"{vocab_path}letters.txt"),
         "emojis":load_from_txt(f"{vocab_path}emojis.txt"),
         "dep_labels": load_from_txt(f"{vocab_path}dep_labels.txt"),
-        "mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
+        #"mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
         "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt"),
         "syntactic_patterns":tuple(matcher.patterns.keys())
     }
@@ -128,9 +128,9 @@ def letters(doc) -> Feature:
 def dep_labels(doc) -> Feature:
     return Counter([dep for dep in doc.doc._.dep_labels])
 
-@Feature.register
-def mixed_bigrams(doc) -> Feature:
-    return Counter(doc.doc._.mixed_bigrams)
+# @Feature.register
+# def mixed_bigrams(doc) -> Feature:
+#     return Counter(doc.doc._.mixed_bigrams)
 
 @Feature.register
 def morph_tags(doc) -> Feature:
@@ -163,20 +163,20 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
     if config is None:
         default_config = {
-            #"pos_unigrams":1,
-            #"pos_bigrams":1,
-            #"func_words":1,
-            #"punctuation":1,
-            #"letters":1,
-            #"emojis":1,
-           # "dep_labels":1,
-            #"mixed_bigrams":0, # keep off
-            #"morph_tags":1,
+            "pos_unigrams":1,
+            "pos_bigrams":1,
+            "func_words":1,
+            "punctuation":1,
+            "letters":1,
+            "emojis":1,
+            "dep_labels":1,
+            "mixed_bigrams":0, # keep off
+            "morph_tags":1,
             "syntactic_patterns":1
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
-    
+
 def _load_jsonlines(path:str) -> pd.DataFrame:
     """Loads 1 or more .jsonl files into a dataframe"""
     if path.endswith(".jsonl"):
@@ -189,7 +189,7 @@ def _remove_emojis(document:str) -> str:
     """Removes emojis from a string and fixes spacing issue caused by emoji removal"""
     new_string = demoji.replace(document, "").split()
     return " ".join(new_string)
- 
+
 def _process_documents(documents:Iterable[str]) -> List[Document]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
     nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])

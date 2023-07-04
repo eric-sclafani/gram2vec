@@ -97,7 +97,7 @@ custom_extensions = {
     ("dep_labels", get_dep_labels),
     ("morph_tags", get_morph_tags),
     ("pos_bigrams", get_pos_bigrams),
-    ("mixed_bigrams", get_mixed_bigrams),
+    #("mixed_bigrams", get_mixed_bigrams), # keep commented out for now
     ("syntactic_patterns", get_syntactic_patterns)
 }
 
@@ -105,14 +105,16 @@ def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
- 
+
+model = "en_core_web_lg"
 try:
-    nlp = spacy.load("en_core_web_md", exclude=["ner"])
+    nlp = spacy.load(model, exclude=["ner"])
 except OSError:
-    print("Downloading spaCy language model 'en_core_web_md' (this will only happen once)", file=stderr)
+    print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
     from spacy.cli import download
-    download("en_core_web_md")
-    
-nlp = spacy.load("en_core_web_md", exclude=["ner"])
+    download(model)
+
+nlp = spacy.load(model, exclude=["ner"])
+print(f"Gram2Vec: Using '{model}'")
 for name, function in custom_extensions:
     set_spacy_extension(name, function)
