@@ -172,7 +172,7 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "dep_labels":1,
             "mixed_bigrams":0, # keep off
             "morph_tags":1,
-            "syntactic_patterns":1
+            "syntactic_patterns":0
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]

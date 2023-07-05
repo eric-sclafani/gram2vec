@@ -1,5 +1,6 @@
+import spacy
 from dataclasses import dataclass
-
+from srm.matcher import linearlize_tree
 
 
 @dataclass
@@ -7,13 +8,6 @@ class TestSentence:
     truth:str
     text:str
 
-
-def save_test_sentences(sentences, fname):
-    with open(f"{fname}.txt", "w") as fout:
-        for test in sentences:
-            doc = nlp(test.text)
-            for sent in doc.sents:
-                fout.write(f"{test.truth}\n{test.text}\n{tree_to_string(sent)}\n\n")
 template = [
     TestSentence("TRUE", ""),
     TestSentence("TRUE", ""),
@@ -26,7 +20,19 @@ template = [
     TestSentence("FALSE", ""),
 ]
 
-psuedo_cleft_sents = [
+it_cleft_sents = [
+    TestSentence("TRUE", "It was Jane’s car that got stolen last night"),
+    TestSentence("TRUE", "It wasn’t the most obvious problem that intrigued me, it was the subtle issue of responsibility."),
+    TestSentence("TRUE", "It was a moral debt that I had inherited from my grandmother."),
+    TestSentence("TRUE", "It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished."),
+    TestSentence("TRUE", "It was during the principate of Tiberius Caesar when their druids and prophets and healers of this type were abolished."),
+    TestSentence("TRUE", "If it were John who is the candidate, I would vote for him."),
+    TestSentence("FALSE", "He was a man who ate my cakes."),
+    TestSentence("FALSE", "It was in the principate of Tiberius Caesar, who reigned from AD14 to AD37."),
+    TestSentence("FALSE", "It wasn’t the most obvious problem."),
+]
+
+pseudo_cleft_sents = [
     TestSentence("TRUE", "What I want is some peace and quiet!"),
     TestSentence("TRUE", "What you need to do is to rest for a while."),
     TestSentence("TRUE", "Where I want to go is a place so far away from here."),
@@ -52,6 +58,8 @@ all_cleft_sents = [
     TestSentence("FALSE", "I want all of these shirts"),
     TestSentence("FALSE", "The boxes were all filled with potatoes"),
     TestSentence("FALSE", "In all of this time, I have never seen a goose."),
+    TestSentence("FALSE", "The man riding the bike wanted to play baseball"),
+    TestSentence("FALSE", "In the morning, Jack and Ryan played with all of the toys.")
 ]
 
 there_cleft_sents = [
@@ -92,3 +100,17 @@ passive_sents = [
     TestSentence("FALSE", "The dwarf is sitting by the fire"),
 ]
 
+nlp = spacy.load("en_core_web_lg")
+
+
+
+def save_test_sentences(sentences, fname):
+    with open(f"{fname}.txt", "w") as fout:
+        for test in sentences:
+            doc = nlp(test.text)
+            for sent in doc.sents:
+                fout.write(f"{test.truth}\n{test.text}\n{linearlize_tree(sent)}\n\n")
+                
+
+
+save_test_sentences(passive_sents, "passive_sents")

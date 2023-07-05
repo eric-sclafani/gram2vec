@@ -29,9 +29,7 @@ This file contains ideas for future additions/improvements
 
 - `It-clefts`:
     - Temporal it-clefts are not parsed correctly. May be fixed when switching to large model (needs experimentation)
-    - It-clefts like "If it were John who is the candidate, I would vote for him." are not captured. 
-- `Pseudo-clefts`:
-    - "What I need is none of your business." is a false positive
+
 - `Passives`:
     - In the following two sentences, "book" is being mislabeled as "nsubj" when it should be "nsubjpass":
         - "The book which was given to me by Mary was really interesting."
