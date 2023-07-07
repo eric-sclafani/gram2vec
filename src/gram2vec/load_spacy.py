@@ -3,10 +3,16 @@ from spacy.tokens import Doc
 from sys import stderr
 from typing import Callable, List, Tuple, Iterable
 from nltk import bigrams
+from srm import SyntaxRegexMatcher
 
 # ~~~ Type aliases ~~~
+
 SentenceSpan = Tuple[int,int]
 Bigram = Tuple[str,str]
+
+# ~~ Regex matcher ~~~
+
+matcher = SyntaxRegexMatcher()
 
 # ~~~ Helper funcs ~~~
 
@@ -28,14 +34,11 @@ def get_dep_labels(doc):
 def get_morph_tags(doc):
     return [morph for token in doc for morph in token.morph if morph != ""]
 
-def get_sentences(doc):
-    return list(doc.sents)
-
 def get_pos_bigrams(doc) -> List[Bigram]:
 
     def get_sentence_spans(doc) -> List[SentenceSpan]:
         """Gets each start and end index of all sentences in a document"""
-        return [(sent.start, sent.end) for sent in doc._.sentences]
+        return [(sent.start, sent.end) for sent in doc.sents]
 
     def insert_sentence_boundaries(spans:List[SentenceSpan]) -> List[str]:
         """Marks sentence boundaries with symbols BOS (beginning of sentence) & EOS (end of sentence)"""
@@ -80,8 +83,11 @@ def get_mixed_bigrams(doc):
     mixed_bigrams = bigrams(tokens_with_replacements)
     mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
     return convert_bigrams_to_strings(mixed_bigrams)
-    
 
+def get_syntactic_patterns(doc):
+    sentence_matches = matcher.match_document(doc)
+    return [match.pattern_name for match in sentence_matches]
+    
     
 # Add more extensions here as needed!
 # Extension syntax: (extension_name, getter function that returns a list)
@@ -90,23 +96,25 @@ custom_extensions = {
     ("pos_tags", get_pos_tags),
     ("dep_labels", get_dep_labels),
     ("morph_tags", get_morph_tags),
-    ("sentences", get_sentences),
     ("pos_bigrams", get_pos_bigrams),
-    ("mixed_bigrams", get_mixed_bigrams)
+    #("mixed_bigrams", get_mixed_bigrams), # keep commented out for now
+    ("syntactic_patterns", get_syntactic_patterns)
 }
 
 def set_spacy_extension(name:str, function:Callable) -> None:
     """Creates spacy extensions to easily access certain information"""
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
- 
+
+model = "en_core_web_lg"
 try:
-    nlp = spacy.load("en_core_web_md", exclude=["ner"])
+    nlp = spacy.load(model, exclude=["ner"])
 except OSError:
-    print("Downloading spaCy language model 'en_core_web_md' (don't worry, this will only happen once)", file=stderr)
+    print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
     from spacy.cli import download
-    download("en_core_web_md")
-    
-nlp = spacy.load("en_core_web_md", exclude=["ner"])
+    download(model)
+
+nlp = spacy.load(model, exclude=["ner"])
+print(f"Gram2Vec: Using '{model}'")
 for name, function in custom_extensions:
     set_spacy_extension(name, function)

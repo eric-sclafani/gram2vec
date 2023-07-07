@@ -6,9 +6,9 @@ import os
 import pandas as pd
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Tuple, List, Dict, Callable, Iterable, Optional
+from typing import Tuple, List, Dict, Callable, Optional, Iterable
 
-from .load_spacy import nlp, Doc
+from .load_spacy import nlp, Doc, matcher
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -26,7 +26,7 @@ def measure_time(func):
 def load_from_txt(path:str) -> Tuple[str]:
     """Loads a .txt file delimited by newlines"""
     with open (path, "r") as fin:
-        return tuple(map(lambda x: x.strip("\n"), fin.readlines()))
+        return [line.strip("\n") for line in fin.readlines()]
 
 def get_user_vocab_path():
     """Gets the user's path to the vocabulary files"""
@@ -45,8 +45,9 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
         "letters": load_from_txt(f"{vocab_path}letters.txt"),
         "emojis":load_from_txt(f"{vocab_path}emojis.txt"),
         "dep_labels": load_from_txt(f"{vocab_path}dep_labels.txt"),
-        "mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
-        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt")
+        #"mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
+        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt"),
+        "syntactic_patterns":tuple(matcher.patterns.keys())
     }
     
 VOCABS = vocab_loader()  
@@ -127,9 +128,9 @@ def letters(doc) -> Feature:
 def dep_labels(doc) -> Feature:
     return Counter([dep for dep in doc.doc._.dep_labels])
 
-@Feature.register
-def mixed_bigrams(doc) -> Feature:
-    return Counter(doc.doc._.mixed_bigrams)
+# @Feature.register
+# def mixed_bigrams(doc) -> Feature:
+#     return Counter(doc.doc._.mixed_bigrams)
 
 @Feature.register
 def morph_tags(doc) -> Feature:
@@ -141,6 +142,10 @@ def emojis(doc) -> Feature:
     extracted_emojis = demoji.findall_list(doc.raw, desc=False)
     doc_emoji_counts = [emoji for emoji in extracted_emojis if emoji in vocab]
     return Counter(doc_emoji_counts)
+
+@Feature.register
+def syntactic_patterns(doc) -> Feature:
+    return Counter(doc.doc._.syntactic_patterns)
 
 
 # ~~~ Processing ~~~
@@ -165,12 +170,13 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "letters":1,
             "emojis":1,
             "dep_labels":1,
-            "mixed_bigrams":0,
-            "morph_tags":1
+            "mixed_bigrams":0, # keep off
+            "morph_tags":1,
+            "syntactic_patterns":0
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
-    
+
 def _load_jsonlines(path:str) -> pd.DataFrame:
     """Loads 1 or more .jsonl files into a dataframe"""
     if path.endswith(".jsonl"):
@@ -183,7 +189,7 @@ def _remove_emojis(document:str) -> str:
     """Removes emojis from a string and fixes spacing issue caused by emoji removal"""
     new_string = demoji.replace(document, "").split()
     return " ".join(new_string)
- 
+
 def _process_documents(documents:Iterable[str]) -> List[Document]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
     nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])
@@ -199,7 +205,7 @@ def _get_json_entries(df) -> Tuple[pd.Series, pd.Series, pd.Series]:
         author_ids = df["authorIDs"]
         document_ids = df["documentID"]
     except KeyError:
-        raise KeyError("Specified jsonlines file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
+        raise KeyError("Specified jsonline(s) file missing one or more fields: 'fullText', 'authorIDs', 'documentID'")
     
     return documents, author_ids, document_ids
 
@@ -280,4 +286,3 @@ def from_documents(documents:Iterable[str],
         print("Gram2Vec: (WARNING) embedding should only be used for experiments, not attribution")
     vector_df = _apply_features_to_docs(documents, config, include_content_embedding)
     return vector_df
-
