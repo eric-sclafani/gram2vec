@@ -10,8 +10,11 @@ This file contains ideas for future additions/improvements
 - Clean up vocab handling
 - https://carpentries-incubator.github.io/python_packaging/instructor/05-publishing.html
 
+## TODO eventually
+- Add unit tests
 
-## SRM (Sentence Regex Matcher):
+
+## SRM (Syntax Regex Matcher):
 - SRM will eventually be ported to its own repo and thus be its own module
 - For now, the focus is on getting a working system for linear dependency tree matching. Code simplification and refinement can be focused on at a later time
 - Experiment with spacy large en model

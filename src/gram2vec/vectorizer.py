@@ -23,7 +23,7 @@ def measure_time(func):
 
 # ~~~ Vocab ~~~
 
-def load_from_txt(path:str) -> Tuple[str]:
+def _load_from_txt(path:str) -> Tuple[str]:
     """Loads a .txt file delimited by newlines"""
     with open (path, "r") as fin:
         return [line.strip("\n") for line in fin.readlines()]
@@ -38,15 +38,15 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
     """Loads in all feature vocabs. For any new vocabs, add them to this function"""
     vocab_path = get_user_vocab_path()
     return {
-        "pos_unigrams": load_from_txt(f"{vocab_path}pos_unigrams.txt"),
-        "pos_bigrams": load_from_txt(f"{vocab_path}pos_bigrams.txt"),
-        "func_words": load_from_txt(f"{vocab_path}func_words.txt"),
-        "punctuation": load_from_txt(f"{vocab_path}punctuation.txt"),
-        "letters": load_from_txt(f"{vocab_path}letters.txt"),
-        "emojis":load_from_txt(f"{vocab_path}emojis.txt"),
-        "dep_labels": load_from_txt(f"{vocab_path}dep_labels.txt"),
-        #"mixed_bigrams":load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
-        "morph_tags":load_from_txt(f"{vocab_path}morph_tags.txt"),
+        "pos_unigrams": _load_from_txt(f"{vocab_path}pos_unigrams.txt"),
+        "pos_bigrams": _load_from_txt(f"{vocab_path}pos_bigrams.txt"),
+        "func_words": _load_from_txt(f"{vocab_path}func_words.txt"),
+        "punctuation": _load_from_txt(f"{vocab_path}punctuation.txt"),
+        "letters": _load_from_txt(f"{vocab_path}letters.txt"),
+        "emojis":_load_from_txt(f"{vocab_path}emojis.txt"),
+        "dep_labels": _load_from_txt(f"{vocab_path}dep_labels.txt"),
+        #"mixed_bigrams":_load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
+        "morph_tags":_load_from_txt(f"{vocab_path}morph_tags.txt"),
         "syntactic_patterns":tuple(matcher.patterns.keys())
     }
     
