@@ -1,12 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import zscore
-from pathlib import Path
 from typing import List
-import pickle as pkl
-
-
-raise Exception("Verbalizer is currently undergoing maintanence. Please check back in a later version")
 
 # project imports
 from gram2vec import vectorizer
@@ -33,13 +28,13 @@ class Verbalizer:
 
     def _make_author_df(self) -> pd.DataFrame:
         """Creates an author level dataframe. Each author entry is the average of that author's document vectors"""
-        author_ids = self.text_df["authorIDs"]
+        author_ids = self.docs_df["authorIDs"].unique()
         author_ids_to_avs = {}
         
         for author_id in author_ids:
             author_doc_entries = self.get_author_docs(author_id)
             author_doc_vectors = self._exclude_columns(author_doc_entries, cols=['documentID', 'authorIDs'])
-            author_ids_to_avs[author_id] = np.mean(author_doc_vectors, axis=0)
+            author_ids_to_avs[author_id] = author_doc_vectors.mean(axis=0)
 
         df = pd.DataFrame(author_ids_to_avs).T      
         df.reset_index(inplace=True)
