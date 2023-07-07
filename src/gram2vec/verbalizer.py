@@ -4,12 +4,24 @@ from scipy.stats import zscore
 from typing import List
 
 class Verbalizer:
-    
+    """
+    This class encapsulates the zscore verbalization functionality of gram2vec
+    """
     def __init__(self, docs_df:pd.DataFrame, zscore_threshold=2.0):
         
         self.docs_df = docs_df
+        self.check_correct_format(docs_df)
+        
         self.threshold = zscore_threshold
         self.author_df = self._make_author_df(docs_df)
+        
+    def check_correct_format(self, df:pd.DataFrame) -> None:
+        """Ensures that provided docs df has correct fields"""
+        try:
+            df["authorIDs"]
+            df["documentID"]
+        except KeyError:
+            raise ValueError("'authorIDs' or 'documentID' field missing from provided dataframe")
         
     def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
         """Excludes given columns from a dataframe. Used when doing numerical operations"""
@@ -48,7 +60,6 @@ class Verbalizer:
         else:
             raise ValueError(f"id '{id}' not found in dataframe")
 
-    
     def _get_zscores(self, df:pd.DataFrame) -> np.ndarray:
         """Calculates zscores for a given df"""
         return zscore(self._exclude_columns(df, cols=["documentID", "authorIDs"]))
@@ -74,7 +85,17 @@ class Verbalizer:
         return converted
     
     def verbalize_document(self, doc_id:str) -> pd.DataFrame:
-        """"""
+        """
+        Given a unqiue document id, retrieves that document's most distinguishing features. 
+        
+        Args:
+        ----
+            - doc_id (str) - document id to verbalize
+            
+        Returns
+        ------
+            - pd.DataFrame - dataframe of which features meet the threshold, their zscores, and their verbalized forms
+        """
         selected_id_zscores = self._get_identifying_features(doc_id, self.docs_df)
         templated_strings = self._verbalize_zscores(selected_id_zscores, "document")
         
@@ -86,7 +107,17 @@ class Verbalizer:
         return verbalized_df
     
     def verbalize_author(self, author_id:str) -> pd.DataFrame:
-        """"""
+        """
+        Given a unqiue author id, retrieves that author's most distinguishing features. 
+        
+        Args:
+        ----
+            - author_id (str) - author id to verbalize
+            
+        Returns
+        ------
+            - pd.DataFrame - dataframe of which features meet the threshold, their zscores, and their verbalized forms
+        """
         selected_id_zscores = self._get_identifying_features(author_id, self.author_df)
         templated_strings = self._verbalize_zscores(selected_id_zscores, "author")
         
