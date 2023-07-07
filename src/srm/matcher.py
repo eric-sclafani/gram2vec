@@ -5,7 +5,7 @@ from typing import Dict, Tuple, Iterable, List
 import re
 
 
-def linearlize_tree(sentence:Span) -> str:
+def linearize_tree(sentence:Span) -> str:
     """Converts a spaCy dependency-parsed sentence into a linear tree string while preserving dependency relations"""
     
     def get_NT_count(sentence) -> int:
@@ -44,7 +44,7 @@ class Match:
     def __repr__(self) -> str:
         return f"{self.pattern_name} : {self.sentence}"
 
-class SentenceRegexMatcher:
+class SyntaxRegexMatcher:
     """
     This class encapsulates the sentence regex patterns and methods to apply them to target documents
     """
@@ -63,7 +63,7 @@ class SentenceRegexMatcher:
         """Iterates through a document's sentences, applying every regex to each sentence"""
         matches = []
         for sent in doc.sents:
-            tree_string = linearlize_tree(sent)
+            tree_string = linearize_tree(sent)
             for name, pattern in self.patterns.items():
                 match = re.search(pattern, tree_string)
                 if match:

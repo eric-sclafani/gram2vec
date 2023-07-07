@@ -3,7 +3,7 @@ from spacy.tokens import Doc
 from sys import stderr
 from typing import Callable, List, Tuple, Iterable
 from nltk import bigrams
-from srm import SentenceRegexMatcher
+from srm import SyntaxRegexMatcher
 
 # ~~~ Type aliases ~~~
 
@@ -12,7 +12,7 @@ Bigram = Tuple[str,str]
 
 # ~~ Regex matcher ~~~
 
-matcher = SentenceRegexMatcher()
+matcher = SyntaxRegexMatcher()
 
 # ~~~ Helper funcs ~~~
 

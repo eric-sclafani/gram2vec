@@ -7,7 +7,6 @@ This file contains ideas for future additions/improvements
 - experiment with spotify annoy
 
 ## TODO before pip installation:
-- Make unit tests
 - Clean up vocab handling
 - https://carpentries-incubator.github.io/python_packaging/instructor/05-publishing.html
 
@@ -28,7 +27,7 @@ This file contains ideas for future additions/improvements
     - In sentences where the _same pattern_ occurs more than once, the regex counts it as **one** occurence, _not_ two. I'm not sure if this is an issue with the regex itself, or my python implementation. This is a priority \#1 issue.
 
 - `It-clefts`:
-    - Temporal it-clefts are not parsed correctly. May be fixed when switching to large model (needs experimentation)
+    - Temporal it-clefts are not parsed correctly. 
 
 - `Passives`:
     - In the following two sentences, "book" is being mislabeled as "nsubj" when it should be "nsubjpass":

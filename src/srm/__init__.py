@@ -1,1 +1,1 @@
-from .matcher import SentenceRegexMatcher
+from .matcher import SyntaxRegexMatcher
