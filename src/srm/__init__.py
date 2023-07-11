@@ -1,1 +1,1 @@
-from .matcher import SyntaxRegexMatcher
+from .matcher import SyntaxRegexMatcher, linearize_tree

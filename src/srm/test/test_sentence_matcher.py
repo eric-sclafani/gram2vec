@@ -1,6 +1,6 @@
 import spacy
 from dataclasses import dataclass
-from srm.matcher import linearlize_tree
+from srm import linearize_tree
 
 
 @dataclass
@@ -100,6 +100,24 @@ passive_sents = [
     TestSentence("FALSE", "The dwarf is sitting by the fire"),
 ]
 
+#https://regex101.com/r/sWhI2d/1
+sub_clauses_sents = [
+    TestSentence("TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."),
+    TestSentence("TRUE", "The chicken, who was busy laying eggs, sat happily."),
+    TestSentence("TRUE", "Looking over the hill, she sighed wistfully."),
+    TestSentence("TRUE", "The girl sighed wistfully, looking over the hill."),
+    TestSentence("TRUE", "Steven, who was looking over the hill, sighed wistfully."),
+    TestSentence("TRUE", "The man sat in his house, waiting patiently for the rain to stop"),
+    TestSentence("TRUE", "The man in the house, who waited patiently, stepped outside."),
+    TestSentence("TRUE", "Singing her favorite song, Jasmine skipped along the road."),
+    TestSentence("TRUE", "Jeff was mad at whoever egged his house."),
+    TestSentence("TRUE", "If I can find my wallet, we can all go for ice cream"),
+    TestSentence("TRUE", "Watching Star Wars, which has lots of special effects, is my favorite thing to do.")
+    #TestSentence("FALSE", ""),
+    #TestSentence("FALSE", ""),
+    #TestSentence("FALSE", ""),
+]
+
 nlp = spacy.load("en_core_web_lg")
 
 
@@ -109,8 +127,8 @@ def save_test_sentences(sentences, fname):
         for test in sentences:
             doc = nlp(test.text)
             for sent in doc.sents:
-                fout.write(f"{test.truth}\n{test.text}\n{linearlize_tree(sent)}\n\n")
+                fout.write(f"{test.truth}\n{test.text}\n{linearize_tree(sent)}\n\n")
                 
 
 
-save_test_sentences(passive_sents, "passive_sents")
+save_test_sentences(sub_clauses_sents, "sub_clauses_sents")
