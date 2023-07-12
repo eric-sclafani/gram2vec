@@ -1,0 +1,36 @@
+TRUE
+If he wants to be a millionaire, it's because he wants to help poor children
+('s-be-VBZ-ROOT(wants-want-VBZ-advcl(If-if-IN-mark)(he-he-PRP-nsubj)(be-be-VB-xcomp(to-to-TO-aux)(millionaire-millionaire-NN-attr(a-a-DT-det)(,-,-,-punct)(it-it-PRP-nsubj)(wants-want-VBZ-advcl(because-because-IN-mark)(he-he-PRP-nsubj)(help-help-VB-xcomp(to-to-TO-aux)(children-child-NNS-dobj(poor-poor-JJ-amod))))))))
+
+TRUE
+If it seems that she is meddling, it's just because she's just trying to help the family.
+('s-be-VBZ-ROOT(seems-seem-VBZ-advcl(If-if-IN-mark)(it-it-PRP-nsubj)(meddling-meddle-VBG-ccomp(that-that-IN-mark)(she-she-PRP-nsubj)(is-be-VBZ-aux)(,-,-,-punct)(it-it-PRP-nsubj)(trying-try-VBG-advcl(just-just-RB-advmod)(because-because-IN-mark)(she-she-PRP-nsubj)('s-be-VBZ-aux)(just-just-RB-advmod)(help-help-VB-xcomp(to-to-TO-aux)(family-family-NN-dobj(the-the-DT-det)(.-.-.-punct)))))))
+
+TRUE
+If the dog in the tree is crying, it's only because he is hungry.
+('s-be-VBZ-ROOT(crying-cry-VBG-advcl(If-if-IN-mark)(dog-dog-NN-nsubj(the-the-DT-det)(in-in-IN-prep(tree-tree-NN-pobj(the-the-DT-det)(is-be-VBZ-aux)(,-,-,-punct)(it-it-PRP-nsubj)(is-be-VBZ-advcl(only-only-RB-advmod)(because-because-IN-mark)(he-he-PRP-nsubj)(hungry-hungry-JJ-acomp)(.-.-.-punct)))))))
+
+TRUE
+If Sam and Tom are married, it's because they're in love
+('s-be-VBZ-ROOT(are-be-VBP-advcl(If-if-IN-mark)(Sam-Sam-NNP-nsubj(and-and-CC-cc)(Tom-Tom-NNP-conj)(married-married-JJ-acomp)(,-,-,-punct)(it-it-PRP-nsubj)('re-be-VBP-advcl(because-because-IN-mark)(they-they-PRP-nsubj)(in-in-IN-prep(love-love-NN-pobj))))))
+
+TRUE
+If she wanted to drive to Florida, it's because she hates flying.
+('s-be-VBZ-ROOT(wanted-want-VBD-advcl(If-if-IN-mark)(she-she-PRP-nsubj)(drive-drive-VB-xcomp(to-to-TO-aux)(to-to-IN-prep(Florida-Florida-NNP-pobj)(,-,-,-punct)(it-it-PRP-nsubj)(hates-hate-VBZ-advcl(because-because-IN-mark)(she-she-PRP-nsubj)(flying-fly-VBG-xcomp)(.-.-.-punct))))))
+
+TRUE
+If I ate the chicken, it's because I like meat.
+('s-be-VBZ-ROOT(ate-eat-VBD-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(chicken-chicken-NN-dobj(the-the-DT-det)(,-,-,-punct)(it-it-PRP-nsubj)(like-like-VBP-advcl(because-because-IN-mark)(I-I-PRP-nsubj)(meat-meat-NN-dobj)(.-.-.-punct)))))
+
+FALSE
+If I wanted to, I could go to the mall
+(go-go-VB-ROOT(wanted-want-VBD-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(to-to-TO-xcomp)(,-,-,-punct)(I-I-PRP-nsubj)(could-could-MD-aux)(to-to-IN-prep(mall-mall-NN-pobj(the-the-DT-det)))))
+
+FALSE
+Because I am young, I can do anything
+(do-do-VB-ROOT(am-be-VBP-advcl(Because-because-IN-mark)(I-I-PRP-nsubj)(young-young-JJ-acomp)(,-,-,-punct)(I-I-PRP-nsubj)(can-can-MD-aux)(anything-anything-NN-dobj)))
+
+FALSE
+Sarah ate the ham sandwhich because she was hungry
+(ate-eat-VBD-ROOT(Sarah-Sarah-NNP-nsubj)(sandwhich-sandwhich-NN-dobj(the-the-DT-det)(ham-ham-NN-compound)(was-be-VBD-advcl(because-because-IN-mark)(she-she-PRP-nsubj)(hungry-hungry-JJ-acomp))))
+

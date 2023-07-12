@@ -1,0 +1,64 @@
+TRUE
+J. K. Rowling is the author who wrote the Harry Potter books
+(is-be-VBZ-ROOT(Rowling-Rowling-NNP-nsubj(J.-J.-NNP-compound)(K.-K.-NNP-compound)(author-author-NN-attr(the-the-DT-det)(wrote-write-VBD-relcl(who-who-WP-nsubj)(books-book-NNS-dobj(the-the-DT-det)(Potter-Potter-NNP-compound(Harry-Harry-NNP-compound)))))))
+
+TRUE
+The students who live next door make too much noise
+(make-make-VBP-ROOT(students-student-NNS-nsubj(The-the-DT-det)(live-live-VBP-relcl(who-who-WP-nsubj)(door-door-NN-npadvmod(next-next-JJ-amod)(noise-noise-NN-dobj(much-much-JJ-amod(too-too-RB-advmod)))))))
+
+TRUE
+There are numerous viruses which cause the common cold
+(are-be-VBP-ROOT(There-there-EX-expl)(viruses-virus-NNS-attr(numerous-numerous-JJ-amod)(cause-cause-VBP-relcl(which-which-WDT-nsubj)(cold-cold-NN-dobj(the-the-DT-det)(common-common-JJ-amod)))))
+
+TRUE
+There are numerous viruses that cause the common cold
+(are-be-VBP-ROOT(There-there-EX-expl)(viruses-virus-NNS-attr(numerous-numerous-JJ-amod)(cause-cause-VBP-relcl(that-that-WDT-nsubj)(cold-cold-NN-dobj(the-the-DT-det)(common-common-JJ-amod)))))
+
+TRUE
+I bought a new car that is very fast
+(bought-buy-VBD-ROOT(I-I-PRP-nsubj)(car-car-NN-dobj(a-a-DT-det)(new-new-JJ-amod)(is-be-VBZ-relcl(that-that-WDT-nsubj)(fast-fast-JJ-acomp(very-very-RB-advmod)))))
+
+TRUE
+I like the woman who lives next door
+(like-like-VBP-ROOT(I-I-PRP-nsubj)(woman-woman-NN-dobj(the-the-DT-det)(lives-live-VBZ-relcl(who-who-WP-nsubj)(door-door-NN-npadvmod(next-next-JJ-amod)))))
+
+TRUE
+I sent a letter which arrived three weeks later
+(sent-send-VBD-ROOT(I-I-PRP-nsubj)(letter-letter-NN-dobj(a-a-DT-det)(arrived-arrive-VBD-relcl(which-which-WDT-nsubj)(later-later-RB-advmod(weeks-week-NNS-npadvmod(three-three-CD-nummod))))))
+
+FALSE (OBJ REL)
+Last year, someone who I know had a book published
+(had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
+
+FALSE (OBJ REL)
+She is the author that I have interviewed
+(is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(interviewed-interview-VBN-ccomp(that-that-IN-dobj)(I-I-PRP-nsubj)(have-have-VBP-aux))))
+
+FALSE (OBJ REL)
+The beach that we visited last week is closed
+(is-be-VBZ-ROOT(beach-beach-NN-nsubj(The-the-DT-det)(visited-visit-VBD-relcl(that-that-WDT-dobj)(we-we-PRP-nsubj)(week-week-NN-npadvmod(last-last-JJ-amod)(closed-close-VBN-acomp)))))
+
+FALSE (OBJ REL)
+The man who I spoke to had a thick accent
+(man-man-NN-ROOT(The-the-DT-det)(spoke-speak-VBD-relcl(who-who-WP-pobj)(I-I-PRP-nsubj)(had-have-VBD-xcomp(to-to-TO-aux)(accent-accent-NN-dobj(a-a-DT-det)(thick-thick-JJ-amod)))))
+
+FALSE (OBJ REL)
+This is a problem which we know nothing about
+(is-be-VBZ-ROOT(This-this-DT-nsubj)(problem-problem-NN-attr(a-a-DT-det)(know-know-VBP-relcl(we-we-PRP-nsubj)(nothing-nothing-NN-dobj)(about-about-IN-prep(which-which-WDT-pobj)))))
+
+FALSE (OBJ REL)
+These are the documents that you need to enter the country
+(are-be-VBP-ROOT(These-these-DT-nsubj)(documents-document-NNS-attr(the-the-DT-det)(need-need-VBP-relcl(you-you-PRP-nsubj)(enter-enter-VB-xcomp(that-that-WDT-dobj)(to-to-TO-aux)(country-country-NN-dobj(the-the-DT-det))))))
+
+FALSE
+He hates eating oranges and I love that about him
+(hates-hate-VBZ-ROOT(He-he-PRP-nsubj)(eating-eat-VBG-xcomp(oranges-orange-NNS-dobj)(and-and-CC-cc)(love-love-VBP-conj(I-I-PRP-nsubj)(that-that-DT-dobj)(about-about-IN-prep(him-he-PRP-pobj)))))
+
+FALSE
+Who is that man in the gray jacket?
+(is-be-VBZ-ROOT(Who-who-WP-attr)(man-man-NN-nsubj(that-that-DT-det)(in-in-IN-prep(jacket-jacket-NN-pobj(the-the-DT-det)(gray-gray-JJ-amod)(?-?-.-punct)))))
+
+FALSE
+That Jessica rides her bike fast intrigues me
+(intrigues-intrigue-VBZ-ROOT(rides-ride-VBZ-csubj(That-that-IN-mark)(Jessica-Jessica-NNP-nsubj)(bike-bike-NN-dobj(her-her-PRP$-poss)(fast-fast-RB-advmod)(me-I-PRP-dobj))))
+

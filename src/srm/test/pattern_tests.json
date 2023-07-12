@@ -1,0 +1,146 @@
+[
+    {
+        "name" : "it-cleft", 
+        "tests": [
+            ["TRUE",  "It was Jane’s car that got stolen last night"],
+            ["TRUE", "It wasn’t the most obvious problem that intrigued me, it was the subtle issue of responsibility."],
+            ["TRUE", "It was a moral debt that I had inherited from my grandmother."],
+            ["TRUE", "It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished."],
+            ["TRUE", "It was during the principate of Tiberius Caesar when their druids and prophets and healers of this type were abolished."],
+            ["TRUE", "If it were John who is the candidate, I would vote for him."],
+            ["FALSE", "He was a man who ate my cakes."],
+            ["FALSE", "It was in the principate of Tiberius Caesar, who reigned from AD14 to AD37."],
+            ["FALSE", "It wasn’t the most obvious problem."]
+            ]
+    },
+    {
+        "name" : "psuedo-cleft",
+        "tests" : [
+            ["TRUE", "What I want is some peace and quiet!"],
+            ["TRUE", "What you need to do is to rest for a while."],
+            ["TRUE", "Where I want to go is a place so far away from here."],
+            ["TRUE", "How she paid for her food was with her credit card."],
+            ["TRUE", "Some peace and quiet is what I want."],
+            ["TRUE", "A place so far away from here is where I want to go."],
+            ["FALSE", "I want a hamburger."],
+            ["FALSE", "Where did I put that potato?"],
+            ["FALSE", "I like having peace and quiet"],
+            ["FALSE", "What I need is none of your business."]
+        ]
+    },
+    {
+        "name" : "all-cleft",
+        "tests" : [
+            ["TRUE", "All Jimmy wants for Christmas is a brand new bicycle."],
+            ["TRUE", "All the girl does is complain about everything"],
+            ["TRUE", "Was all she wanted a good job?"],
+            ["TRUE", "Was all Jeff saw blue and yellow?"],
+            ["TRUE", "Was all she saw blue and yellow?"],
+            ["TRUE", "Was all the dog saw blue and yellow?"],
+            ["TRUE", "Was all Jeff saw the moon?"],
+            ["TRUE", "All the dog in the tree knew was that the bone was on the grass."],
+            ["TRUE", "While riding her bike, all Sarah thought about was seeing her friends at the ball game."],
+            ["FALSE", "I want all of these shirts"],
+            ["FALSE", "The boxes were all filled with potatoes"],
+            ["FALSE", "In all of this time, I have never seen a goose."],
+            ["FALSE", "The man riding the bike wanted to play baseball"],
+            ["FALSE", "In the morning, Jack and Ryan played with all of the toys."]
+        ]
+    },
+    {
+        "name" : "there-cleft",
+        "tests" : [
+            ["TRUE", "There's this orphan kid that I'm trying to adopt."],
+            ["TRUE", "There is a new car Camille wanted to buy"],
+            ["TRUE", "There are five ducks swimming in the pool"],
+            ["TRUE", "There is a new James Bond movie that I want to watch tomorrow."],
+            ["TRUE", "Is there a new TV show that Mary wants to watch?"],
+            ["FALSE","I want to walk over there"],
+            ["FALSE", "Cindy and Mindy go there everyday."],
+            ["FALSE", "In the future, I will eat lunch over there"],
+            ["FALSE", "There is a unicorn in the garden"]
+        ]
+    },
+    {
+        "name" : "if-because-cleft",
+        "tests" : [
+            ["TRUE", "The lion was killed by the hunter."],
+            ["TRUE", "English is spoken all over the world"],
+            ["TRUE", "The book which was given to me by Mary was really interesting."],
+            ["TRUE", "The book given to me by Mary was really interesting"],
+            ["TRUE", "The windows have been cleaned"],
+            ["TRUE", "The work will be finished soon"],
+            ["TRUE", "They might have been invited to the party"],
+            ["TRUE", "John might have been invited to the party"],
+            ["FALSE", "The cat is chasing the rat"],
+            ["FALSE", "He is always doing things by the books"],
+            ["FALSE", "The dwarf is sitting by the fire"]
+        ]
+    },
+    {
+        "name" : "passive",
+        "tests":[
+            ["TRUE", "The lion was killed by the hunter."],
+            ["TRUE", "English is spoken all over the world"],
+            ["TRUE", "The book which was given to me by Mary was really interesting."],
+            ["TRUE", "The book given to me by Mary was really interesting"],
+            ["TRUE", "The windows have been cleaned"],
+            ["TRUE", "The work will be finished soon"],
+            ["TRUE", "They might have been invited to the party"],
+            ["TRUE", "John might have been invited to the party"],
+            ["FALSE", "The cat is chasing the rat"],
+            ["FALSE", "He is always doing things by the books"],
+            ["FALSE", "The dwarf is sitting by the fire"]
+        ]
+    },
+    {
+        "name" : "subj-relcl",
+        "tests" : [
+            ["TRUE", "J. K. Rowling is the author who wrote the Harry Potter books"],
+            ["TRUE", "The students who live next door make too much noise"],
+            ["TRUE", "There are numerous viruses which cause the common cold"],
+            ["TRUE", "There are numerous viruses that cause the common cold"],
+            ["TRUE", "I bought a new car that is very fast"],
+            ["TRUE", "I like the woman who lives next door"],
+            ["TRUE", "I sent a letter which arrived three weeks later"],
+            ["FALSE (OBJ REL)", "Last year, someone who I know had a book published"],
+            ["FALSE (OBJ REL)", "She is the author that I have interviewed"],
+            ["FALSE (OBJ REL)", "The beach that we visited last week is closed"],
+            ["FALSE (OBJ REL)", "The man who I spoke to had a thick accent"],
+            ["FALSE (OBJ REL)", "This is a problem which we know nothing about"],
+            ["FALSE (OBJ REL)", "These are the documents that you need to enter the country"],
+            ["FALSE", "He hates eating oranges and I love that about him"],
+            ["FALSE", "Who is that man in the gray jacket?"],
+            ["FALSE", "That Jessica rides her bike fast intrigues me"]
+        ]
+    },
+    {
+        "name" : "obj-relcl",
+        "tests" : [
+            
+        ]
+    },
+    {
+        "name" : "dependent-cl",
+        "skip" : true,
+        "tests" : [
+            ["TRUE", "The chicken, who was busy laying eggs, sat happily."],
+            ["TRUE", "Steven, who was looking over the hill, sighed wistfully."],
+            ["TRUE", "The man in the house, who waited patiently, stepped outside."],
+            ["TRUE", "Watching Star Wars, which has lots of special effects, is my favorite thing to do."],
+
+            ["TRUE", "The girl sighed wistfully, looking over the hill."],
+            ["TRUE", "The man sat in his house, waiting patiently for the rain to stop"],
+
+            ["TRUE", "Singing her favorite song, Jasmine skipped along the road."],
+            ["TRUE", "Looking over the hill, she sighed wistfully."],
+            ["TRUE", "If I can find my wallet, we can all go for ice cream"],
+
+            ["TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."],
+            ["TRUE (SKIP FOR NOW)", "Jeff was mad at whoever egged his house."],
+            ["FALSE", ""],
+            ["FALSE", ""],
+            ["FALSE", ""]
+        ]
+    }
+]

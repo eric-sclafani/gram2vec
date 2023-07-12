@@ -1,4 +1,5 @@
 import spacy
+import json
 from dataclasses import dataclass
 from srm import linearize_tree
 
@@ -100,22 +101,57 @@ passive_sents = [
     TestSentence("FALSE", "The dwarf is sitting by the fire"),
 ]
 
-#https://regex101.com/r/sWhI2d/1
+
 sub_clauses_sents = [
-    TestSentence("TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."),
+    
     TestSentence("TRUE", "The chicken, who was busy laying eggs, sat happily."),
-    TestSentence("TRUE", "Looking over the hill, she sighed wistfully."),
-    TestSentence("TRUE", "The girl sighed wistfully, looking over the hill."),
     TestSentence("TRUE", "Steven, who was looking over the hill, sighed wistfully."),
-    TestSentence("TRUE", "The man sat in his house, waiting patiently for the rain to stop"),
     TestSentence("TRUE", "The man in the house, who waited patiently, stepped outside."),
+    TestSentence("TRUE", "Watching Star Wars, which has lots of special effects, is my favorite thing to do."),
+    
+    TestSentence("TRUE", "The girl sighed wistfully, looking over the hill."),
+    TestSentence("TRUE", "The man sat in his house, waiting patiently for the rain to stop"),
+    
     TestSentence("TRUE", "Singing her favorite song, Jasmine skipped along the road."),
-    TestSentence("TRUE", "Jeff was mad at whoever egged his house."),
+    TestSentence("TRUE", "Looking over the hill, she sighed wistfully."),
     TestSentence("TRUE", "If I can find my wallet, we can all go for ice cream"),
-    TestSentence("TRUE", "Watching Star Wars, which has lots of special effects, is my favorite thing to do.")
+    
+    TestSentence("TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."),
+    TestSentence("TRUE (SKIP FOR NOW)", "Jeff was mad at whoever egged his house."),
     #TestSentence("FALSE", ""),
     #TestSentence("FALSE", ""),
     #TestSentence("FALSE", ""),
+]
+
+subj_rel_clause_sents = [
+    TestSentence("TRUE", "J. K. Rowling is the author who wrote the Harry Potter books"),
+    TestSentence("TRUE", "The students who live next door make too much noise"),
+    TestSentence("TRUE", "There are numerous viruses which cause the common cold"),
+    TestSentence("TRUE", "There are numerous viruses that cause the common cold"),
+    TestSentence("TRUE", "I bought a new car that is very fast"),
+    TestSentence("TRUE", "I like the woman who lives next door"),
+    TestSentence("TRUE", "I sent a letter which arrived three weeks later"),
+    TestSentence("FALSE (OBJ REL)", "Last year, someone who I know had a book published"),
+    TestSentence("FALSE (OBJ REL)", "She is the author that I have interviewed"),
+    TestSentence("FALSE (OBJ REL)", "The beach that we visited last week is closed"),
+    TestSentence("FALSE (OBJ REL)", "The man who I spoke to had a thick accent"),
+    TestSentence("FALSE (OBJ REL)", "This is a problem which we know nothing about"),
+    TestSentence("FALSE (OBJ REL)", "These are the documents that you need to enter the country"),
+    TestSentence("FALSE", "He hates eating oranges and I love that about him"),
+    TestSentence("FALSE", "Who is that man in the gray jacket?"),
+    TestSentence("FALSE", "That Jessica rides her bike fast intrigues me"),
+]
+
+obj_rel_clause_sents = [
+    TestSentence("TRUE", ""),
+    TestSentence("TRUE", ""),
+    TestSentence("TRUE", ""),
+    TestSentence("TRUE", ""),
+    TestSentence("TRUE", ""),
+    TestSentence("TRUE", ""),
+    TestSentence("FALSE", ""),
+    TestSentence("FALSE", ""),
+    TestSentence("FALSE", ""),
 ]
 
 nlp = spacy.load("en_core_web_lg")
@@ -123,7 +159,7 @@ nlp = spacy.load("en_core_web_lg")
 
 
 def save_test_sentences(sentences, fname):
-    with open(f"{fname}.txt", "w") as fout:
+    with open(f"testing_output/{fname}.txt", "w") as fout:
         for test in sentences:
             doc = nlp(test.text)
             for sent in doc.sents:
@@ -131,4 +167,20 @@ def save_test_sentences(sentences, fname):
                 
 
 
-save_test_sentences(sub_clauses_sents, "sub_clauses_sents")
+
+
+
+
+
+
+        
+        
+        
+def main():
+    pass
+
+# BACKUPS
+# https://regex101.com/r/TgWuWz/1
+
+if __name__ == "__main__":
+    main()
