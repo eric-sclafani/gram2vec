@@ -1,0 +1,44 @@
+TRUE
+The lion was killed by the hunter.
+(killed-kill-VBN-ROOT(lion-lion-NN-nsubjpass(The-the-DT-det)(was-be-VBD-auxpass)(by-by-IN-agent(hunter-hunter-NN-pobj(the-the-DT-det)(.-.-.-punct)))))
+
+TRUE
+English is spoken all over the world
+(spoken-speak-VBN-ROOT(English-English-NNP-nsubjpass)(is-be-VBZ-auxpass)(over-over-IN-prep(all-all-RB-advmod)(world-world-NN-pobj(the-the-DT-det))))
+
+TRUE
+The book which was given to me by Mary was really interesting.
+(was-be-VBD-ROOT(book-book-NN-nsubj(The-the-DT-det)(given-give-VBN-relcl(which-which-WDT-nsubjpass)(was-be-VBD-auxpass)(to-to-IN-dative(me-I-PRP-pobj)(by-by-IN-agent(Mary-Mary-NNP-pobj)(interesting-interesting-JJ-acomp(really-really-RB-advmod)(.-.-.-punct)))))))
+
+TRUE
+The book given to me by Mary was really interesting
+(was-be-VBD-ROOT(book-book-NN-nsubj(The-the-DT-det)(given-give-VBN-acl(to-to-IN-dative(me-I-PRP-pobj)(by-by-IN-agent(Mary-Mary-NNP-pobj)(interesting-interesting-JJ-acomp(really-really-RB-advmod)))))))
+
+TRUE
+The windows have been cleaned
+(cleaned-clean-VBN-ROOT(windows-window-NNS-nsubjpass(The-the-DT-det)(have-have-VBP-aux)(been-be-VBN-auxpass)))
+
+TRUE
+The work will be finished soon
+(finished-finish-VBN-ROOT(work-work-NN-nsubjpass(The-the-DT-det)(will-will-MD-aux)(be-be-VB-auxpass)(soon-soon-RB-advmod)))
+
+TRUE
+They might have been invited to the party
+(invited-invite-VBN-ROOT(They-they-PRP-nsubjpass)(might-might-MD-aux)(have-have-VB-aux)(been-be-VBN-auxpass)(to-to-IN-prep(party-party-NN-pobj(the-the-DT-det))))
+
+TRUE
+John might have been invited to the party
+(invited-invite-VBN-ROOT(John-John-NNP-nsubjpass)(might-might-MD-aux)(have-have-VB-aux)(been-be-VBN-auxpass)(to-to-IN-prep(party-party-NN-pobj(the-the-DT-det))))
+
+FALSE
+The cat is chasing the rat
+(chasing-chase-VBG-ROOT(cat-cat-NN-nsubj(The-the-DT-det)(is-be-VBZ-aux)(rat-rat-NN-dobj(the-the-DT-det))))
+
+FALSE
+He is always doing things by the books
+(doing-do-VBG-ROOT(He-he-PRP-nsubj)(is-be-VBZ-aux)(always-always-RB-advmod)(things-thing-NNS-dobj)(by-by-IN-prep(books-book-NNS-pobj(the-the-DT-det))))
+
+FALSE
+The dwarf is sitting by the fire
+(sitting-sit-VBG-ROOT(dwarf-dwarf-NN-nsubj(The-the-DT-det)(is-be-VBZ-aux)(by-by-IN-prep(fire-fire-NN-pobj(the-the-DT-det)))))
+

@@ -122,7 +122,6 @@
     },
     {
         "name" : "dependent-cl",
-        "skip" : true,
         "tests" : [
             ["TRUE", "The chicken, who was busy laying eggs, sat happily."],
             ["TRUE", "Steven, who was looking over the hill, sighed wistfully."],
@@ -138,9 +137,9 @@
 
             ["TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."],
             ["TRUE (SKIP FOR NOW)", "Jeff was mad at whoever egged his house."],
-            ["FALSE", ""],
-            ["FALSE", ""],
-            ["FALSE", ""]
+            ["FALSE", "TBA"],
+            ["FALSE", "TBA"],
+            ["FALSE", "TBA"]
         ]
     }
 ]
