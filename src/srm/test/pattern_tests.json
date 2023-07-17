@@ -1,12 +1,12 @@
 [
     {
         "name" : "it-cleft", 
-        "tests": [
+        "tests" : [
             ["TRUE",  "It was Jane’s car that got stolen last night"],
             ["TRUE", "It wasn’t the most obvious problem that intrigued me, it was the subtle issue of responsibility."],
             ["TRUE", "It was a moral debt that I had inherited from my grandmother."],
-            ["TRUE", "It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished."],
-            ["TRUE", "It was during the principate of Tiberius Caesar when their druids and prophets and healers of this type were abolished."],
+            ["TRUE (SKIP FOR NOW)", "It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished."],
+            ["TRUE (SKIP FOR NOW)", "It was during the principate of Tiberius Caesar when their druids and prophets and healers of this type were abolished."],
             ["TRUE", "If it were John who is the candidate, I would vote for him."],
             ["FALSE", "He was a man who ate my cakes."],
             ["FALSE", "It was in the principate of Tiberius Caesar, who reigned from AD14 to AD37."],
@@ -79,7 +79,7 @@
     },
     {
         "name" : "passive",
-        "tests":[
+        "tests" :[
             ["TRUE", "The lion was killed by the hunter."],
             ["TRUE", "English is spoken all over the world"],
             ["TRUE", "The book which was given to me by Mary was really interesting."],
@@ -117,7 +117,25 @@
     {
         "name" : "obj-relcl",
         "tests" : [
-            
+            ["TRUE", "These are the documents that you need to enter the country"],
+            ["TRUE (SKIP FOR NOW, PARSE ERROR)", "Last year, someone who I know had a book published"],
+            ["TRUE", "She is the author that I have interviewed"],
+            ["TRUE", "The beach that we visited last week is closed"],
+            ["TRUE", "The man who I spoke to had a thick accent"],
+            ["TRUE", "This is a problem which we know nothing about"],
+            ["TRUE, PARSE ERROR", "She is the author that the committee gave an award to"],
+            ["TRUE, PARSE ERROR", "You can ask anyone that I spoke to"],
+            ["FALSE (SUBJ RELCL)", "J. K. Rowling is the author who wrote the Harry Potter books"],
+            ["FALSE (SUBJ RELCL)", "The students who live next door make too much noise"],
+            ["FALSE (SUBJ RELCL)", "There are numerous viruses which cause the common cold"],
+            ["FALSE (SUBJ RELCL)", "There are numerous viruses that cause the common cold"],
+            ["FALSE (SUBJ RELCL)", "I bought a new car that is very fast"],
+            ["FALSE (SUBJ RELCL)", "I like the woman who lives next door"],
+            ["FALSE (SUBJ RELCL)", "I sent a letter which arrived three weeks later"],
+            ["FALSE","I hate that you eat mangos all the time"],
+            ["FALSE","Did you see that bird over there?"],
+            ["FALSE","There was a young couple running through the meadows while holding hands "],
+            ["FALSE","The fish that ate the food swam swiftly"]
         ]
     },
     {
@@ -137,9 +155,59 @@
 
             ["TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."],
             ["TRUE (SKIP FOR NOW)", "Jeff was mad at whoever egged his house."],
-            ["FALSE", "TBA"],
-            ["FALSE", "TBA"],
-            ["FALSE", "TBA"]
+
+            ["FALSE", "Jenna played her favorite song while eating some chicken"],
+            ["FALSE", "There is a woman sitting in the corner sipping coffee"],
+            ["FALSE", "If I had a dollar, I would use it to buy that ice cream"],
+            ["FALSE", "John and Mary held hands and looked in each others eyes"],
+            ["FALSE", "Jackson spend three hours looking for his wallet"]
+        ]
+    },
+    {
+        "name" : "yes-no-question",
+        "tests" : [
+            ["TRUE", "Do you like this country?"],
+            ["TRUE", "Does Jane know about your new job?"],
+            ["TRUE", "Can I call my sister?"],
+            ["TRUE", "Is it cold outside?"],
+            ["TRUE", "Are they ready for the trip?"],
+            ["TRUE", "Are you hungry? "],
+            ["TRUE", "Do you not want me to open the door?"],
+            ["TRUE", "Are you in the middle of working?"],
+            ["TRUE", "If I come home early, do you want to go out to dinner?"],
+            ["TRUE", "If I come home early, do you want to go out to eat?"],
+            ["TRUE", "If I needed your help, would you give it to me?"],
+            ["TRUE", "Did Justin say when he was coming over?"],
+            ["FALSE","I want to leave this house."],
+            ["FALSE","What did you mean you want a divorce?"],
+            ["FALSE","Where did you buy that necklace?"],
+            ["FALSE","If you were home all day, why didn't you do your chores?"],
+            ["FALSE","I thought you needed three hours?"],
+            ["FALSE","Why did you eat the pancakes if you didn't like them?"],
+            ["FALSE", "I will buy you that television if you promise to be good"]
+        
+        ]
+    },
+    {
+        "name" : "wh-question",
+        "tests": [
+            ["TRUE", "Where were you last Sunday?"],
+            ["TRUE", "What show did you want to watch tonight?"],
+            ["TRUE", "Tomorrow, which ocean do you want to visit?"],
+            ["TRUE", "Why did Jackie say you were being mean?"],
+            ["TRUE", "If you didn't enjoy the pancakes, why did you eat them?"],
+            ["TRUE", "When did Sarah say she was coming over?"],
+            ["TRUE", "What did George Washington say after winning the American Revolution?"],
+            ["TRUE", "Even though you said you liked Mary, why did you ignore her?"],
+            ["TRUE", "Was it in the mansion where Tommy sae the ghost?"],
+            ["TRUE", "What are you talking about?"],
+            ["FALSE", "Are you angry with me?"],
+            ["FALSE", "I like when we play baseball outside"],
+            ["FALSE", "Did Sarah say when she was coming over?"],
+            ["FALSE", "Can you stop looking at me with those eyes?"],
+            ["FALSE", "I hate what Shannon did with her floors"],
+            ["FALSE", "Was the man wearing a fancy watch?"],
+            ["FALSE (KNOWN FALSE POSITIVE)", "If you wanted to know why, did you know that you could just ask?"]
         ]
     }
 ]

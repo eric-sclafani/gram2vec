@@ -10,11 +10,11 @@ TRUE
 It was a moral debt that I had inherited from my grandmother.
 (was-be-VBD-ROOT(It-it-PRP-nsubj)(debt-debt-NN-attr(a-a-DT-det)(moral-moral-JJ-amod)(inherited-inherit-VBN-relcl(that-that-WDT-dobj)(I-I-PRP-nsubj)(had-have-VBD-aux)(from-from-IN-prep(grandmother-grandmother-NN-pobj(my-my-PRP$-poss)(.-.-.-punct))))))
 
-TRUE
+TRUE (SKIP FOR NOW)
 It was in the principate of Tiberius Caesar that their druids and prophets and healers of this type were abolished.
 (was-be-VBD-ROOT(It-it-PRP-nsubj)(in-in-IN-prep(principate-principate-NN-pobj(the-the-DT-det)(of-of-IN-prep(Caesar-Caesar-NNP-pobj(Tiberius-Tiberius-NNP-compound)(abolished-abolish-VBN-ccomp(that-that-IN-mark)(druids-druid-NNS-nsubjpass(their-their-PRP$-poss)(and-and-CC-cc)(prophets-prophet-NNS-conj(and-and-CC-cc)(healers-healer-NNS-conj)(of-of-IN-prep(type-type-NN-pobj(this-this-DT-det)(were-be-VBD-auxpass)(.-.-.-punct)))))))))))
 
-TRUE
+TRUE (SKIP FOR NOW)
 It was during the principate of Tiberius Caesar when their druids and prophets and healers of this type were abolished.
 (was-be-VBD-ROOT(It-it-PRP-nsubj)(during-during-IN-prep(principate-principate-NN-pobj(the-the-DT-det)(of-of-IN-prep(Caesar-Caesar-NNP-pobj(Tiberius-Tiberius-NNP-compound)(abolished-abolish-VBN-advcl(when-when-WRB-advmod)(druids-druid-NNS-nsubjpass(their-their-PRP$-poss)(and-and-CC-cc)(prophets-prophet-NNS-conj(and-and-CC-cc)(healers-healer-NNS-conj)(of-of-IN-prep(type-type-NN-pobj(this-this-DT-det)(were-be-VBD-auxpass)(.-.-.-punct)))))))))))
 

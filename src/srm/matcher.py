@@ -57,7 +57,8 @@ class SyntaxRegexMatcher:
             "there-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-there-EX-expl.*\([^-]*-[^-]*-[^-]*-attr.*\([^-]*-[^-]*-[^-]*-(relcl|acl)",
             "if-because-cleft" : r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-[^-]*-[^-]*-advcl\([^-*]*-if-IN-mark",
             "passive" : r"\([^-]*-[^-]*-(NN[^-]*|PRP|WDT)-nsubjpass.*\([^-]*-be-[^-]*-auxpass",
-            "subj_relcl" : r"\([^-]*-[^-]*-[^-]*-relcl.*\([^-]*-[^-]*-(WP|WDT)-nsubj"
+            "subj_relcl" : r"\([^-]*-[^-]*-[^-]*-relcl.*\([^-]*-[^-]*-(WP|WDT)-nsubj",
+            "wh-question" : r"\([^-]*-[^-]*-(WRB|WP|WDT)-[^-]*.*\(\?-\?-\.-punct"
         }
         
     def _find_treegex_matches(self, doc:Doc) -> Tuple[Match]:

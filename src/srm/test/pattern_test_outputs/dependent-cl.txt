@@ -43,14 +43,22 @@ Jeff was mad at whoever egged his house.
 (was-be-VBD-ROOT(Jeff-Jeff-NNP-nsubj)(mad-mad-JJ-acomp(at-at-IN-prep(egged-egg-VBD-pcomp(whoever-whoever-WP-nsubj)(house-house-NN-dobj(his-his-PRP$-poss)(.-.-.-punct))))))
 
 FALSE
-TBA
-(TBA-TBA-NNP-ROOT)
+Jenna played her favorite song while eating some chicken
+(played-play-VBD-ROOT(Jenna-Jenna-NNP-nsubj)(song-song-NN-dobj(her-her-PRP$-poss)(favorite-favorite-JJ-amod)(eating-eat-VBG-advcl(while-while-IN-mark)(chicken-chicken-NN-dobj(some-some-DT-det)))))
 
 FALSE
-TBA
-(TBA-TBA-NNP-ROOT)
+There is a woman sitting in the corner sipping coffee
+(is-be-VBZ-ROOT(There-there-EX-expl)(woman-woman-NN-attr(a-a-DT-det)(sitting-sit-VBG-acl(in-in-IN-prep(coffee-coffee-NN-pobj(the-the-DT-det)(sipping-sip-VBG-compound(corner-corner-NN-compound)))))))
 
 FALSE
-TBA
-(TBA-TBA-NNP-ROOT)
+If I had a dollar, I would use it to buy that ice cream
+(use-use-VB-ROOT(had-have-VBD-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(dollar-dollar-NN-dobj(a-a-DT-det)(,-,-,-punct)(I-I-PRP-nsubj)(would-would-MD-aux)(it-it-PRP-dobj)(buy-buy-VB-xcomp(to-to-TO-aux)(cream-cream-NN-dobj(that-that-DT-det)(ice-ice-NN-compound))))))
+
+FALSE
+John and Mary held hands and looked in each others eyes
+(held-hold-VBD-ROOT(John-John-NNP-nsubj(and-and-CC-cc)(Mary-Mary-NNP-conj)(hands-hand-NNS-dobj)(and-and-CC-cc)(looked-look-VBD-conj(in-in-IN-prep(others-other-NNS-pobj(each-each-DT-det)(eyes-eye-VBZ-dep))))))
+
+FALSE
+Jackson spend three hours looking for his wallet
+(spend-spend-VB-ROOT(Jackson-Jackson-NNP-nsubj)(hours-hour-NNS-dobj(three-three-CD-nummod)(looking-look-VBG-xcomp(for-for-IN-prep(wallet-wallet-NN-pobj(his-his-PRP$-poss))))))
 

@@ -1,6 +1,5 @@
 import spacy
 import json
-from typing import List
 from collections import defaultdict
 from dataclasses import dataclass
 from srm import linearize_tree
