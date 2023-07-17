@@ -177,7 +177,7 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
 
-def _load_jsonlines(path:str) -> pd.DataFrame:
+def load_jsonlines(path:str) -> pd.DataFrame:
     """Loads 1 or more .jsonl files into a dataframe"""
     if path.endswith(".jsonl"):
         return pd.read_json(path, lines=True)
@@ -252,7 +252,7 @@ def from_jsonlines(path:str,
     -------
         pd.DataFrame: dataframe where rows are documents and columns are low level features
     """
-    df = _load_jsonlines(path)
+    df = load_jsonlines(path)
     documents, author_ids, document_ids = _get_json_entries(df)
     documents = _process_documents(documents)
     if include_content_embedding:
