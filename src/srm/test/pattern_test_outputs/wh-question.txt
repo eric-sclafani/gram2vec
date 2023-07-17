@@ -1,0 +1,68 @@
+TRUE
+Where were you last Sunday?
+(were-be-VBD-ROOT(Where-where-WRB-advmod)(you-you-PRP-nsubj)(Sunday-Sunday-NNP-npadvmod(last-last-JJ-amod)(?-?-.-punct)))
+
+TRUE
+What show did you want to watch tonight?
+(want-want-VB-ROOT(did-do-VBD-aux)(you-you-PRP-nsubj)(watch-watch-VB-xcomp(show-show-NN-dobj(What-what-WP-det)(to-to-TO-aux)(tonight-tonight-NN-npadvmod)(?-?-.-punct))))
+
+TRUE
+Tomorrow, which ocean do you want to visit?
+(want-want-VB-ROOT(Tomorrow-tomorrow-NN-npadvmod(,-,-,-punct)(do-do-VBP-aux)(you-you-PRP-nsubj)(visit-visit-VB-xcomp(ocean-ocean-NN-dobj(which-which-WDT-det)(to-to-TO-aux)(?-?-.-punct)))))
+
+TRUE
+Why did Jackie say you were being mean?
+(say-say-VB-ROOT(Why-why-WRB-advmod)(did-do-VBD-aux)(Jackie-Jackie-NNP-nsubj)(mean-mean-JJ-ccomp(being-be-VBG-auxpass(you-you-PRP-nsubj)(were-be-VBD-aux)(?-?-.-punct))))
+
+TRUE
+If you didn't enjoy the pancakes, why did you eat them?
+(eat-eat-VB-ROOT(enjoy-enjoy-VB-advcl(If-if-IN-mark)(you-you-PRP-nsubj)(did-do-VBD-aux)(n't-not-RB-neg)(pancakes-pancake-NNS-dobj(the-the-DT-det)(,-,-,-punct)(why-why-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(them-they-PRP-dobj)(?-?-.-punct))))
+
+TRUE
+When did Sarah say she was coming over?
+(say-say-VB-ROOT(When-when-WRB-advmod)(did-do-VBD-aux)(Sarah-Sarah-NNP-nsubj)(coming-come-VBG-ccomp(she-she-PRP-nsubj)(was-be-VBD-aux)(over-over-RP-prt)(?-?-.-punct)))
+
+TRUE
+What did George Washington say after winning the American Revolution?
+(say-say-VB-ROOT(What-what-WP-dobj)(did-do-VBD-aux)(Washington-Washington-NNP-nsubj(George-George-NNP-compound)(after-after-IN-prep(winning-win-VBG-pcomp(Revolution-Revolution-NNP-dobj(the-the-DT-det)(American-American-NNP-compound)(?-?-.-punct))))))
+
+TRUE
+Even though you said you liked Mary, why did you ignore her?
+(ignore-ignore-VB-ROOT(said-say-VBD-advcl(Even-even-RB-advmod)(though-though-IN-mark)(you-you-PRP-nsubj)(liked-like-VBD-ccomp(you-you-PRP-nsubj)(Mary-Mary-NNP-dobj)(,-,-,-punct)(why-why-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(her-she-PRP-dobj)(?-?-.-punct))))
+
+TRUE
+Was it in the mansion where Tommy sae the ghost?
+(Was-be-VBD-ROOT(it-it-PRP-nsubj)(in-in-IN-prep(mansion-mansion-NN-pobj(the-the-DT-det)(sae-sae-NNP-advcl(where-where-WRB-advmod)(Tommy-Tommy-NNP-compound)(ghost-ghost-NN-appos(the-the-DT-det)(?-?-.-punct))))))
+
+TRUE
+What are you talking about?
+(talking-talk-VBG-ROOT(are-be-VBP-aux)(you-you-PRP-nsubj)(about-about-IN-prep(What-what-WP-pobj)(?-?-.-punct)))
+
+FALSE
+Are you angry with me?
+(Are-be-VBP-ROOT(you-you-PRP-nsubj)(angry-angry-JJ-acomp(with-with-IN-prep(me-I-PRP-pobj)(?-?-.-punct))))
+
+FALSE
+I like when we play baseball outside
+(like-like-VBP-ROOT(I-I-PRP-nsubj)(play-play-VBP-advcl(when-when-WRB-advmod)(we-we-PRP-nsubj)(baseball-baseball-NN-dobj)(outside-outside-IN-prep)))
+
+FALSE
+Did Sarah say when she was coming over?
+(say-say-VB-ROOT(Did-do-VBD-aux)(Sarah-Sarah-NNP-nsubj)(coming-come-VBG-ccomp(when-when-WRB-advmod)(she-she-PRP-nsubj)(was-be-VBD-aux)(over-over-RP-prt)(?-?-.-punct)))
+
+FALSE
+Can you stop looking at me with those eyes?
+(stop-stop-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(looking-look-VBG-xcomp(at-at-IN-prep(me-I-PRP-pobj)(with-with-IN-prep(eyes-eye-NNS-pobj(those-those-DT-det)(?-?-.-punct))))))
+
+FALSE
+I hate what Shannon did with her floors
+(hate-hate-VBP-ROOT(I-I-PRP-nsubj)(did-do-VBD-ccomp(what-what-WP-dobj)(Shannon-Shannon-NNP-nsubj)(with-with-IN-prep(floors-floor-NNS-pobj(her-her-PRP$-poss)))))
+
+FALSE
+Was the man wearing a fancy watch?
+(wearing-wear-VBG-ROOT(Was-be-VBD-aux)(man-man-NN-nsubj(the-the-DT-det)(watch-watch-NN-dobj(a-a-DT-det)(fancy-fancy-JJ-amod)(?-?-.-punct))))
+
+FALSE (KNOWN FALSE POSITIVE)
+If you wanted to know why, did you know that you could just ask?
+(know-know-VB-ROOT(wanted-want-VBD-advcl(If-if-IN-mark)(you-you-PRP-nsubj)(know-know-VB-xcomp(to-to-TO-aux)(why-why-WRB-advmod)(,-,-,-punct)(did-do-VBD-aux)(you-you-PRP-nsubj)(ask-ask-VB-ccomp(that-that-IN-mark)(you-you-PRP-nsubj)(could-could-MD-aux)(just-just-RB-advmod)(?-?-.-punct)))))
+

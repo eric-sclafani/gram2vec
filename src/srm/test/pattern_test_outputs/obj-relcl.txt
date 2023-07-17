@@ -1,0 +1,76 @@
+TRUE
+These are the documents that you need to enter the country
+(are-be-VBP-ROOT(These-these-DT-nsubj)(documents-document-NNS-attr(the-the-DT-det)(need-need-VBP-relcl(you-you-PRP-nsubj)(enter-enter-VB-xcomp(that-that-WDT-dobj)(to-to-TO-aux)(country-country-NN-dobj(the-the-DT-det))))))
+
+TRUE (SKIP FOR NOW)
+Last year, someone who I know had a book published
+(had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
+
+TRUE
+She is the author that I have interviewed
+(is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(interviewed-interview-VBN-ccomp(that-that-IN-dobj)(I-I-PRP-nsubj)(have-have-VBP-aux))))
+
+TRUE
+The beach that we visited last week is closed
+(is-be-VBZ-ROOT(beach-beach-NN-nsubj(The-the-DT-det)(visited-visit-VBD-relcl(that-that-WDT-dobj)(we-we-PRP-nsubj)(week-week-NN-npadvmod(last-last-JJ-amod)(closed-close-VBN-acomp)))))
+
+TRUE
+The man who I spoke to had a thick accent
+(man-man-NN-ROOT(The-the-DT-det)(spoke-speak-VBD-relcl(who-who-WP-pobj)(I-I-PRP-nsubj)(had-have-VBD-xcomp(to-to-TO-aux)(accent-accent-NN-dobj(a-a-DT-det)(thick-thick-JJ-amod)))))
+
+TRUE
+This is a problem which we know nothing about
+(is-be-VBZ-ROOT(This-this-DT-nsubj)(problem-problem-NN-attr(a-a-DT-det)(know-know-VBP-relcl(we-we-PRP-nsubj)(nothing-nothing-NN-dobj)(about-about-IN-prep(which-which-WDT-pobj)))))
+
+TRUE
+She is the author that the committee gave an award to
+(is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(gave-give-VBD-ccomp(that-that-IN-mark)(committee-committee-NN-nsubj(the-the-DT-det)(award-award-NN-dobj(an-an-DT-det)(to-to-TO-dative))))))
+
+TRUE
+You can ask anyone that I spoke to
+(ask-ask-VB-ROOT(You-you-PRP-nsubj)(can-can-MD-aux)(anyone-anyone-NN-dobj)(spoke-speak-VBD-ccomp(I-I-PRP-nsubj)(to-to-IN-prep(that-that-IN-pobj))))
+
+FALSE (SUBJ RELCL)
+J. K. Rowling is the author who wrote the Harry Potter books
+(is-be-VBZ-ROOT(Rowling-Rowling-NNP-nsubj(J.-J.-NNP-compound)(K.-K.-NNP-compound)(author-author-NN-attr(the-the-DT-det)(wrote-write-VBD-relcl(who-who-WP-nsubj)(books-book-NNS-dobj(the-the-DT-det)(Potter-Potter-NNP-compound(Harry-Harry-NNP-compound)))))))
+
+FALSE (SUBJ RELCL)
+The students who live next door make too much noise
+(make-make-VBP-ROOT(students-student-NNS-nsubj(The-the-DT-det)(live-live-VBP-relcl(who-who-WP-nsubj)(door-door-NN-npadvmod(next-next-JJ-amod)(noise-noise-NN-dobj(much-much-JJ-amod(too-too-RB-advmod)))))))
+
+FALSE (SUBJ RELCL)
+There are numerous viruses which cause the common cold
+(are-be-VBP-ROOT(There-there-EX-expl)(viruses-virus-NNS-attr(numerous-numerous-JJ-amod)(cause-cause-VBP-relcl(which-which-WDT-nsubj)(cold-cold-NN-dobj(the-the-DT-det)(common-common-JJ-amod)))))
+
+FALSE (SUBJ RELCL)
+There are numerous viruses that cause the common cold
+(are-be-VBP-ROOT(There-there-EX-expl)(viruses-virus-NNS-attr(numerous-numerous-JJ-amod)(cause-cause-VBP-relcl(that-that-WDT-nsubj)(cold-cold-NN-dobj(the-the-DT-det)(common-common-JJ-amod)))))
+
+FALSE (SUBJ RELCL)
+I bought a new car that is very fast
+(bought-buy-VBD-ROOT(I-I-PRP-nsubj)(car-car-NN-dobj(a-a-DT-det)(new-new-JJ-amod)(is-be-VBZ-relcl(that-that-WDT-nsubj)(fast-fast-JJ-acomp(very-very-RB-advmod)))))
+
+FALSE (SUBJ RELCL)
+I like the woman who lives next door
+(like-like-VBP-ROOT(I-I-PRP-nsubj)(woman-woman-NN-dobj(the-the-DT-det)(lives-live-VBZ-relcl(who-who-WP-nsubj)(door-door-NN-npadvmod(next-next-JJ-amod)))))
+
+FALSE (SUBJ RELCL)
+I sent a letter which arrived three weeks later
+(sent-send-VBD-ROOT(I-I-PRP-nsubj)(letter-letter-NN-dobj(a-a-DT-det)(arrived-arrive-VBD-relcl(which-which-WDT-nsubj)(later-later-RB-advmod(weeks-week-NNS-npadvmod(three-three-CD-nummod))))))
+
+FALSE
+I hate that you eat mangos all the time
+(hate-hate-VBP-ROOT(I-I-PRP-nsubj)(eat-eat-VBP-ccomp(that-that-IN-mark)(you-you-PRP-nsubj)(mangos-mangos-NN-dobj)(time-time-NN-npadvmod(all-all-PDT-predet)(the-the-DT-det))))
+
+FALSE
+Did you see that bird over there?
+(see-see-VB-ROOT(Did-do-VBD-aux)(you-you-PRP-nsubj)(bird-bird-NN-dobj(that-that-DT-det)(there-there-RB-advmod(over-over-RB-advmod)(?-?-.-punct))))
+
+FALSE
+There was a young couple running through the meadows while holding hands 
+(was-be-VBD-ROOT(There-there-EX-expl)(couple-couple-NN-attr(a-a-DT-det)(young-young-JJ-amod)(running-run-VBG-acl(through-through-IN-prep(meadows-meadow-NNS-pobj(the-the-DT-det)(holding-hold-VBG-advcl(while-while-IN-mark)(hands-hand-NNS-dobj)))))))
+
+FALSE
+The fish that ate the food swam swiftly
+(swam-swam-VB-ROOT(fish-fish-NN-nsubj(The-the-DT-det)(ate-eat-VBD-relcl(that-that-WDT-nsubj)(food-food-NN-dobj(the-the-DT-det)(swiftly-swiftly-RB-advmod)))))
+

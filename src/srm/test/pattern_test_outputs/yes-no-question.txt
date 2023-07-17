@@ -1,0 +1,76 @@
+TRUE
+Do you like this country?
+(like-like-VB-ROOT(Do-do-VBP-aux)(you-you-PRP-nsubj)(country-country-NN-dobj(this-this-DT-det)(?-?-.-punct)))
+
+TRUE
+Does Jane know about your new job?
+(know-know-VB-ROOT(Does-do-VBZ-aux)(Jane-Jane-NNP-nsubj)(about-about-IN-prep(job-job-NN-pobj(your-your-PRP$-poss)(new-new-JJ-amod)(?-?-.-punct))))
+
+TRUE
+Can I call my sister?
+(call-call-VB-ROOT(Can-can-MD-aux)(I-I-PRP-nsubj)(sister-sister-NN-dobj(my-my-PRP$-poss)(?-?-.-punct)))
+
+TRUE
+Is it cold outside?
+(Is-be-VBZ-ROOT(it-it-PRP-nsubj)(cold-cold-JJ-acomp)(outside-outside-RB-advmod)(?-?-.-punct))
+
+TRUE
+Are they ready for the trip?
+(Are-be-VBP-ROOT(they-they-PRP-nsubj)(ready-ready-JJ-acomp(for-for-IN-prep(trip-trip-NN-pobj(the-the-DT-det)(?-?-.-punct)))))
+
+TRUE
+Are you hungry? 
+(Are-be-VBP-ROOT(you-you-PRP-nsubj)(hungry-hungry-JJ-acomp)(?-?-.-punct))
+
+TRUE
+Do you not want me to open the door?
+(want-want-VB-ROOT(Do-do-VBP-aux)(you-you-PRP-nsubj)(not-not-RB-neg)(open-open-VB-ccomp(me-I-PRP-nsubj)(to-to-TO-aux)(door-door-NN-dobj(the-the-DT-det)(?-?-.-punct))))
+
+TRUE
+Are you in the middle of working?
+(Are-be-VBP-ROOT(you-you-PRP-nsubj)(in-in-IN-prep(middle-middle-NN-pobj(the-the-DT-det)(of-of-IN-prep(working-work-VBG-pcomp)(?-?-.-punct)))))
+
+TRUE
+If I come home early, do you want to go out to dinner?
+(want-want-VB-ROOT(come-come-VBP-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(home-home-RB-advmod)(early-early-RB-advmod)(,-,-,-punct)(do-do-VBP-aux)(you-you-PRP-nsubj)(go-go-VB-xcomp(to-to-TO-aux)(out-out-RP-prt)(to-to-IN-prep(dinner-dinner-NN-pobj)(?-?-.-punct)))))
+
+TRUE
+If I come home early, do you want to go out to eat?
+(want-want-VB-ROOT(come-come-VBP-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(home-home-RB-advmod)(early-early-RB-advmod)(,-,-,-punct)(do-do-VBP-aux)(you-you-PRP-nsubj)(go-go-VB-xcomp(to-to-TO-aux)(out-out-RP-prt)(eat-eat-VB-advcl(to-to-TO-aux)(?-?-.-punct)))))
+
+TRUE
+If I needed your help, would you give it to me?
+(give-give-VB-ROOT(needed-need-VBD-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(help-help-NN-dobj(your-your-PRP$-poss)(,-,-,-punct)(would-would-MD-aux)(you-you-PRP-nsubj)(it-it-PRP-dobj)(to-to-IN-dative(me-I-PRP-pobj)(?-?-.-punct)))))
+
+TRUE
+Did Justin say when he was coming over?
+(say-say-VB-ROOT(Did-do-VBD-aux)(Justin-Justin-NNP-nsubj)(coming-come-VBG-ccomp(when-when-WRB-advmod)(he-he-PRP-nsubj)(was-be-VBD-aux)(over-over-RP-prt)(?-?-.-punct)))
+
+FALSE
+I want to leave this house.
+(want-want-VBP-ROOT(I-I-PRP-nsubj)(leave-leave-VB-xcomp(to-to-TO-aux)(house-house-NN-dobj(this-this-DT-det)(.-.-.-punct))))
+
+FALSE
+What did you mean you want a divorce?
+(want-want-VBP-ROOT(mean-mean-VB-parataxis(What-what-WP-dobj)(did-do-VBD-aux)(you-you-PRP-nsubj)(you-you-PRP-nsubj)(divorce-divorce-NN-dobj(a-a-DT-det)(?-?-.-punct))))
+
+FALSE
+Where did you buy that necklace?
+(buy-buy-VB-ROOT(Where-where-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(necklace-necklace-NN-dobj(that-that-DT-det)(?-?-.-punct)))
+
+FALSE
+If you were home all day, why didn't you do your chores?
+(do-do-VB-ROOT(were-be-VBD-advcl(If-if-IN-mark)(you-you-PRP-nsubj)(home-home-RB-advmod)(day-day-NN-npadvmod(all-all-DT-det)(,-,-,-punct)(why-why-WRB-advmod)(did-do-VBD-aux)(n't-not-RB-neg)(you-you-PRP-nsubj)(chores-chore-NNS-dobj(your-your-PRP$-poss)(?-?-.-punct)))))
+
+FALSE
+I thought you needed three hours?
+(thought-think-VBD-ROOT(I-I-PRP-nsubj)(needed-need-VBD-ccomp(you-you-PRP-nsubj)(hours-hour-NNS-npadvmod(three-three-CD-nummod)(?-?-.-punct))))
+
+FALSE
+Why did you eat the pancakes if you didn't like them?
+(eat-eat-VB-ROOT(Why-why-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(pancakes-pancake-NNS-dobj(the-the-DT-det)(like-like-VB-advcl(if-if-IN-mark)(you-you-PRP-nsubj)(did-do-VBD-aux)(n't-not-RB-neg)(them-they-PRP-dobj)(?-?-.-punct))))
+
+FALSE
+I will buy you that television if you promise to be good
+(buy-buy-VB-ROOT(I-I-PRP-nsubj)(will-will-MD-aux)(you-you-PRP-dobj)(television-television-NN-dobj(that-that-DT-det)(promise-promise-VBP-advcl(if-if-IN-mark)(you-you-PRP-nsubj)(be-be-VB-xcomp(to-to-TO-aux)(good-good-JJ-acomp)))))
+
