@@ -2,7 +2,7 @@ TRUE
 These are the documents that you need to enter the country
 (are-be-VBP-ROOT(These-these-DT-nsubj)(documents-document-NNS-attr(the-the-DT-det)(need-need-VBP-relcl(you-you-PRP-nsubj)(enter-enter-VB-xcomp(that-that-WDT-dobj)(to-to-TO-aux)(country-country-NN-dobj(the-the-DT-det))))))
 
-TRUE (SKIP FOR NOW)
+TRUE (SKIP FOR NOW, PARSE ERROR)
 Last year, someone who I know had a book published
 (had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
 
@@ -22,11 +22,11 @@ TRUE
 This is a problem which we know nothing about
 (is-be-VBZ-ROOT(This-this-DT-nsubj)(problem-problem-NN-attr(a-a-DT-det)(know-know-VBP-relcl(we-we-PRP-nsubj)(nothing-nothing-NN-dobj)(about-about-IN-prep(which-which-WDT-pobj)))))
 
-TRUE
+TRUE, PARSE ERROR
 She is the author that the committee gave an award to
 (is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(gave-give-VBD-ccomp(that-that-IN-mark)(committee-committee-NN-nsubj(the-the-DT-det)(award-award-NN-dobj(an-an-DT-det)(to-to-TO-dative))))))
 
-TRUE
+TRUE, PARSE ERROR
 You can ask anyone that I spoke to
 (ask-ask-VB-ROOT(You-you-PRP-nsubj)(can-can-MD-aux)(anyone-anyone-NN-dobj)(spoke-speak-VBD-ccomp(I-I-PRP-nsubj)(to-to-IN-prep(that-that-IN-pobj))))
 

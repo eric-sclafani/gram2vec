@@ -35,6 +35,10 @@ Was it in the mansion where Tommy sae the ghost?
 (Was-be-VBD-ROOT(it-it-PRP-nsubj)(in-in-IN-prep(mansion-mansion-NN-pobj(the-the-DT-det)(sae-sae-NNP-advcl(where-where-WRB-advmod)(Tommy-Tommy-NNP-compound)(ghost-ghost-NN-appos(the-the-DT-det)(?-?-.-punct))))))
 
 TRUE
+Five years ago, what did you whisper into Allison's ear?
+(whisper-whisper-VB-ROOT(ago-ago-RB-advmod(years-year-NNS-npadvmod(Five-five-CD-nummod)(,-,-,-punct)(what-what-WP-dobj)(did-do-VBD-aux)(you-you-PRP-nsubj)(into-into-IN-prep(ear-ear-NN-pobj(Allison-Allison-NNP-poss('s-'s-POS-case)(?-?-.-punct)))))))
+
+TRUE
 What are you talking about?
 (talking-talk-VBG-ROOT(are-be-VBP-aux)(you-you-PRP-nsubj)(about-about-IN-prep(What-what-WP-pobj)(?-?-.-punct)))
 
@@ -43,20 +47,24 @@ Are you angry with me?
 (Are-be-VBP-ROOT(you-you-PRP-nsubj)(angry-angry-JJ-acomp(with-with-IN-prep(me-I-PRP-pobj)(?-?-.-punct))))
 
 FALSE
-I like when we play baseball outside
-(like-like-VBP-ROOT(I-I-PRP-nsubj)(play-play-VBP-advcl(when-when-WRB-advmod)(we-we-PRP-nsubj)(baseball-baseball-NN-dobj)(outside-outside-IN-prep)))
+Aren't you angry about what they said?
+(Are-be-VBP-ROOT(n't-not-RB-neg)(you-you-PRP-nsubj)(angry-angry-JJ-acomp(about-about-IN-prep(said-say-VBD-pcomp(what-what-WP-dobj)(they-they-PRP-nsubj)(?-?-.-punct)))))
 
 FALSE
 Did Sarah say when she was coming over?
 (say-say-VB-ROOT(Did-do-VBD-aux)(Sarah-Sarah-NNP-nsubj)(coming-come-VBG-ccomp(when-when-WRB-advmod)(she-she-PRP-nsubj)(was-be-VBD-aux)(over-over-RP-prt)(?-?-.-punct)))
 
 FALSE
-Can you stop looking at me with those eyes?
-(stop-stop-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(looking-look-VBG-xcomp(at-at-IN-prep(me-I-PRP-pobj)(with-with-IN-prep(eyes-eye-NNS-pobj(those-those-DT-det)(?-?-.-punct))))))
+Can you say whether you like it or not?
+(say-say-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(like-like-VBP-ccomp(whether-whether-IN-mark)(you-you-PRP-nsubj)(it-it-PRP-dobj)(or-or-CC-cc)(not-not-RB-conj)(?-?-.-punct)))
 
 FALSE
-I hate what Shannon did with her floors
-(hate-hate-VBP-ROOT(I-I-PRP-nsubj)(did-do-VBD-ccomp(what-what-WP-dobj)(Shannon-Shannon-NNP-nsubj)(with-with-IN-prep(floors-floor-NNS-pobj(her-her-PRP$-poss)))))
+Can you tell me why you don't want to go?
+(tell-tell-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(me-I-PRP-dobj)(want-want-VB-ccomp(why-why-WRB-advmod)(you-you-PRP-nsubj)(do-do-VBP-aux)(n't-not-RB-neg)(go-go-VB-xcomp(to-to-TO-aux)(?-?-.-punct))))
+
+FALSE
+Can you stop looking at me with those eyes?
+(stop-stop-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(looking-look-VBG-xcomp(at-at-IN-prep(me-I-PRP-pobj)(with-with-IN-prep(eyes-eye-NNS-pobj(those-those-DT-det)(?-?-.-punct))))))
 
 FALSE
 Was the man wearing a fancy watch?

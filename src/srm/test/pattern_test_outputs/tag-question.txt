@@ -1,0 +1,72 @@
+TRUE
+You liked walking the dog, didn't you?
+(did-do-VBD-ROOT(liked-like-VBD-ccomp(You-you-PRP-nsubj)(walking-walk-VBG-xcomp(dog-dog-NN-dobj(the-the-DT-det)(,-,-,-punct)(n't-not-RB-neg)(you-you-PRP-nsubj)(?-?-.-punct)))))
+
+TRUE
+Cindy and Mindy haven't left the house, have they?
+(have-have-VBP-ROOT(left-leave-VBN-ccomp(Cindy-Cindy-NNP-nsubj(and-and-CC-cc)(Mindy-Mindy-NNP-conj)(have-have-VBP-aux)(n't-not-RB-neg)(house-house-NN-dobj(the-the-DT-det)(,-,-,-punct)(they-they-PRP-nsubj)(?-?-.-punct)))))
+
+TRUE
+You can meet me at the station, can’t you?
+(ca-can-MD-ROOT(meet-meet-VB-ccomp(You-you-PRP-nsubj)(can-can-MD-aux)(me-I-PRP-dobj)(at-at-IN-prep(station-station-NN-pobj(the-the-DT-det)(,-,-,-punct)(n’t-not-RB-neg)(you-you-PRP-nsubj)(?-?-.-punct)))))
+
+TRUE
+It’s very windy today, isn’t it?
+(is-be-VBZ-ROOT(’s-’-VBZ-ccomp(It-it-PRP-nsubj)(windy-windy-JJ-acomp(very-very-RB-advmod)(today-today-NN-npadvmod)(,-,-,-punct)(n’t-not-RB-neg)(it-it-PRP-nsubj)(?-?-.-punct))))
+
+TRUE
+You couldn’t give me a ride, could you?
+(could-could-MD-ROOT(give-give-VB-ccomp(You-you-PRP-nsubj)(could-could-MD-aux)(n’t-not-RB-neg)(me-I-PRP-dative)(ride-ride-NN-dobj(a-a-DT-det)(,-,-,-punct)(you-you-PRP-nsubj)(?-?-.-punct))))
+
+TRUE
+You didn’t tell him, did you?
+(did-do-VBD-ROOT(tell-tell-VB-ccomp(You-you-PRP-nsubj)(did-do-VBD-aux)(n’t-not-RB-neg)(him-he-PRP-dobj)(,-,-,-punct)(you-you-PRP-nsubj)(?-?-.-punct)))
+
+TRUE
+He never drinks alcohol, does he?
+(does-do-VBZ-ROOT(drinks-drink-VBZ-ccomp(He-he-PRP-nsubj)(never-never-RB-neg)(alcohol-alcohol-NN-dobj)(,-,-,-punct)(he-he-PRP-nsubj)(?-?-.-punct)))
+
+TRUE (PARSE ERROR)
+Yesterday, you didn't tell Patrick he is wierd, right?
+(tell-tell-VB-ROOT(Yesterday-yesterday-NN-npadvmod)(,-,-,-punct)(you-you-PRP-nsubj)(did-do-VBD-aux)(n't-not-RB-neg)(Patrick-Patrick-NNP-dobj)(is-be-VBZ-ccomp(he-he-PRP-nsubj)(wierd-wierd-NNP-attr)(,-,-,-punct)(right-right-JJ-acomp)(?-?-.-punct)))
+
+TRUE
+The dog on the tree eating the bone wasn't barking yesterday, was he?
+(was-be-VBD-ROOT(barking-bark-VBG-ccomp(dog-dog-NN-nsubj(The-the-DT-det)(on-on-IN-prep(tree-tree-NN-pobj(the-the-DT-det)(eating-eat-VBG-acl(bone-bone-NN-dobj(the-the-DT-det)(was-be-VBD-aux)(n't-not-RB-neg)(yesterday-yesterday-NN-npadvmod)(,-,-,-punct)(he-he-PRP-nsubj)(?-?-.-punct))))))))
+
+TRUE
+When you picked up my phone, nobody left a message, did they?
+(did-do-VBD-ROOT(left-leave-VBD-ccomp(picked-pick-VBD-advcl(When-when-WRB-advmod)(you-you-PRP-nsubj)(up-up-RP-prt)(phone-phone-NN-dobj(my-my-PRP$-poss)(,-,-,-punct)(nobody-nobody-NN-nsubj)(message-message-NN-dobj(a-a-DT-det)(,-,-,-punct)(they-they-PRP-nsubj)(?-?-.-punct))))))
+
+TRUE
+Betty has a good job, hasn’t she?
+(has-have-VBZ-ROOT(Betty-Betty-NNP-nsubj)(job-job-NN-dobj(a-a-DT-det)(good-good-JJ-amod)(,-,-,-punct)(has-have-VBZ-conj(n’t-not-RB-neg)(she-she-PRP-nsubj)(?-?-.-punct))))
+
+TRUE
+You have enough money, haven’t you?
+(have-have-VBP-ROOT(You-you-PRP-nsubj)(money-money-NN-dobj(enough-enough-JJ-amod)(,-,-,-punct)(have-have-VBP-conj(n’t-not-RB-neg)(you-you-PRP-nsubj)(?-?-.-punct))))
+
+FALSE
+Did Jack go to the parlor last night?
+(go-go-VB-ROOT(Did-do-VBD-aux)(Jack-Jack-NNP-nsubj)(to-to-IN-prep(parlor-parlor-NN-pobj(the-the-DT-det)(night-night-NN-npadvmod(last-last-JJ-amod)(?-?-.-punct)))))
+
+FALSE
+Can you check the weather for me please?
+(check-check-VB-ROOT(Can-can-MD-aux)(you-you-PRP-nsubj)(weather-weather-NN-dobj(the-the-DT-det)(for-for-IN-dative(me-I-PRP-pobj)(please-please-UH-advcl)(?-?-.-punct))))
+
+FALSE
+When it was raining, did you see the rainbow?
+(see-see-VB-ROOT(raining-rain-VBG-advcl(When-when-WRB-advmod)(it-it-PRP-nsubj)(was-be-VBD-aux)(,-,-,-punct)(did-do-VBD-aux)(you-you-PRP-nsubj)(rainbow-rainbow-NN-dobj(the-the-DT-det)(?-?-.-punct))))
+
+FALSE
+I don't know why, but I don't appreciate your tone.
+(know-know-VB-ROOT(I-I-PRP-nsubj)(do-do-VBP-aux)(n't-not-RB-neg)(why-why-WRB-advmod)(,-,-,-punct)(but-but-CC-cc)(appreciate-appreciate-VB-conj(I-I-PRP-nsubj)(do-do-VBP-aux)(n't-not-RB-neg)(tone-tone-NN-dobj(your-your-PRP$-poss)(.-.-.-punct))))
+
+FALSE
+If the apple was all she wanted, why did she also take the banana?
+(take-take-VB-ROOT(was-be-VBD-advcl(If-if-IN-mark)(apple-apple-NN-nsubj(the-the-DT-det)(all-all-DT-attr(wanted-want-VBD-relcl(she-she-PRP-nsubj)(,-,-,-punct)(why-why-WRB-advmod)(did-do-VBD-aux)(she-she-PRP-nsubj)(also-also-RB-advmod)(banana-banana-NN-dobj(the-the-DT-det)(?-?-.-punct)))))))
+
+FALSE
+Have you ever wondered whether aliens exist?
+(wondered-wonder-VBN-ROOT(Have-have-VBP-aux)(you-you-PRP-nsubj)(ever-ever-RB-advmod)(exist-exist-VBP-ccomp(whether-whether-IN-mark)(aliens-alien-NNS-nsubj)(?-?-.-punct)))
+

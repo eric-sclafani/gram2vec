@@ -200,14 +200,39 @@
             ["TRUE", "What did George Washington say after winning the American Revolution?"],
             ["TRUE", "Even though you said you liked Mary, why did you ignore her?"],
             ["TRUE", "Was it in the mansion where Tommy sae the ghost?"],
+            ["TRUE", "Five years ago, what did you whisper into Allison's ear?"],
             ["TRUE", "What are you talking about?"],
             ["FALSE", "Are you angry with me?"],
-            ["FALSE", "I like when we play baseball outside"],
+            ["FALSE", "Aren't you angry about what they said?"],
             ["FALSE", "Did Sarah say when she was coming over?"],
+            ["FALSE", "Can you say whether you like it or not?"],
+            ["FALSE", "Can you tell me why you don't want to go?"],
             ["FALSE", "Can you stop looking at me with those eyes?"],
-            ["FALSE", "I hate what Shannon did with her floors"],
             ["FALSE", "Was the man wearing a fancy watch?"],
             ["FALSE (KNOWN FALSE POSITIVE)", "If you wanted to know why, did you know that you could just ask?"]
+        ]
+    },
+    {
+        "name" : "tag-question",
+        "tests" : [
+            ["TRUE", "You liked walking the dog, didn't you?"],
+            ["TRUE", "Cindy and Mindy haven't left the house, have they?"],
+            ["TRUE", "You can meet me at the station, can’t you?"],
+            ["TRUE", "It’s very windy today, isn’t it?"],
+            ["TRUE", "You couldn’t give me a ride, could you?"],
+            ["TRUE", "You didn’t tell him, did you?"],
+            ["TRUE", "He never drinks alcohol, does he?"],
+            ["TRUE (PARSE ERROR)", "Yesterday, you didn't tell Patrick he is wierd, right?"],
+            ["TRUE", "The dog on the tree eating the bone wasn't barking yesterday, was he?"],
+            ["TRUE", "When you picked up my phone, nobody left a message, did they?"],
+            ["TRUE", "Betty has a good job, hasn’t she?"],
+            ["TRUE", "You have enough money, haven’t you?"],
+            ["FALSE", "Did Jack go to the parlor last night?"],
+            ["FALSE", "Can you check the weather for me please?"],
+            ["FALSE", "When it was raining, did you see the rainbow?"],
+            ["FALSE", "I don't know why, but I don't appreciate your tone."],
+            ["FALSE", "If the apple was all she wanted, why did she also take the banana?"],
+            ["FALSE", "Have you ever wondered whether aliens exist?"]
         ]
     }
 ]
