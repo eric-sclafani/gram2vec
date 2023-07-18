@@ -84,7 +84,7 @@ def get_mixed_bigrams(doc):
     mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
     return convert_bigrams_to_strings(mixed_bigrams)
 
-def get_syntactic_patterns(doc):
+def get_sentences(doc):
     sentence_matches = matcher.match_document(doc)
     return [match.pattern_name for match in sentence_matches]
     
@@ -97,8 +97,8 @@ custom_extensions = {
     ("dep_labels", get_dep_labels),
     ("morph_tags", get_morph_tags),
     ("pos_bigrams", get_pos_bigrams),
-    #("mixed_bigrams", get_mixed_bigrams), # keep commented out for now
-    ("syntactic_patterns", get_syntactic_patterns)
+    #("mixed_bigrams", get_mixed_bigrams), # volatile, keep commented out for now
+    ("sentences", get_sentences)
 }
 
 def set_spacy_extension(name:str, function:Callable) -> None:
