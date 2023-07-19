@@ -2,7 +2,7 @@ TRUE
 These are the documents that you need to enter the country
 (are-be-VBP-ROOT(These-these-DT-nsubj)(documents-document-NNS-attr(the-the-DT-det)(need-need-VBP-relcl(you-you-PRP-nsubj)(enter-enter-VB-xcomp(that-that-WDT-dobj)(to-to-TO-aux)(country-country-NN-dobj(the-the-DT-det))))))
 
-TRUE (SKIP FOR NOW, PARSE ERROR)
+TRUE (PARSE ERROR)
 Last year, someone who I know had a book published
 (had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
 

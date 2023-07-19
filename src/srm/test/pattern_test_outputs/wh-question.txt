@@ -31,8 +31,8 @@ Even though you said you liked Mary, why did you ignore her?
 (ignore-ignore-VB-ROOT(said-say-VBD-advcl(Even-even-RB-advmod)(though-though-IN-mark)(you-you-PRP-nsubj)(liked-like-VBD-ccomp(you-you-PRP-nsubj)(Mary-Mary-NNP-dobj)(,-,-,-punct)(why-why-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(her-she-PRP-dobj)(?-?-.-punct))))
 
 TRUE
-Was it in the mansion where Tommy sae the ghost?
-(Was-be-VBD-ROOT(it-it-PRP-nsubj)(in-in-IN-prep(mansion-mansion-NN-pobj(the-the-DT-det)(sae-sae-NNP-advcl(where-where-WRB-advmod)(Tommy-Tommy-NNP-compound)(ghost-ghost-NN-appos(the-the-DT-det)(?-?-.-punct))))))
+Was it in the mansion where Tommy saw the ghost?
+(Was-be-VBD-ROOT(it-it-PRP-nsubj)(in-in-IN-prep(mansion-mansion-NN-pobj(the-the-DT-det)(saw-see-VBD-relcl(where-where-WRB-advmod)(Tommy-Tommy-NNP-nsubj)(ghost-ghost-NN-dobj(the-the-DT-det)(?-?-.-punct))))))
 
 TRUE
 Five years ago, what did you whisper into Allison's ear?
@@ -70,7 +70,7 @@ FALSE
 Was the man wearing a fancy watch?
 (wearing-wear-VBG-ROOT(Was-be-VBD-aux)(man-man-NN-nsubj(the-the-DT-det)(watch-watch-NN-dobj(a-a-DT-det)(fancy-fancy-JJ-amod)(?-?-.-punct))))
 
-FALSE (KNOWN FALSE POSITIVE)
+FALSE
 If you wanted to know why, did you know that you could just ask?
 (know-know-VB-ROOT(wanted-want-VBD-advcl(If-if-IN-mark)(you-you-PRP-nsubj)(know-know-VB-xcomp(to-to-TO-aux)(why-why-WRB-advmod)(,-,-,-punct)(did-do-VBD-aux)(you-you-PRP-nsubj)(ask-ask-VB-ccomp(that-that-IN-mark)(you-you-PRP-nsubj)(could-could-MD-aux)(just-just-RB-advmod)(?-?-.-punct)))))
 

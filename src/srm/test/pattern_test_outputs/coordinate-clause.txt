@@ -1,0 +1,76 @@
+TRUE
+He wanted to go to the beach, but it started raining.
+(wanted-want-VBD-ROOT(He-he-PRP-nsubj)(go-go-VB-xcomp(to-to-TO-aux)(to-to-IN-prep(beach-beach-NN-pobj(the-the-DT-det)(,-,-,-punct)(but-but-CC-cc)(started-start-VBD-conj(it-it-PRP-nsubj)(raining-rain-VBG-xcomp)(.-.-.-punct))))))
+
+TRUE
+You can feed the dog, or you can wash the dishes.
+(feed-feed-VB-ROOT(You-you-PRP-nsubj)(can-can-MD-aux)(dog-dog-NN-dobj(the-the-DT-det)(,-,-,-punct)(or-or-CC-cc)(wash-wash-VB-conj(you-you-PRP-nsubj)(can-can-MD-aux)(dishes-dish-NNS-dobj(the-the-DT-det)(.-.-.-punct)))))
+
+TRUE
+They have homework to do, yet they keep putting it off.
+(have-have-VBP-ROOT(They-they-PRP-nsubj)(homework-homework-NN-dobj(do-do-VB-relcl(to-to-TO-aux)(,-,-,-punct)(yet-yet-CC-cc)(keep-keep-VBP-conj(they-they-PRP-nsubj)(putting-put-VBG-xcomp(it-it-PRP-dobj)(off-off-RP-prt)(.-.-.-punct))))))
+
+TRUE
+I like chocolate and I like sweets.
+(like-like-VBP-ROOT(I-I-PRP-nsubj)(chocolate-chocolate-NN-dobj(and-and-CC-cc)(like-like-VBP-conj(I-I-PRP-nsubj)(sweets-sweet-NNS-dobj)(.-.-.-punct))))
+
+TRUE
+Mary wanted to eat at Taco Bell, but Jack decided to eat at McDonalds.
+(wanted-want-VBD-ROOT(Mary-Mary-NNP-nsubj)(eat-eat-VB-xcomp(to-to-TO-aux)(at-at-IN-prep(Bell-Bell-NNP-pobj(Taco-Taco-NNP-compound)(,-,-,-punct)(but-but-CC-cc)(decided-decide-VBD-conj(Jack-Jack-NNP-nsubj)(eat-eat-VB-xcomp(to-to-TO-aux)(at-at-IN-prep(McDonalds-McDonalds-NNP-pobj)(.-.-.-punct))))))))
+
+TRUE
+Yesterday, Jack said he hated the cookie, yet he ate it anyway.
+(said-say-VBD-ROOT(Yesterday-yesterday-NN-npadvmod)(,-,-,-punct)(Jack-Jack-NNP-nsubj)(hated-hate-VBD-ccomp(he-he-PRP-nsubj)(cookie-cookie-NN-dobj(the-the-DT-det)(,-,-,-punct)(yet-yet-CC-cc)(ate-eat-VBD-conj(he-he-PRP-nsubj)(it-it-PRP-dobj)(anyway-anyway-RB-advmod)(.-.-.-punct)))))
+
+TRUE
+In the morning, Sally wanted to eat a cheeseburger with ketchup, but she ran out of ketchup yesterday.
+(wanted-want-VBD-ROOT(In-in-IN-prep(morning-morning-NN-pobj(the-the-DT-det)(,-,-,-punct)(Sally-Sally-NNP-nsubj)(eat-eat-VB-xcomp(to-to-TO-aux)(cheeseburger-cheeseburger-NN-dobj(a-a-DT-det)(with-with-IN-prep(ketchup-ketchup-NN-pobj)(,-,-,-punct)(but-but-CC-cc)(ran-run-VBD-conj(she-she-PRP-nsubj)(out-out-IN-prep(of-of-IN-prep(ketchup-ketchup-NN-pobj)(yesterday-yesterday-NN-npadvmod)(.-.-.-punct))))))))))
+
+TRUE
+The cat in the tree wanted to sleep longer, but it started snowing outside.
+(wanted-want-VBD-ROOT(cat-cat-NN-nsubj(The-the-DT-det)(in-in-IN-prep(tree-tree-NN-pobj(the-the-DT-det)(sleep-sleep-VB-xcomp(to-to-TO-aux)(longer-long-RBR-advmod)(,-,-,-punct)(but-but-CC-cc)(started-start-VBD-conj(it-it-PRP-nsubj)(snowing-snow-VBG-xcomp(outside-outside-RB-advmod)(.-.-.-punct))))))))
+
+TRUE
+Owen is a professor and Eric was a student.
+(is-be-VBZ-ROOT(Owen-Owen-NNP-nsubj)(professor-professor-NN-attr(a-a-DT-det)(and-and-CC-cc)(was-be-VBD-conj(Eric-Eric-NNP-nsubj)(student-student-NN-attr(a-a-DT-det)(.-.-.-punct)))))
+
+TRUE
+When it was sunny, I went outside, but it started raining.
+(went-go-VBD-ROOT(was-be-VBD-advcl(When-when-WRB-advmod)(it-it-PRP-nsubj)(sunny-sunny-JJ-acomp)(,-,-,-punct)(I-I-PRP-nsubj)(outside-outside-RB-advmod)(,-,-,-punct)(but-but-CC-cc)(started-start-VBD-conj(it-it-PRP-nsubj)(raining-rain-VBG-xcomp)(.-.-.-punct))))
+
+TRUE
+You said you liked the cookie, but why did you throw it out?
+(said-say-VBD-ROOT(You-you-PRP-nsubj)(liked-like-VBD-ccomp(you-you-PRP-nsubj)(cookie-cookie-NN-dobj(the-the-DT-det)(,-,-,-punct)(but-but-CC-cc)(throw-throw-VB-conj(why-why-WRB-advmod)(did-do-VBD-aux)(you-you-PRP-nsubj)(it-it-PRP-dobj)(out-out-RP-prt)(?-?-.-punct)))))
+
+TRUE
+The struggle did not end, nor was it any less diminished.
+(end-end-VB-ROOT(struggle-struggle-NN-nsubj(The-the-DT-det)(did-do-VBD-aux)(not-not-RB-neg)(,-,-,-punct)(nor-nor-CC-cc)(diminished-diminished-JJ-conj(was-be-VBD-auxpass(it-it-PRP-nsubj)(less-less-RBR-advmod(any-any-DT-advmod)(.-.-.-punct))))))
+
+FALSE
+Do you like this one or that one better?
+(like-like-VB-ROOT(Do-do-VBP-aux)(you-you-PRP-nsubj)(one-one-NN-dobj(this-this-DT-det)(or-or-CC-cc)(one-one-NN-conj(that-that-DT-det)(better-well-JJR-advmod)(?-?-.-punct))))
+
+FALSE
+I can't decide whether to go to the movies or not.
+(decide-decide-VB-ROOT(I-I-PRP-nsubj)(ca-can-MD-aux)(n't-not-RB-neg)(go-go-VB-xcomp(whether-whether-IN-mark)(to-to-TO-aux)(to-to-IN-prep(movies-movie-NNS-pobj(the-the-DT-det)(or-or-CC-cc)(not-not-RB-conj)(.-.-.-punct)))))
+
+FALSE
+Would you prefer to see a movie or go to the beach?
+(prefer-prefer-VB-ROOT(Would-would-MD-aux)(you-you-PRP-nsubj)(see-see-VB-xcomp(to-to-TO-aux)(movie-movie-NN-dobj(a-a-DT-det)(or-or-CC-cc)(go-go-VB-conj(to-to-IN-prep(beach-beach-NN-pobj(the-the-DT-det)(?-?-.-punct)))))))
+
+FALSE
+Did you publish your book yet?
+(publish-publish-VB-ROOT(Did-do-VBD-aux)(you-you-PRP-nsubj)(book-book-NN-dobj(your-your-PRP$-poss)(yet-yet-RB-advmod)(?-?-.-punct)))
+
+FALSE
+In that moment, Jackie ran fast, but not too fast.
+(ran-run-VBD-ROOT(In-in-IN-prep(moment-moment-NN-pobj(that-that-DT-det)(,-,-,-punct)(Jackie-Jackie-NNP-nsubj)(fast-fast-RB-advmod)(,-,-,-punct)(but-but-CC-cc)(fast-fast-JJ-conj(not-not-RB-neg)(too-too-RB-advmod)(.-.-.-punct)))))
+
+FALSE
+Chris, Haley, and Mark went to the mall.
+(went-go-VBD-ROOT(Chris-Chris-NNP-nsubj(,-,-,-punct)(Haley-Haley-NNP-conj)(,-,-,-punct)(and-and-CC-cc)(Mark-Mark-NNP-nsubj)(to-to-IN-prep(mall-mall-NN-pobj(the-the-DT-det)(.-.-.-punct)))))
+
+FALSE
+The shoes were neither cheap nor convenient.
+(were-be-VBD-ROOT(shoes-shoe-NNS-nsubj(The-the-DT-det)(cheap-cheap-JJ-acomp(neither-neither-CC-preconj)(nor-nor-CC-cc)(convenient-convenient-JJ-conj)(.-.-.-punct))))
+

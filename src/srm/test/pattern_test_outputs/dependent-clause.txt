@@ -34,7 +34,7 @@ TRUE
 If I can find my wallet, we can all go for ice cream
 (go-go-VB-ROOT(find-find-VB-advcl(If-if-IN-mark)(I-I-PRP-nsubj)(can-can-MD-aux)(wallet-wallet-NN-dobj(my-my-PRP$-poss)(,-,-,-punct)(we-we-PRP-nsubj)(can-can-MD-aux)(all-all-RB-advmod)(for-for-IN-prep(cream-cream-NN-pobj(ice-ice-NN-compound))))))
 
-TRUE (PARSE ERROR, IGNORE)
+TRUE (PARSE ERROR)
 Sitting happily, the chicken laid eggs.
 (eggs-egg-NNS-ROOT(Sitting-sit-VBG-advcl(happily-happily-RB-advmod)(,-,-,-punct)(the-the-DT-det)(laid-lay-VBD-amod(chicken-chicken-NN-npadvmod)(.-.-.-punct))))
 

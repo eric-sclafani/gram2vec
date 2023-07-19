@@ -118,7 +118,7 @@
         "name" : "obj-relcl",
         "tests" : [
             ["TRUE", "These are the documents that you need to enter the country"],
-            ["TRUE (SKIP FOR NOW, PARSE ERROR)", "Last year, someone who I know had a book published"],
+            ["TRUE (PARSE ERROR)", "Last year, someone who I know had a book published"],
             ["TRUE", "She is the author that I have interviewed"],
             ["TRUE", "The beach that we visited last week is closed"],
             ["TRUE", "The man who I spoke to had a thick accent"],
@@ -139,7 +139,7 @@
         ]
     },
     {
-        "name" : "dependent-cl",
+        "name" : "dependent-clause",
         "tests" : [
             ["TRUE", "The chicken, who was busy laying eggs, sat happily."],
             ["TRUE", "Steven, who was looking over the hill, sighed wistfully."],
@@ -153,7 +153,7 @@
             ["TRUE", "Looking over the hill, she sighed wistfully."],
             ["TRUE", "If I can find my wallet, we can all go for ice cream"],
 
-            ["TRUE (PARSE ERROR, IGNORE)", "Sitting happily, the chicken laid eggs."],
+            ["TRUE (PARSE ERROR)", "Sitting happily, the chicken laid eggs."],
             ["TRUE (SKIP FOR NOW)", "Jeff was mad at whoever egged his house."],
 
             ["FALSE", "Jenna played her favorite song while eating some chicken"],
@@ -199,7 +199,7 @@
             ["TRUE", "When did Sarah say she was coming over?"],
             ["TRUE", "What did George Washington say after winning the American Revolution?"],
             ["TRUE", "Even though you said you liked Mary, why did you ignore her?"],
-            ["TRUE", "Was it in the mansion where Tommy sae the ghost?"],
+            ["TRUE", "Was it in the mansion where Tommy saw the ghost?"],
             ["TRUE", "Five years ago, what did you whisper into Allison's ear?"],
             ["TRUE", "What are you talking about?"],
             ["FALSE", "Are you angry with me?"],
@@ -209,7 +209,7 @@
             ["FALSE", "Can you tell me why you don't want to go?"],
             ["FALSE", "Can you stop looking at me with those eyes?"],
             ["FALSE", "Was the man wearing a fancy watch?"],
-            ["FALSE (KNOWN FALSE POSITIVE)", "If you wanted to know why, did you know that you could just ask?"]
+            ["FALSE", "If you wanted to know why, did you know that you could just ask?"]
         ]
     },
     {
@@ -233,6 +233,30 @@
             ["FALSE", "I don't know why, but I don't appreciate your tone."],
             ["FALSE", "If the apple was all she wanted, why did she also take the banana?"],
             ["FALSE", "Have you ever wondered whether aliens exist?"]
+        ]
+    },
+    {
+        "name" : "coordinate-clause",
+        "tests" : [
+            ["TRUE", "He wanted to go to the beach, but it started raining."],
+            ["TRUE", "You can feed the dog, or you can wash the dishes."],
+            ["TRUE", "They have homework to do, yet they keep putting it off."],
+            ["TRUE", "I like chocolate and I like sweets."],
+            ["TRUE", "Mary wanted to eat at Taco Bell, but Jack decided to eat at McDonalds."],
+            ["TRUE", "Yesterday, Jack said he hated the cookie, yet he ate it anyway."],
+            ["TRUE", "In the morning, Sally wanted to eat a cheeseburger with ketchup, but she ran out of ketchup yesterday."],
+            ["TRUE", "The cat in the tree wanted to sleep longer, but it started snowing outside."],
+            ["TRUE", "Owen is a professor and Eric was a student."],
+            ["TRUE", "When it was sunny, I went outside, but it started raining."],
+            ["TRUE", "You said you liked the cookie, but why did you throw it out?"],
+            ["TRUE", "The struggle did not end, nor was it any less diminished."],
+            ["FALSE", "Do you like this one or that one better?"],
+            ["FALSE", "I can't decide whether to go to the movies or not."],
+            ["FALSE", "Would you prefer to see a movie or go to the beach?"],
+            ["FALSE", "Did you publish your book yet?"],
+            ["FALSE", "In that moment, Jackie ran fast, but not too fast."],
+            ["FALSE", "Chris, Haley, and Mark went to the mall."],
+            ["FALSE", "The shoes were neither cheap nor convenient."]
         ]
     }
 ]
