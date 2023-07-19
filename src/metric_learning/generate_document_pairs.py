@@ -57,8 +57,8 @@ def main():
         same_author_vector_pairs = distinct_combinations(vectors, r=2)
         break
     
-    a = [15,5,5]
-    b = [2,2,2]
+    a = [0.3,0.1,0.45]
+    b = [0.11,0.32,0.8]
     
     result = calculate_difference((a,b))
     print(result)
