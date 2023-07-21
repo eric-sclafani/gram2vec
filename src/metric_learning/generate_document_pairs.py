@@ -8,6 +8,7 @@ from more_itertools import distinct_combinations
 
 from gram2vec import vectorizer
 
+
 def load_data(path:str) -> pd.DataFrame:
     df = vectorizer.load_jsonlines(path)
     df["authorIDs"] = df["authorIDs"].apply(lambda x: "".join(x))
@@ -25,19 +26,12 @@ def apply_vectorizer(documents:Iterable) -> np.ndarray:
 def to_array(iter:List[float]) -> np.ndarray:
     return np.array(iter)
 
-def calculate_difference(pair:Tuple[List,List]):
-    """|a-b|/2 """
-    ar1 = to_array(pair[0])
-    ar2 = to_array(pair[1])
-    return np.abs(ar1 - ar2) / 2
+def difference(pair:Tuple[List,List]) -> np.ndarray:
+    """|a-b|"""
+    return np.abs(to_array(pair[0]) - to_array(pair[1]))
 
-def calculate_similarity(pair:Tuple[List,List]):
-    """1-(|a-b|/2)"""
-    return 1 - calculate_difference(pair)
-
-
-
-
+def calculate_difference(pairs:Iterable[Tuple]) -> np.ndarray:
+    return np.array([difference(pair) for pair in pairs])
 
 
 def main():
@@ -51,18 +45,31 @@ def main():
     data = load_data(args.dataset_dir)
     author_ids = get_unique_author_ids(data)
     
+
+    train = []
     for author_id in author_ids:
         documents = get_author_docs(data, author_id)
-        vectors = apply_vectorizer(documents).tolist() # more_itertools.distinct_combinations crashes when working with np arrays
-        same_author_vector_pairs = distinct_combinations(vectors, r=2)
-        break
+        vectors = apply_vectorizer(documents)
+        same_author_vector_pairs = distinct_combinations(vectors.tolist(), r=2)
+        similarity_vectors = 1 - calculate_difference(same_author_vector_pairs)
+        
+        for vector in similarity_vectors:
+            train.append(
+                (vector)
+                )
+        
+        import ipdb;ipdb.set_trace()
+        
+        
+        
     
-    a = [0.3,0.1,0.45]
-    b = [0.11,0.32,0.8]
+        
+        
+
+   
+
     
-    result = calculate_difference((a,b))
-    print(result)
-    
+
     
 
 
