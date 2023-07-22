@@ -46,7 +46,8 @@ def main():
     author_ids = get_unique_author_ids(data)
     
 
-    train = []
+    X_train = []
+    y_train = []
     for author_id in author_ids:
         documents = get_author_docs(data, author_id)
         vectors = apply_vectorizer(documents)
@@ -54,9 +55,8 @@ def main():
         similarity_vectors = 1 - calculate_difference(same_author_vector_pairs)
         
         for vector in similarity_vectors:
-            train.append(
-                (vector)
-                )
+            X_train.append(vector)
+            y_train.append(1)
         
         import ipdb;ipdb.set_trace()
         
