@@ -116,15 +116,19 @@
     },
     {
         "name" : "obj-relcl",
+        "unfinished" : true,
         "tests" : [
             ["TRUE", "These are the documents that you need to enter the country"],
-            ["TRUE (PARSE ERROR)", "Last year, someone who I know had a book published"],
             ["TRUE", "She is the author that I have interviewed"],
             ["TRUE", "The beach that we visited last week is closed"],
-            ["TRUE", "The man who I spoke to had a thick accent"],
             ["TRUE", "This is a problem which we know nothing about"],
-            ["TRUE, PARSE ERROR", "She is the author that the committee gave an award to"],
-            ["TRUE, PARSE ERROR", "You can ask anyone that I spoke to"],
+            ["TRUE", "Jackie loves the chocolate that I bought for her yesterday."],
+            ["TRUE", "Two weeks ago, the police arrested someone that Simon worked with"],
+            ["TRUE", "Susan and Sam went to the village that Leonard recommended"],
+            ["TRUE, (PARSE ERROR)", "The man who I spoke to had a thick accent"],
+            ["TRUE (PARSE ERROR)", "Last year, someone who I know had a book published"],
+            ["TRUE (PARSE ERROR)", "She is the author that the committee gave an award to"],
+            ["TRUE (PARSE ERROR)", "You can ask anyone that I spoke to"],
             ["FALSE (SUBJ RELCL)", "J. K. Rowling is the author who wrote the Harry Potter books"],
             ["FALSE (SUBJ RELCL)", "The students who live next door make too much noise"],
             ["FALSE (SUBJ RELCL)", "There are numerous viruses which cause the common cold"],
@@ -140,6 +144,7 @@
     },
     {
         "name" : "dependent-clause",
+        "unfinished" : true,
         "tests" : [
             ["TRUE", "The chicken, who was busy laying eggs, sat happily."],
             ["TRUE", "Steven, who was looking over the hill, sighed wistfully."],
@@ -165,6 +170,7 @@
     },
     {
         "name" : "yes-no-question",
+        "unfinished" : true,
         "tests" : [
             ["TRUE", "Do you like this country?"],
             ["TRUE", "Does Jane know about your new job?"],
@@ -190,6 +196,7 @@
     },
     {
         "name" : "wh-question",
+        "unfinished" : true,
         "tests": [
             ["TRUE", "Where were you last Sunday?"],
             ["TRUE", "What show did you want to watch tonight?"],

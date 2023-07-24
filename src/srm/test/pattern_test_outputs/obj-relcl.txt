@@ -2,10 +2,6 @@ TRUE
 These are the documents that you need to enter the country
 (are-be-VBP-ROOT(These-these-DT-nsubj)(documents-document-NNS-attr(the-the-DT-det)(need-need-VBP-relcl(you-you-PRP-nsubj)(enter-enter-VB-xcomp(that-that-WDT-dobj)(to-to-TO-aux)(country-country-NN-dobj(the-the-DT-det))))))
 
-TRUE (PARSE ERROR)
-Last year, someone who I know had a book published
-(had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
-
 TRUE
 She is the author that I have interviewed
 (is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(interviewed-interview-VBN-ccomp(that-that-IN-dobj)(I-I-PRP-nsubj)(have-have-VBP-aux))))
@@ -15,18 +11,34 @@ The beach that we visited last week is closed
 (is-be-VBZ-ROOT(beach-beach-NN-nsubj(The-the-DT-det)(visited-visit-VBD-relcl(that-that-WDT-dobj)(we-we-PRP-nsubj)(week-week-NN-npadvmod(last-last-JJ-amod)(closed-close-VBN-acomp)))))
 
 TRUE
-The man who I spoke to had a thick accent
-(man-man-NN-ROOT(The-the-DT-det)(spoke-speak-VBD-relcl(who-who-WP-pobj)(I-I-PRP-nsubj)(had-have-VBD-xcomp(to-to-TO-aux)(accent-accent-NN-dobj(a-a-DT-det)(thick-thick-JJ-amod)))))
-
-TRUE
 This is a problem which we know nothing about
 (is-be-VBZ-ROOT(This-this-DT-nsubj)(problem-problem-NN-attr(a-a-DT-det)(know-know-VBP-relcl(we-we-PRP-nsubj)(nothing-nothing-NN-dobj)(about-about-IN-prep(which-which-WDT-pobj)))))
 
-TRUE, PARSE ERROR
+TRUE
+Jackie loves the chocolate that I bought for her yesterday.
+(loves-love-VBZ-ROOT(Jackie-Jackie-NNP-nsubj)(chocolate-chocolate-NN-dobj(the-the-DT-det)(bought-buy-VBD-relcl(that-that-WDT-dobj)(I-I-PRP-nsubj)(for-for-IN-prep(her-she-PRP-pobj)(yesterday-yesterday-NN-npadvmod)(.-.-.-punct)))))
+
+TRUE
+Two weeks ago, the police arrested someone that Simon worked with
+(arrested-arrest-VBD-ROOT(ago-ago-RB-advmod(weeks-week-NNS-npadvmod(Two-two-CD-nummod)(,-,-,-punct)(police-police-NN-nsubj(the-the-DT-det)(someone-someone-NN-dobj(worked-work-VBD-relcl(that-that-WDT-dobj)(Simon-Simon-NNP-nsubj)(with-with-IN-prep)))))))
+
+TRUE
+Susan and Sam went to the village that Leonard recommended
+(went-go-VBD-ROOT(Susan-Susan-NNP-nsubj(and-and-CC-cc)(Sam-Sam-NNP-conj)(to-to-IN-prep(village-village-NN-pobj(the-the-DT-det)(recommended-recommend-VBD-relcl(that-that-WDT-dobj)(Leonard-Leonard-NNP-nsubj))))))
+
+TRUE, (PARSE ERROR)
+The man who I spoke to had a thick accent
+(man-man-NN-ROOT(The-the-DT-det)(spoke-speak-VBD-relcl(who-who-WP-pobj)(I-I-PRP-nsubj)(had-have-VBD-xcomp(to-to-TO-aux)(accent-accent-NN-dobj(a-a-DT-det)(thick-thick-JJ-amod)))))
+
+TRUE (PARSE ERROR)
+Last year, someone who I know had a book published
+(had-have-VBD-ROOT(year-year-NN-npadvmod(Last-last-JJ-amod)(,-,-,-punct)(someone-someone-NN-nsubj)(know-know-VBP-parataxis(who-who-WP-nsubj)(I-I-PRP-nsubj)(book-book-NN-dobj(a-a-DT-det)(published-publish-VBN-acl)))))
+
+TRUE (PARSE ERROR)
 She is the author that the committee gave an award to
 (is-be-VBZ-ROOT(She-she-PRP-nsubj)(author-author-NN-attr(the-the-DT-det)(gave-give-VBD-ccomp(that-that-IN-mark)(committee-committee-NN-nsubj(the-the-DT-det)(award-award-NN-dobj(an-an-DT-det)(to-to-TO-dative))))))
 
-TRUE, PARSE ERROR
+TRUE (PARSE ERROR)
 You can ask anyone that I spoke to
 (ask-ask-VB-ROOT(You-you-PRP-nsubj)(can-can-MD-aux)(anyone-anyone-NN-dobj)(spoke-speak-VBD-ccomp(I-I-PRP-nsubj)(to-to-IN-prep(that-that-IN-pobj))))
 
