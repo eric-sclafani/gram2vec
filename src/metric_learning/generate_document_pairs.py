@@ -3,19 +3,30 @@
 import argparse
 import pandas as pd
 import numpy as np
+import time
 from typing import Iterable, List, Tuple
 from more_itertools import distinct_combinations
 
 from gram2vec import vectorizer
 
+def measure_time(func):
+    """Debugging function for measuring function execution time"""
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Function '{func.__name__}' executed in {execution_time:.6f} seconds.")
+        return result
+    return wrapper
 
 def load_data(path:str) -> pd.DataFrame:
     df = vectorizer.load_jsonlines(path)
     df["authorIDs"] = df["authorIDs"].apply(lambda x: "".join(x))
     return df
     
-def get_unique_author_ids(df:pd.DataFrame) -> np.ndarray[str]:
-    return df["authorIDs"].unique()
+def get_unique_author_ids(df:pd.DataFrame) -> List[str]:
+    return df["authorIDs"].unique().tolist()
 
 def get_author_docs(df:pd.DataFrame, author_id:str) -> pd.Series:
     return df["fullText"].loc[df["authorIDs"] == author_id]
@@ -33,7 +44,38 @@ def difference(pair:Tuple[List,List]) -> np.ndarray:
 def calculate_difference(pairs:Iterable[Tuple]) -> np.ndarray:
     return np.array([difference(pair) for pair in pairs])
 
+def create_same_author_vectors(author_ids:List[str], data:pd.DataFrame) -> Tuple[np.ndarray, List[int]]:
+    """
+    For each author, creates all possible distinct combinations of vector pairs and calculate their element-wise similarity
+    """
+    X_train = []
+    y_train = []
+    for author_id in author_ids:
+        documents = get_author_docs(data, author_id)
+        vectors = apply_vectorizer(documents)
+        
+        same_author_vector_pairs = distinct_combinations(vectors.tolist(), r=2)
+        similarity_vectors = 1 - calculate_difference(same_author_vector_pairs)
+        
+        for vector in similarity_vectors:
+            X_train.append(vector)
+            y_train.append(1)
+            
+    return np.array(X_train), y_train
 
+
+
+def create_different_author_vectors(data:pd.DataFrame, same_vectors_shape:Tuple[int,int]) -> Tuple[np.ndarray, List[str]]:
+    """Creates similarity vectors using documents from different authors. The amount is equal to the # of same author vectors"""
+    
+    X_train = []
+    y_train = []
+    for _ in range(same_vectors_shape[0]):
+        random_doc_1 = data[["authorIDs", "fullText"]].sample(n=1)    
+        import ipdb;ipdb.set_trace()
+    
+
+@measure_time
 def main():
     
     parser = argparse.ArgumentParser()
@@ -45,20 +87,9 @@ def main():
     data = load_data(args.dataset_dir)
     author_ids = get_unique_author_ids(data)
     
-
-    X_train = []
-    y_train = []
-    for author_id in author_ids:
-        documents = get_author_docs(data, author_id)
-        vectors = apply_vectorizer(documents)
-        same_author_vector_pairs = distinct_combinations(vectors.tolist(), r=2)
-        similarity_vectors = 1 - calculate_difference(same_author_vector_pairs)
-        
-        for vector in similarity_vectors:
-            X_train.append(vector)
-            y_train.append(1)
-        
-        import ipdb;ipdb.set_trace()
+    same_author_vectors, same_author_labels = create_same_author_vectors(author_ids, data)
+    diff_author_vectors, diff_author_labels = create_different_author_vectors(data, same_author_vectors.shape)
+    
         
         
         
