@@ -4,10 +4,25 @@ import argparse
 import pandas as pd
 import numpy as np
 import time
+import pickle 
 from typing import Iterable, List, Tuple
+from dataclasses import dataclass
 from more_itertools import distinct_combinations
 
 from gram2vec import vectorizer
+
+@dataclass
+class Document:
+    
+    entry:pd.Series
+
+    @property
+    def text(self):
+        return self.entry["fullText"].values[0]
+    
+    @property
+    def author_id(self):
+        return self.entry["authorIDs"].values[0]
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -37,6 +52,12 @@ def apply_vectorizer(documents:Iterable) -> np.ndarray:
 def to_array(iter:List[float]) -> np.ndarray:
     return np.array(iter)
 
+def get_string(series:pd.Series) -> str:
+    return series.fullText.values[0]
+
+def get_author(series:pd.Series) -> str:
+    return series.authorIDs.values[0]
+
 def difference(pair:Tuple[List,List]) -> np.ndarray:
     """|a-b|"""
     return np.abs(to_array(pair[0]) - to_array(pair[1]))
@@ -63,16 +84,27 @@ def create_same_author_vectors(author_ids:List[str], data:pd.DataFrame) -> Tuple
             
     return np.array(X_train), y_train
 
-
-
 def create_different_author_vectors(data:pd.DataFrame, same_vectors_shape:Tuple[int,int]) -> Tuple[np.ndarray, List[str]]:
     """Creates similarity vectors using documents from different authors. The amount is equal to the # of same author vectors"""
     
     X_train = []
     y_train = []
     for _ in range(same_vectors_shape[0]):
-        random_doc_1 = data[["authorIDs", "fullText"]].sample(n=1)    
-        import ipdb;ipdb.set_trace()
+        random_doc_1 = Document(data[["authorIDs", "fullText"]].sample(n=1))
+        random_doc_2 = Document(data[["authorIDs", "fullText"]].sample(n=1)) 
+        vector1 = apply_vectorizer([random_doc_1.text]).squeeze()
+        vector2 = apply_vectorizer([random_doc_2.text]).squeeze()
+        
+        if random_doc_1.author_id != random_doc_2.author_id:
+            similarity = 1 - difference([vector1, vector2])
+            X_train.append(similarity)
+            y_train.append(0)
+                        
+    return np.array(X_train), y_train
+
+def write_to_file(obj, path:str):
+    with open(path, "wb") as writer:
+        pickle.dump(obj, writer)
     
 
 @measure_time
@@ -90,7 +122,12 @@ def main():
     same_author_vectors, same_author_labels = create_same_author_vectors(author_ids, data)
     diff_author_vectors, diff_author_labels = create_different_author_vectors(data, same_author_vectors.shape)
     
-        
+    X_train = np.concatenate([same_author_vectors, diff_author_vectors], axis=0)
+    y_train = same_author_labels + diff_author_labels
+    
+
+    write_to_file(X_train, "metric_learn_data/X_train.pkl")
+    write_to_file(y_train, "metric_learn_data/y_train.pkl")
         
         
     
