@@ -47,7 +47,7 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
         "dep_labels": _load_from_txt(f"{vocab_path}dep_labels.txt"),
         #"mixed_bigrams":_load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
         "morph_tags":_load_from_txt(f"{vocab_path}morph_tags.txt"),
-        "sentence":tuple(matcher.patterns.keys())
+        "sentences":tuple(matcher.patterns.keys())
     }
     
 VOCABS = vocab_loader()  
@@ -144,7 +144,7 @@ def emojis(doc) -> Feature:
     return Counter(doc_emoji_counts)
 
 @Feature.register
-def sentence(doc) -> Feature:
+def sentences(doc) -> Feature:
     return Counter(doc.doc._.sentences)
 
 
@@ -172,7 +172,7 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "dep_labels":1,
             "mixed_bigrams":0, # keep off
             "morph_tags":1,
-            "sentence":1
+            "sentences":1
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
