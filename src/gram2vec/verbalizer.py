@@ -3,15 +3,17 @@ import numpy as np
 from scipy.stats import zscore
 from typing import List
 
+from .vectorizer import from_jsonlines, from_documents
+
 class Verbalizer:
     """
     This class encapsulates the zscore verbalization functionality of gram2vec
     """
-    def __init__(self, docs_df:pd.DataFrame, zscore_threshold=2.0):
+    def __init__(self, training_path:str, zscore_threshold=2.0):
         
-        self.docs_df = docs_df        
         self.threshold = zscore_threshold
-        self.author_df = self._make_author_df(docs_df)
+        self.docs_df = from_jsonlines(training_path)
+        self.author_df = self._make_author_df(self.docs_df)
               
     def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
         """Excludes given columns from a dataframe. Used when doing numerical operations"""
