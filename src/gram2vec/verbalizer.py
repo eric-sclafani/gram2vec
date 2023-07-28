@@ -95,15 +95,18 @@ class Verbalizer:
         fit_matrix.append(document_vector.tolist())
         fit_matrix = np.array(fit_matrix)
         
+        
         feature_names = self.docs_df.select_dtypes(include=np.number).columns.to_list()
-        unseen_doc_zscores = pd.Series(data = zscore(fit_matrix)[-1], index=feature_names)        
-        templated_strings = self._verbalize_zscores(unseen_doc_zscores, "document")
+        unseen_doc_zscores = pd.Series(data = zscore(fit_matrix)[-1], index=feature_names)
+        chosen_zscores = self._get_threshold_zscores_idxs(unseen_doc_zscores)
+        
+        selected_zscores = unseen_doc_zscores.iloc[chosen_zscores]
+        templated_strings = self._verbalize_zscores(selected_zscores, "document")
         
         verbalized_df = pd.DataFrame({
-            "feature_name":feature_names,
-            "zscores" : unseen_doc_zscores.values,
-            "verbalizer" : templated_strings
-            
+            "feature_name":[feature_names[i] for i in chosen_zscores],
+            "zscores" : selected_zscores.values,
+            "verbalized" : templated_strings
         })
         return verbalized_df
     
