@@ -3,8 +3,10 @@ import numpy as np
 from scipy.stats import zscore
 from typing import List
 
-from .vectorizer import from_jsonlines, from_documents
+from .vectorizer import from_jsonlines
 
+
+# code is messy and should be refactored
 class Verbalizer:
     """
     This class encapsulates the zscore verbalization functionality of gram2vec
@@ -54,7 +56,7 @@ class Verbalizer:
 
     def _get_zscores(self, df:pd.DataFrame) -> np.ndarray:
         """Calculates zscores for a given df"""
-        return zscore(self._exclude_columns(df, cols=["documentID", "authorIDs"]))
+        return zscore(self._exclude_columns(df, cols=["authorIDs"]))
     
     def _get_identifying_features(self, id:str, df:pd.DataFrame) -> pd.Series:
         """Calculates the feature zscores for an id and keeps the ones that meet the given threshold"""
@@ -68,15 +70,15 @@ class Verbalizer:
         """Template for the zscore verbalizer"""
         return f"This {doc_or_author} uses {direction} {feat_name} than the average"
     
-    def _verbalize_zscores(self, zscores:pd.DataFrame, to_verbalize:str) -> List[str]:
+    def _verbalize_zscores(self, zscores:pd.Series, to_verbalize:str) -> List[str]:
         """Creates a list of verbalized zscores"""
         converted = []
         for feat_name, zscore in zscores.items():
             direction = "less" if zscore < 0 else "more"
             converted.append(self._template(to_verbalize, feat_name, direction))
-        return converted
+        return converted    
     
-    def verbalize_document(self, doc_id:str) -> pd.DataFrame:
+    def verbalize_document(self, document_vector:np.ndarray) -> pd.DataFrame:
         """
         Given a unqiue document id, retrieves that document's most distinguishing features. 
         
@@ -88,13 +90,20 @@ class Verbalizer:
         ------
             - pd.DataFrame - dataframe of which features meet the threshold, their zscores, and their verbalized forms
         """
-        selected_id_zscores = self._get_identifying_features(doc_id, self.docs_df)
-        templated_strings = self._verbalize_zscores(selected_id_zscores, "document")
+        
+        fit_matrix = self.docs_df.select_dtypes(include=np.number).values.tolist()
+        fit_matrix.append(document_vector.tolist())
+        fit_matrix = np.array(fit_matrix)
+        
+        feature_names = self.docs_df.select_dtypes(include=np.number).columns.to_list()
+        unseen_doc_zscores = pd.Series(data = zscore(fit_matrix)[-1], index=feature_names)        
+        templated_strings = self._verbalize_zscores(unseen_doc_zscores, "document")
         
         verbalized_df = pd.DataFrame({
-            "feature_name":selected_id_zscores.index,
-            "zscore": selected_id_zscores.values,
-            "verbalized":templated_strings
+            "feature_name":feature_names,
+            "zscores" : unseen_doc_zscores.values,
+            "verbalizer" : templated_strings
+            
         })
         return verbalized_df
     
