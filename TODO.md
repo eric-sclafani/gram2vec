@@ -6,13 +6,11 @@ This file contains ideas for future additions/improvements
 ## Evals:
 - experiment with spotify annoy
 
-## TODO before pip installation:
-- Clean up vocab handling
-- https://carpentries-incubator.github.io/python_packaging/instructor/05-publishing.html
+
 
 ## TODO eventually
 - Add unit tests
-
+- https://carpentries-incubator.github.io/python_packaging/instructor/05-publishing.html
 
 ## SRM (Syntax Regex Matcher):
 - SRM will eventually be ported to its own repo and thus be its own module
