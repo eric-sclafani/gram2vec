@@ -48,7 +48,7 @@ You can also enable or disable select feature extractors by using the `config` p
 By default, `all features are activated`. Here's an example of what a configuration looks like:
 
 ```python
-config = {
+>>> config = {
     "pos_unigrams":1,
     "pos_bigrams":0,
     "func_words":1,
@@ -59,7 +59,7 @@ config = {
     "morph_tags":1,
     "sentences":1
     }
-my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
 ```
 
 Additionally, there is an option to include the document embedding produced by **word2vec**. This option should `ONLY` be used for experimenting, `NOT` official authorship attribution evaluations. 
@@ -67,7 +67,7 @@ Additionally, there is an option to include the document embedding produced by *
 The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `completely independent of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to compare `gram2vec` vectors to.
 
 ```python
-my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
 ```
 
 ### Verbalizer
@@ -80,31 +80,56 @@ Additionally, a **threshold** value is used to select the zscores that deviate f
 
 To get started, import both vectorizer and verbalizer from gram2vec. `Verbalizer` needs a dataframe with **authorIDS** and **documentID** fields included. You can use `vectorizer.from_jsonlines()` which will include them automatically, or use `vectorizer.from_documents()` and manually add those required columns to the dataframe.
 ```python
-from gram2vec import vectorizer, verbalizer
+>>> from gram2vec import vectorizer, verbalizer
 
-my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
-verbalized_df = verbalizer.Verbalizer(my_df)
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
+>>> verbalized = verbalizer.Verbalizer(my_df)
 ```
 You can also change the zscore threshold if desired:
 ```python
-my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
-verbalized_df = verbalizer.Verbalizer(my_df, zscore_threshold=2.5)
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
+>>> verbalized = verbalizer.Verbalizer(my_df, zscore_threshold=2.5)
 ```
 
-Zscores and verbalizations can be done on the `author` and `document` levels. For the author level, the `.verbalize_author()` method is used. It accepts a unique author id and returns a dataframe with the zscores and verbalizations:
+Zscores and verbalizations can be done on the `author` and `document` levels. For the author level, the `.verbalize_author()` method is used. It accepts a unique author id and returns a dataframe with the feature names, zscores, and verbalizations as columns:
 ```python
 
-verbalized_df.verbalize_author("en_112")
-
+>>> verbalized.verbalize_author_id("en_112")
+>>> verbalized.head(5)
 ```
+| index |      feature_name     |  zscore  |                                     verbalized                                          |
+|-------|-----------------------|----------|-------------------------------------------------|
+|   0   | pos_unigrams:ADV      | 2.437037 | This author uses more pos_unigrams:ADV than the average author                                 
+|   1   | pos_bigrams:ADV ADP   | 2.759779 | This author uses more pos_bigrams:ADV ADP than the average author                             
+|   2   | pos_bigrams:ADP SYM   | 2.192766 | This author uses more pos_bigrams:ADP SYM than the average author                              
+|   3   | pos_bigrams:PUNCT AUX | 2.714269 | This author uses more pos_bigrams:PUNCT AUX than the average author                        
+|   4   | pos_bigrams:DET SCONJ | 7.416198 | This author uses more pos_bigrams:DET SCONJ than the average author                       
+|   5   | pos_bigrams:DET SYM   | 2.238211 | This author uses more pos_bigrams:DET SYM than the average author 
+
+To verbalize **unseen documents**, use the `.verbalize_document()` method. This function takes an unseen *document vector* as input and calculates the zscores and verbalized string for it with respect to the data the `Verbalizer` data is initially fit with:
+```python
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") # this is essentially the "training data"
+>>> verbalized = verbalizer.Verbalizer(my_df)
+>>> verbalized.verbalize_document_vector(my_unseed_doc_vector_here) # unseen document vector
+```
+
+| index |         feature_name        |  zscore   |                                    verbalized                                   |
+|-------|----------------------------|-----------|---------------------------------------------------------------------------------|
+|  30   |          emojis:🥰            | 5.518523  | This document uses more emojis:🥰 than the average document            |
+|  31   |       dep_labels:cc          | 2.400670  | This document uses more dep_labels:cc than the average document       |
+|  32   |     dep_labels:meta        | 4.329617  | This document uses more dep_labels:meta than the average document    |
+|  33   | morph_tags:ConjType=Cmp | 2.118285  | This document uses more morph_tags:ConjType=Cmp than the average document |
+|  34   | sentences:coordinate-clause | 2.517907  | This document uses more sentences:coordinate-clause than the average document |
 
 ## Vocab
 
 This section provides more details about how vocabulary works in `gram2vec` and is not needed to understand how to use the software.
 
-In general, each feature is frequency based (I will be adding regex matching ones soon). A **vocab** is therefore the collection of items that get counted for a feature. Each vocab is stored in a local `vocab/` directory. These files are read by `gram2vec` and used in the feature extractors.
+In general, each feature is frequency based. A **vocab** is therefore the collection of items that get counted for a feature. Each vocab is stored in a local `vocab/` directory. These files are read by `gram2vec` and used in the feature extractors.
 
 If new vocabularies are added, for the sake of consistency, the vocabulary files should have the same name as the feature function. Examples of this can be seen in `vectorizer.py`.
+
+Some features, in particular the `sentences` feature produced by `SyntaxRegexMatcher`, do not require a vocab (at least, not in the same way the others do).
 
 Some vocabularies require more explanation. The following subsections go into more detail about them
 
@@ -112,10 +137,3 @@ Some vocabularies require more explanation. The following subsections go into mo
 
 From the list of POS tags from <a href="https://universaldependencies.org/u/pos/">Universal dependencies</a> (18 total tags), I create all possible combinations. 
 > So $18^2$ = 324 possible POS bigrams
-
-### Mixed bigrams
-
-From a list of closed class words aggregated from the internet, I take all possible combinations of them (100 words) with open class POS tags (6 tags). Order is also important, i.e. ("the", "NOUN") is _not_ the same as ("NOUN", "the")
-> So 100 closed class words * 6 POS tags * 2 possible orderings per bigram = 1200 possible mixed bigrams 
-
-`NOTE`: this feature is heavily WIP and is disabled by default due to it's size. It increases the processing time significantly. 

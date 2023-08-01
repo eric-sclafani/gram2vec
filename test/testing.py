@@ -26,8 +26,7 @@ test_vector = df.select_dtypes(include=np.number).iloc[-1]
 
 verb = Verbalizer(df)
 
-a = verb.verbalize_author("en_112")
-print(a)
+
 # feed in vector
 d = verb.verbalize_document(test_vector)
 

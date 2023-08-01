@@ -75,7 +75,7 @@ class Verbalizer:
             converted.append(self._template(to_verbalize, feat_name, direction))
         return converted    
     
-    def verbalize_document(self, document_vector:np.ndarray) -> pd.DataFrame:
+    def verbalize_document_vector(self, document_vector:np.ndarray) -> pd.DataFrame:
         """
         Given a unqiue document id, retrieves that document's most distinguishing features. 
         
@@ -107,7 +107,7 @@ class Verbalizer:
        
         return verbalized_df
     
-    def verbalize_author(self, author_id:str) -> pd.DataFrame:
+    def verbalize_author_id(self, author_id:str) -> pd.DataFrame:
         """
         Given a unqiue author id, retrieves that author's most distinguishing features. 
         
