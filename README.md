@@ -29,7 +29,7 @@ The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe
 ```python
 >>> from gram2vec import vectorizer
 >>> my_df = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
->>> my_df = v  ectorizer.from_jsonlines("path/to/dataset/directory/")
+>>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/")
 ```
 
 The second option,`vectorizer.from_documents()`, is used to generate a dataframe **from a list of strings**. Note that this does NOT take into account author or document IDs, unlike the `.from_jsonlines()` function.
@@ -87,7 +87,6 @@ To get started, import both vectorizer and verbalizer from gram2vec. `Verbalizer
 ```
 You can also change the zscore threshold if desired:
 ```python
->>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
 >>> verbalized = verbalizer.Verbalizer(my_df, zscore_threshold=2.5)
 ```
 
@@ -106,7 +105,7 @@ Zscores and verbalizations can be done on the `author` and `document` levels. Fo
 |   4   | pos_bigrams:DET SCONJ | 7.416198 | This author uses more pos_bigrams:DET SCONJ than the average author                       
 |   5   | pos_bigrams:DET SYM   | 2.238211 | This author uses more pos_bigrams:DET SYM than the average author 
 
-To verbalize **unseen documents**, use the `.verbalize_document()` method. This function takes an unseen *document vector* as input and calculates the zscores and verbalized string for it with respect to the data the `Verbalizer` data is initially fit with:
+To verbalize **unseen documents**, use the `.verbalize_document_vector()` method. This function takes an unseen *document vector* as input and calculates the zscores and verbalized string for it with respect to the data the `Verbalizer` data is initially fit with:
 ```python
 >>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") # this is essentially the "training data"
 >>> verbalized = verbalizer.Verbalizer(my_df)
