@@ -3,20 +3,17 @@ import numpy as np
 from scipy.stats import zscore
 from typing import List
 
-from .vectorizer import from_jsonlines
-
-
 # code is messy and should be refactored
 class Verbalizer:
     """
     This class encapsulates the zscore verbalization functionality of gram2vec
     """
-    def __init__(self, training_path:str, zscore_threshold=2.0):
+    def __init__(self, docs_df:pd.DataFrame, zscore_threshold=2.0):
         
         self.threshold = zscore_threshold
-        self.docs_df = from_jsonlines(training_path)
+        self.docs_df = docs_df
         self.author_df = self._make_author_df(self.docs_df)
-              
+
     def _exclude_columns(self, df:pd.DataFrame, cols:List[str]) -> pd.DataFrame:
         """Excludes given columns from a dataframe. Used when doing numerical operations"""
         return df.loc[:, ~df.columns.isin(cols)]
@@ -95,7 +92,6 @@ class Verbalizer:
         fit_matrix.append(document_vector.tolist())
         fit_matrix = np.array(fit_matrix)
         
-        
         feature_names = self.docs_df.select_dtypes(include=np.number).columns.to_list()
         unseen_doc_zscores = pd.Series(data = zscore(fit_matrix)[-1], index=feature_names)
         chosen_zscores = self._get_threshold_zscores_idxs(unseen_doc_zscores)
@@ -108,6 +104,7 @@ class Verbalizer:
             "zscores" : selected_zscores.values,
             "verbalized" : templated_strings
         })
+       
         return verbalized_df
     
     def verbalize_author(self, author_id:str) -> pd.DataFrame:

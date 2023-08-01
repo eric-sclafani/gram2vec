@@ -20,6 +20,8 @@ which will install gram2vec into your environment, as well as all of its depende
 
 ## Usage
 
+### Vectorizer
+
 There are two options for calling the vectorizer.
 
 The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe from **either a single .jsonl file** _OR_ **a directory of .jsonl files**.
@@ -27,10 +29,11 @@ The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe
 ```python
 >>> from gram2vec import vectorizer
 >>> my_df = vectorizer.from_jsonlines("path/to/dataset/data.jsonl")
->>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/")
+>>> my_df = v  ectorizer.from_jsonlines("path/to/dataset/directory/")
 ```
 
 The second option,`vectorizer.from_documents()`, is used to generate a dataframe **from a list of strings**. Note that this does NOT take into account author or document IDs, unlike the `.from_jsonlines()` function.
+
 ```python
 >>> from gram2vec import vectorizer
 >>> documents = [
@@ -40,11 +43,9 @@ The second option,`vectorizer.from_documents()`, is used to generate a dataframe
 ]
 >>> my_df = vectorizer.from_documents(documents)
 ```
-
-
 You can also enable or disable select feature extractors by using the `config` parameter, which takes a dictionary of feature names mapped to 1 or 0 (1 = ON, 0 = OFF). 
 
-By default, `all features are activated` **EXCEPT** for `mixed_bigrams`, which adds 1200 dimensions and slows the processing speed down considerably. I recommend leaving it off. Here's an example of what a configuration looks like:
+By default, `all features are activated`. Here's an example of what a configuration looks like:
 
 ```python
 config = {
@@ -55,8 +56,8 @@ config = {
     "letters":0,
     "emojis":1,
     "dep_labels":1,
-    "mixed_bigrams":0,
-    "morph_tags":1
+    "morph_tags":1,
+    "sentences":1
     }
 my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
 ```
@@ -64,8 +65,37 @@ my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", config=config)
 Additionally, there is an option to include the document embedding produced by **word2vec**. This option should `ONLY` be used for experimenting, `NOT` official authorship attribution evaluations. 
 
 The purpose of this is to test how well the grammatical stylistic features perform during authorship attribution with and without the embedding. The point of stylistic feature extraction is to create vectors `completely independent of content`, only capturing the style from documents. Since we know that **word2vec** embeddings do include content, they are useful to compare `gram2vec` vectors to.
+
 ```python
 my_df = vectorizer.from_jsonlines("path/to/dataset/directory/", include_content_embedding=True)
+```
+
+### Verbalizer
+
+The goal of the verbalizer is to calculate zscores from a given grammatical feature vector dataframe and produce string representations for the most "salient" features. Given a dataset, `Verbalizer` will calculate and store the zscores for each row. This works on the document and author levels.
+
+The theory behind this is that when calculating the zscores for each feature, that will tell us `how many standard deviations away that feature is from the average feature`. We can then answer questions like: "which features does author A use frequently that sets them apart from authors B, C, and D?". This also works on the document level too. Given an **unseen document vector**, we can also answer: "how much does it's features deviate from the other document vectors?"
+
+Additionally, a **threshold** value is used to select the zscores that deviate from the mean that many times. By default, this value is `2.0`
+
+To get started, import both vectorizer and verbalizer from gram2vec. `Verbalizer` needs a dataframe with **authorIDS** and **documentID** fields included. You can use `vectorizer.from_jsonlines()` which will include them automatically, or use `vectorizer.from_documents()` and manually add those required columns to the dataframe.
+```python
+from gram2vec import vectorizer, verbalizer
+
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
+verbalized_df = verbalizer.Verbalizer(my_df)
+```
+You can also change the zscore threshold if desired:
+```python
+my_df = vectorizer.from_jsonlines("path/to/dataset/directory/") 
+verbalized_df = verbalizer.Verbalizer(my_df, zscore_threshold=2.5)
+```
+
+Zscores and verbalizations can be done on the `author` and `document` levels. For the author level, the `.verbalize_author()` method is used. It accepts a unique author id and returns a dataframe with the zscores and verbalizations:
+```python
+
+verbalized_df.verbalize_author("en_112")
+
 ```
 
 ## Vocab

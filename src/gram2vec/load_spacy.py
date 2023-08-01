@@ -1,7 +1,7 @@
 import spacy
 from spacy.tokens import Doc
 from sys import stderr
-from typing import Callable, List, Tuple, Iterable
+from typing import Callable, List, Tuple
 from nltk import bigrams
 from srm import SyntaxRegexMatcher
 
@@ -58,31 +58,6 @@ def get_pos_bigrams(doc) -> List[Bigram]:
     pos_bigrams = bigrams(pos_tags_with_boundary_syms)
     
     return convert_bigrams_to_strings(pos_bigrams)
-    
-def get_mixed_bigrams(doc):
-    
-    def replace_openclass(doc, open_class:List[str]) -> List[str]:
-        """Replaces all open class tokens with corresponding POS tags and returns a new list"""
-        tokens_with_replacements = doc._.tokens
-        for i, _ in enumerate(tokens_with_replacements):
-            if doc._.pos_tags[i] in open_class:
-                tokens_with_replacements[i] = doc._.pos_tags[i]
-        return tokens_with_replacements
-
-    def remove_illicit_bigrams(bigrams, open_class:List[str]) -> List[Bigram]:
-        """Ensures that only (OPEN_CLASS, CLOSED_CLASS) and (CLOSED_CLASS, OPEN_CLASS) bigrams are included in mixed bigrams"""
-        filtered = []
-        for pair in bigrams:
-            if pair[0] not in open_class and pair[1] in open_class or \
-               pair[0] in open_class and pair[1] not in open_class:
-                filtered.append(pair)
-        return filtered
-        
-    OPEN_CLASS = ["ADJ", "ADV", "NOUN", "VERB", "INTJ", "PROPN"]
-    tokens_with_replacements = replace_openclass(doc, OPEN_CLASS)
-    mixed_bigrams = bigrams(tokens_with_replacements)
-    mixed_bigrams = remove_illicit_bigrams(mixed_bigrams, OPEN_CLASS)
-    return convert_bigrams_to_strings(mixed_bigrams)
 
 def get_sentences(doc):
     sentence_matches = matcher.match_document(doc)
@@ -97,7 +72,6 @@ custom_extensions = {
     ("dep_labels", get_dep_labels),
     ("morph_tags", get_morph_tags),
     ("pos_bigrams", get_pos_bigrams),
-    #("mixed_bigrams", get_mixed_bigrams), # volatile, keep commented out for now
     ("sentences", get_sentences)
 }
 
