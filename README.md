@@ -166,4 +166,4 @@ If possible, create a custom spaCy extension for your countable items. It makes 
 
 ## Step 3
 
-Inside of [vectorizer.py](src/gram2vec/vectorizer.py)
+Inside of [vectorizer.py](src/gram2vec/vectorizer.py), define a function that returns a **Counter** object of your countable feature (again, see the other feature functions as example). Make sure to
