@@ -10,10 +10,6 @@ from srm import SyntaxRegexMatcher
 SentenceSpan = Tuple[int,int]
 Bigram = Tuple[str,str]
 
-# ~~ Regex matcher ~~~
-
-matcher = SyntaxRegexMatcher()
-
 # ~~~ Helper funcs ~~~
 
 def convert_bigrams_to_strings(bigrams) -> List[str]:
