@@ -128,10 +128,6 @@ def letters(doc) -> Feature:
 def dep_labels(doc) -> Feature:
     return Counter([dep for dep in doc.doc._.dep_labels])
 
-# @Feature.register
-# def mixed_bigrams(doc) -> Feature:
-#     return Counter(doc.doc._.mixed_bigrams)
-
 @Feature.register
 def morph_tags(doc) -> Feature:
     return Counter(doc.doc._.morph_tags)
@@ -170,7 +166,6 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "letters":1,
             "emojis":1,
             "dep_labels":1,
-            "mixed_bigrams":0, # keep off
             "morph_tags":1,
             "sentences":1
             }

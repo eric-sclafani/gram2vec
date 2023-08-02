@@ -21,13 +21,13 @@ config = {
     "sentences":1
     }
 
-df = vectorizer.from_jsonlines("../data/pan22/preprocessed/", config=config)
-test_vector = df.select_dtypes(include=np.number).iloc[-1]
+#df = vectorizer.from_jsonlines("../data/pan22/preprocessed/", config=config)
+#test_vector = df.select_dtypes(include=np.number).iloc[-1]
+documents = [
+    "This is a test string 😄!!!",
+    "The string below me is false.",
+    "The string above me is true 😱!"
+]
+df = vectorizer.from_documents(documents)
 
-verb = Verbalizer(df)
-
-
-# feed in vector
-d = verb.verbalize_document(test_vector)
-
-print(d)
+print(df)

@@ -18,6 +18,11 @@ pip install gram2vec/
 ```
 which will install gram2vec into your environment, as well as all of its dependencies.
 
+If you'd like to play around with the source code, I recommend installing it with the `-e` flag which installs an editable version of the package (so you don't have to pip install every time you modify the source code):
+```bash
+pip install -e gram2vec/
+```
+
 ## Usage
 
 ### Vectorizer
@@ -41,8 +46,14 @@ The second option,`vectorizer.from_documents()`, is used to generate a dataframe
     "The string below me is false.",
     "The string above me is true 😱!"
 ]
->>> my_df = vectorizer.from_documents(documents)
+>>> vectorizer.from_documents(documents)
 ```
+|   pos_unigrams:ADJ   |   pos_unigrams:ADP   |   pos_unigrams:ADV   | ... |   sentences:obj-relcl   |   sentences:tag-question   |   sentences:coordinate-clause   |
+|----------------------|----------------------|----------------------|-----|------------------------|---------------------------|-------------------------------|
+|           0.000000   |           0.000000   |           0.0        | ... |           0.0          |           0.0             |           0.0                 |
+|           0.142857   |           0.142857   |           0.0        | ... |           0.0          |           0.0             |           0.0                 |
+|           0.142857   |           0.142857   |           0.0        | ... |           0.0          |           0.0             |           0.0                 |
+
 You can also enable or disable select feature extractors by using the `config` parameter, which takes a dictionary of feature names mapped to 1 or 0 (1 = ON, 0 = OFF). 
 
 By default, `all features are activated`. Here's an example of what a configuration looks like:
@@ -136,3 +147,23 @@ Some vocabularies require more explanation. The following subsections go into mo
 
 From the list of POS tags from <a href="https://universaldependencies.org/u/pos/">Universal dependencies</a> (18 total tags), I create all possible combinations. 
 > So $18^2$ = 324 possible POS bigrams
+
+## Adding more features
+
+If you'd like to extend the code and add more countable features, here is a detailed guide on how to do so.
+
+### Step 1
+
+Define what you want to count and why. What is the intuition behind it and what could it tell you about authors' writing styles?
+
+### Step 2
+
+Define a vocabulary. This will be some collection of countable objects. In the [vocab](src/gram2vec/vocab) directory, the vocabularies are just text files of countable items. Alternatively, you may want to add a regex matching feature similar to how my other package, [Syntax Regex Matcher](https://github.com/eric-sclafani/syntax-regex-matcher), works.
+
+## Step 2.5 (SECTION WORK IN PROGRESS)
+
+If possible, create a custom spaCy extension for your countable items. It makes the code cleaner (imo) and works well. See the [load_spacy.py](src/gram2vec/load_spacy.py) functions as examples. This functionality is not a requirement, as not all of my features make use of spaCy extensions.
+
+## Step 3
+
+Inside of [vectorizer.py](src/gram2vec/vectorizer.py)
