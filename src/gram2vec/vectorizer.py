@@ -8,7 +8,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Tuple, List, Dict, Callable, Optional, Iterable
 
-from .load_spacy import nlp, Doc, matcher
+from ._load_spacy import nlp, Doc, matcher
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -45,7 +45,6 @@ def vocab_loader() -> Dict[str, Tuple[str]]:
         "letters": _load_from_txt(f"{vocab_path}letters.txt"),
         "emojis":_load_from_txt(f"{vocab_path}emojis.txt"),
         "dep_labels": _load_from_txt(f"{vocab_path}dep_labels.txt"),
-        #"mixed_bigrams":_load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
         "morph_tags":_load_from_txt(f"{vocab_path}morph_tags.txt"),
         "sentences":tuple(matcher.patterns.keys())
     }
