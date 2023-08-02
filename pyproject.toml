@@ -8,11 +8,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gram2vec"
-version = "0.1.0"
+version = "1.0.0"
 description="Gram2vec is a document embedding software that maps strings to high-dimensional vectors based off stylistic features."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE.md"}
+license = {file = "LICENSE"}
 #urls = {source = "https://github.com/iarpa-hiatus/eric-gram2vec"} #! will need to be updated
 dependencies = [
     "numpy",
@@ -20,6 +20,7 @@ dependencies = [
     "spacy",
     "nltk",
     "demoji",
+    "srm @ git+https://github.com/eric-sclafani/syntax-regex-matcher@06c842cc202835a19dd8055ec67b0432dc4f5710"
 ]
 classifiers = [
     "Development Status :: 1 - Planning",

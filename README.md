@@ -10,15 +10,15 @@ In your working directory, create an environment by running (I think any version
 python3.11 -m venv venv/
 source venv/bin/activate
 ```
-which will create a directory called `venv/` which will store all the dependencies. 
+which will create a directory called `venv/` to store all the dependencies. 
 
-After cloning `gram2vec` into your working directory, run:
+Next, run:
 ```bash
-pip install gram2vec/
+pip install git+https://github.com/eric-sclafani/gram2vec
 ```
 which will install gram2vec into your environment, as well as all of its dependencies.
 
-If you'd like to play around with the source code, I recommend installing it with the `-e` flag which installs an editable version of the package (so you don't have to pip install every time you modify the source code):
+If you'd like to play around with the source code, you can instead clone the repo directly with the `-e` flag:
 ```bash
 pip install -e gram2vec/
 ```
