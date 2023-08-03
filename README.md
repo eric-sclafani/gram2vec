@@ -191,4 +191,4 @@ Add your feature to the `default_config` dictionary and give it a value of **1**
 
 ### Step 5
 
-Finally, if you want to also use the `Verbalizer` with your new features, 
+Finally, if you want to also use the `Verbalizer` with your new features, you should add it to the `Verbalizer._template()` method's `name_mapping` dictionary. The purpose of this is to give it a cleaner string representation. 
