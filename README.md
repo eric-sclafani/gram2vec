@@ -33,7 +33,7 @@ pip install git+https://github.com/eric-sclafani/gram2vec
 ```
 which will install gram2vec into your environment, as well as all of its dependencies.
 
-If you'd like to play around with the source code, you can instead clone the repo directly with the `-e` flag:
+If you'd like to play around with the source code, you can instead clone the repo directly and install with the `-e` flag (editable installation):
 ```bash
 pip install -e gram2vec/
 ```
