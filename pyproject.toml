@@ -18,9 +18,8 @@ dependencies = [
     "numpy",
     "pandas", 
     "spacy",
-    "nltk",
     "demoji",
-    "srm @ git+https://github.com/eric-sclafani/syntax-regex-matcher@06c842cc202835a19dd8055ec67b0432dc4f5710"
+    "srm @ git+https://github.com/eric-sclafani/syntax-regex-matcher"
 ]
 classifiers = [
     "Development Status :: 1 - Planning",
