@@ -65,7 +65,19 @@ class Verbalizer:
 
     def _template(self, doc_or_author:str, feat_name:str, direction:str) -> str:
         """Template for the zscore verbalizer"""
-        return f"This {doc_or_author} uses {direction} {feat_name} than the average"
+        name_mapping = {
+            "pos_unigrams" : "path of speech unigram",
+            "pos_bigrams" : "part of speech bigram",
+            "morph_tags" : "morphological tag",
+            "dep_labels" : "dependency parse label",
+            "func_words" : "function word",
+            "punctuation" : "punctuation mark",
+            "letters" : "letter",
+            "sentences" : "sentence type",
+            "emojis" : "emoji"
+        }
+        feature = feat_name.split(":")
+        return f"This {doc_or_author} uses the {name_mapping[feature[0]]} '{feature[1]}' {direction} than the average {doc_or_author}"
     
     def _verbalize_zscores(self, zscores:pd.Series, to_verbalize:str) -> List[str]:
         """Creates a list of verbalized zscores"""

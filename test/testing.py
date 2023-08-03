@@ -21,15 +21,14 @@ config = {
     "sentences":1
     }
 
-#df = vectorizer.from_jsonlines("../data/pan22/preprocessed/", config=config)
-#test_vector = df.select_dtypes(include=np.number).iloc[-1]
-documents = [
-    "This is a test string 😄!!!",
-    "The string below me is false.",
-    "The string above me is true 😱!"
-]
-df = vectorizer.from_documents(documents)
+df = vectorizer.from_jsonlines("../data/pan22/preprocessed/", config=config)
+test_vector = df.select_dtypes(include=np.number).iloc[-1]
 
-print(df)
+verbalizer = Verbalizer(df)
+
+a = verbalizer.verbalize_author_id("en_112")
+
+d = verbalizer.verbalize_document_vector(test_vector)
 
 
+print(d)

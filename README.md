@@ -1,7 +1,22 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. More specifically, Gram2Vec vectorizes based off feartures pertaining to grammar, such as POS tags, punctuation, syntactic constructions (WIP), and much more.
+`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. 
+
+More specifically, Gram2vec vectorizes based off features pertaining to grammar, such as POS tags, punctuation, syntactic constructions, and much more.
+
+## Motivation
+
+Vector representations produced by deep neural networks excel at capturing meaning from natural language text. However, they infamously lack innate explainability. Each position in the vector is learned through a training period of weight optimizations. This means the numbers in these vectors don't have concrete features they pertain to. For certain tasks, this is not ideal.
+
+In `authorship attribution` (AA), the task of using an automated system to identify the author of a document, explainability is an important factor. This task is interested in identifying what stylometric choices authors make that differentiate them from each other. Why was author A chosen over author B? What linguistic choices did author A make that caused my AA algorithm to choose them? 
+
+Additionally, deep embeddings are known to capture semantic content from text. For authorship attribution, this is not ideal since the task is primarily concerned with writing style, such as grammar usage, lexical word choice, etc...
+
+Gram2vec was born with these ideas in mind. Given a document, it produces a vector such that each position corresponds to a tangible stylistic feature. 
+
+Instead of using uninterpretable deep embeddings inside of an AA model, getting high numbers, and calling it a day, using gram2vec vectors will provide you with reasons behind a model's predictions.
+
 
 ## Setup
 
@@ -105,16 +120,14 @@ Zscores and verbalizations can be done on the `author` and `document` levels. Fo
 ```python
 
 >>> verbalized.verbalize_author_id("en_112")
->>> verbalized.head(5)
+>>> verbalized.head(3)
 ```
 | index |      feature_name     |  zscore  |                                     verbalized                                          |
 |-------|-----------------------|----------|-------------------------------------------------|
-|   0   | pos_unigrams:ADV      | 2.437037 | This author uses more pos_unigrams:ADV than the average author                                 
-|   1   | pos_bigrams:ADV ADP   | 2.759779 | This author uses more pos_bigrams:ADV ADP than the average author                             
-|   2   | pos_bigrams:ADP SYM   | 2.192766 | This author uses more pos_bigrams:ADP SYM than the average author                              
-|   3   | pos_bigrams:PUNCT AUX | 2.714269 | This author uses more pos_bigrams:PUNCT AUX than the average author                        
-|   4   | pos_bigrams:DET SCONJ | 7.416198 | This author uses more pos_bigrams:DET SCONJ than the average author                       
-|   5   | pos_bigrams:DET SYM   | 2.238211 | This author uses more pos_bigrams:DET SYM than the average author 
+|   0   | pos_unigrams:ADV      | 2.437037 | This author uses the part of speech unigram 'ADV' more than the average author                                 
+|   1   | pos_bigrams:ADV ADP   | 2.759779 | This author uses the part of speech bigram 'ADV ADP' more than the average author                             
+|   2   | pos_bigrams:ADP SYM   | 2.192766 | This author uses the part of speech bigram 'ADP SYM' more than the average author                              
+                      
 
 To verbalize **unseen documents**, use the `.verbalize_document_vector()` method. This function takes an unseen *document vector* as input and calculates the zscores and verbalized string for it with respect to the data the `Verbalizer` data is initially fit with:
 ```python
@@ -125,11 +138,11 @@ To verbalize **unseen documents**, use the `.verbalize_document_vector()` method
 
 | index |         feature_name        |  zscore   |                                    verbalized                                   |
 |-------|----------------------------|-----------|---------------------------------------------------------------------------------|
-|  30   |          emojis:🥰            | 5.518523  | This document uses more emojis:🥰 than the average document            |
-|  31   |       dep_labels:cc          | 2.400670  | This document uses more dep_labels:cc than the average document       |
-|  32   |     dep_labels:meta        | 4.329617  | This document uses more dep_labels:meta than the average document    |
-|  33   | morph_tags:ConjType=Cmp | 2.118285  | This document uses more morph_tags:ConjType=Cmp than the average document |
-|  34   | sentences:coordinate-clause | 2.517907  | This document uses more sentences:coordinate-clause than the average document |
+|  30   |          emojis:🥰            | 5.518523  | This document uses the emoji '🥰' more than the average document            |
+|  31   |       dep_labels:cc          | 2.400670  | This document uses the dependency parse label 'cc' more than the average document       |
+|  32   |     dep_labels:meta        | 4.329617  | This document uses the dependency parse label 'meta' less than the average document    |
+|  33   | morph_tags:ConjType=Cmp | 2.118285  | This document uses the morphological tag 'ConjType=Cmp' less than the average document |
+|  34   | sentences:coordinate-clause | 2.517907  | This document uses the sentence type 'coordinate-clause' more than the average document |
 
 ## Vocab
 
@@ -150,7 +163,7 @@ From the list of POS tags from <a href="https://universaldependencies.org/u/pos/
 
 ## Adding more features
 
-If you'd like to extend the code and add more countable features, here is a detailed guide on how to do so.
+This section is for gram2vec development. If you'd like to extend the code and add more countable features, here is a detailed guide on how to do so.
 
 ### Step 1
 
@@ -158,12 +171,24 @@ Define what you want to count and why. What is the intuition behind it and what 
 
 ### Step 2
 
-Define a vocabulary. This will be some collection of countable objects. In the [vocab](src/gram2vec/vocab) directory, the vocabularies are just text files of countable items. Alternatively, you may want to add a regex matching feature similar to how my other package, [Syntax Regex Matcher](https://github.com/eric-sclafani/syntax-regex-matcher), works.
+Define a vocabulary. This will be some collection of countable objects. In the [vocab](src/gram2vec/vocab) directory, the vocabularies are just text files of countable items. If using an external file for vocabulary, give it the same name as the feature you're counting. Alternatively, you may want to add a regex matching feature similar to how my other package, [Syntax Regex Matcher](https://github.com/eric-sclafani/syntax-regex-matcher), works. 
 
-## Step 2.5 (SECTION WORK IN PROGRESS)
+After defining your vocab, register it inside of the `Vocab` class in [_load_vocab.py](src/gram2vec/_load_vocab.py). There are two methods for doing so based on how you implement the features. Use what's already there as a guide.
 
-If possible, create a custom spaCy extension for your countable items. It makes the code cleaner (imo) and works well. See the [load_spacy.py](src/gram2vec/load_spacy.py) functions as examples. This functionality is not a requirement, as not all of my features make use of spaCy extensions.
+### Step 2.5
 
-## Step 3
+If possible, create a custom spaCy extension for your countable items. It makes the code cleaner (imo) and works well. See the [load_spacy.py](src/gram2vec/load_spacy.py) functions as examples. This functionality is not a requirement, as not all of the features make use of spaCy extensions.
 
-Inside of [vectorizer.py](src/gram2vec/vectorizer.py), define a function that returns a **Counter** object of your countable feature (again, see the other feature functions as example). Make sure to
+### Step 3
+
+Inside of [vectorizer.py](src/gram2vec/vectorizer.py), define a function that returns a **Counter** object of your countable feature (again, see the other feature functions as example). Make sure to use the `@Feature.register` decorator to register it as a feature.
+
+Each feature function returns a Counter object by itself. However, upon calling each function, they become instances of the `Feature` class, where things like normalization and zero vocab counts are calculated. They are also added to the global `REGISTERED_FEATURES` dictionary which is used by the `from_jsonlines` and `from_documents()` functions to create vectors.
+
+### Step 4
+
+Add your feature to the `default_config` dictionary and give it a value of **1**
+
+### Step 5
+
+Finally, if you want to also use the `Verbalizer` with your new features, 
