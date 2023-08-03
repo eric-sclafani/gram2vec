@@ -31,3 +31,5 @@ documents = [
 df = vectorizer.from_documents(documents)
 
 print(df)
+
+
