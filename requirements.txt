@@ -32,7 +32,6 @@ matplotlib-inline==0.1.6
 mdurl==0.1.2
 more-itertools==9.1.0
 murmurhash==1.0.9
-nltk==3.8.1
 numpy==1.25.2
 packaging==23.1
 pandas==2.0.3

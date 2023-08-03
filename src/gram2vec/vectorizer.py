@@ -2,13 +2,13 @@
 from collections import Counter
 import demoji
 import time
-import os
 import pandas as pd
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Tuple, List, Dict, Callable, Optional, Iterable
 
-from .load_spacy import nlp, Doc, matcher
+from ._load_spacy import nlp, Doc
+from ._load_vocab import vocab
 
 def measure_time(func):
     """Debugging function for measuring function execution time"""
@@ -21,37 +21,6 @@ def measure_time(func):
         return result
     return wrapper
 
-# ~~~ Vocab ~~~
-
-def _load_from_txt(path:str) -> Tuple[str]:
-    """Loads a .txt file delimited by newlines"""
-    with open (path, "r") as fin:
-        return [line.strip("\n") for line in fin.readlines()]
-
-def get_user_vocab_path():
-    """Gets the user's path to the vocabulary files"""
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    vocab_path = os.path.join(dir_path, "vocab/")
-    return vocab_path
-    
-def vocab_loader() -> Dict[str, Tuple[str]]:
-    """Loads in all feature vocabs. For any new vocabs, add them to this function"""
-    vocab_path = get_user_vocab_path()
-    return {
-        "pos_unigrams": _load_from_txt(f"{vocab_path}pos_unigrams.txt"),
-        "pos_bigrams": _load_from_txt(f"{vocab_path}pos_bigrams.txt"),
-        "func_words": _load_from_txt(f"{vocab_path}func_words.txt"),
-        "punctuation": _load_from_txt(f"{vocab_path}punctuation.txt"),
-        "letters": _load_from_txt(f"{vocab_path}letters.txt"),
-        "emojis":_load_from_txt(f"{vocab_path}emojis.txt"),
-        "dep_labels": _load_from_txt(f"{vocab_path}dep_labels.txt"),
-        #"mixed_bigrams":_load_from_txt(f"{vocab_path}mixed_bigrams.txt"),
-        "morph_tags":_load_from_txt(f"{vocab_path}morph_tags.txt"),
-        "sentences":tuple(matcher.patterns.keys())
-    }
-    
-VOCABS = vocab_loader()  
-   
 #~~~ Features ~~~
 
 REGISTERD_FEATURES = {}
@@ -102,47 +71,44 @@ class Feature:
         return features.add_prefix(f"{self.name}:")
         
 @Feature.register
-def pos_unigrams(doc) -> Feature:
-    return Counter(doc.doc._.pos_tags)
+def pos_unigrams(text) -> Feature:
+    return Counter(text.doc._.pos_tags)
     
 @Feature.register
-def pos_bigrams(doc) -> Feature:
-    return Counter(doc.doc._.pos_bigrams)
+def pos_bigrams(text) -> Feature:
+    return Counter(text.doc._.pos_bigrams)
 
 @Feature.register
-def func_words(doc) -> Feature:
-    vocab = VOCABS["func_words"]
-    return Counter([token for token in doc.doc._.tokens if token in vocab])
+def func_words(text) -> Feature:
+    return Counter(text.doc._.func_words)
  
 @Feature.register
-def punctuation(doc) -> Feature:
-    vocab = VOCABS["punctuation"]
-    return Counter([punc for token in doc.doc._.tokens for punc in token if punc in vocab])
+def punctuation(text) -> Feature:
+    return Counter(text.doc._.punctuation)
 
 @Feature.register
-def letters(doc) -> Feature:
-    vocab = VOCABS["letters"]
-    return Counter([letter for token in doc.doc._.tokens for letter in token if letter in vocab])
+def letters(text) -> Feature:
+    return Counter(text.doc._.letters)
 
 @Feature.register
-def dep_labels(doc) -> Feature:
-    return Counter([dep for dep in doc.doc._.dep_labels])
+def dep_labels(text) -> Feature:
+    return Counter(text.doc._.dep_labels)
 
 @Feature.register
-def morph_tags(doc) -> Feature:
-    return Counter(doc.doc._.morph_tags)
+def morph_tags(text) -> Feature:
+    return Counter(text.doc._.morph_tags)
 
 @Feature.register
-def emojis(doc) -> Feature:
-    vocab = VOCABS["emojis"]
-    extracted_emojis = demoji.findall_list(doc.raw, desc=False)
-    doc_emoji_counts = [emoji for emoji in extracted_emojis if emoji in vocab]
-    return Counter(doc_emoji_counts)
+def sentences(text) -> Feature:
+    return Counter(text.doc._.sentences)
 
+# emojis must get removed before processed through spaCy,
+# so spaCy extensions cannot be used here unfortunately
 @Feature.register
-def sentences(doc) -> Feature:
-    return Counter(doc.doc._.sentences)
-
+def emojis(text) -> Feature:
+    emojis_vocab = vocab.get("emojis")
+    extracted_emojis = demoji.findall_list(text.raw, desc=False)
+    return Counter([emoji for emoji in extracted_emojis if emoji in emojis_vocab])
 
 # ~~~ Processing ~~~
 
@@ -212,8 +178,9 @@ def _apply_features(doc:Document, config:Optional[Dict], include_content_embeddi
     """Applies all feature extractors to a given document, optionally adding the spaCy emedding vector"""
     features = []
     for feature in get_activated_features(config):
-        vocab = VOCABS[feature.name]
-        features.append(feature(doc, vocab))
+        feature_vocab = vocab.get(feature.name)
+        extraction = feature(doc, feature_vocab)
+        features.append(extraction)
         
     if include_content_embedding:
         features.append(_content_embedding(doc))
