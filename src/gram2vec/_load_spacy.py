@@ -20,7 +20,7 @@ def get_pos_tags(doc):
     return [token.pos_ for token in doc]
 
 def get_dep_labels(doc):
-    return [dep for token in doc for dep in token.dep_ for token in doc]
+    return [dep for token in doc for dep in token.dep_]
 
 def get_morph_tags(doc):
     return [morph for token in doc for morph in token.morph if morph != ""]
