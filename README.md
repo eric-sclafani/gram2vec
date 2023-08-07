@@ -52,6 +52,12 @@ The first option, `vectorizer.from_jsonlines()`, is used to generate a dataframe
 >>> my_df = vectorizer.from_jsonlines("path/to/dataset/directory/")
 ```
 
+`vectorizer.from_jsonlines()` expects a jsonlines file with the following fields: 
+
+- **fullText** - raw document text
+- **authorIDs** - author identifier (no authors can have the same ID)
+- **documentID** - document identifier(no documents can have the same ID)
+
 The second option,`vectorizer.from_documents()`, is used to generate a dataframe **from a list of strings**. Note that this does NOT take into account author or document IDs, unlike the `.from_jsonlines()` function.
 
 ```python
