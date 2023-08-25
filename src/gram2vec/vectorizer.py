@@ -25,6 +25,15 @@ def measure_time(func):
 
 REGISTERD_FEATURES = {}
 
+@dataclass
+class Document:
+    """
+    Encapsulates the raw text and spacy doc. Needed because emojis must be taken out of the spacy doc before 
+    the dependency parse, but the emojis feature still needs access to the emojis from the text
+    """
+    raw:str
+    doc:Doc
+
 class Feature:
     """Encapsulates a feature counting function. When the function is called, normalization is applied to the counted features"""
     def __init__(self, func:Callable):
@@ -71,55 +80,48 @@ class Feature:
         return features.add_prefix(f"{self.name}:")
         
 @Feature.register
-def pos_unigrams(text) -> Feature:
+def pos_unigrams(text:Document) -> Feature:
     return Counter(text.doc._.pos_tags)
     
 @Feature.register
-def pos_bigrams(text) -> Feature:
+def pos_bigrams(text:Document) -> Feature:
     return Counter(text.doc._.pos_bigrams)
 
 @Feature.register
-def func_words(text) -> Feature:
+def func_words(text:Document) -> Feature:
     return Counter(text.doc._.func_words)
  
 @Feature.register
-def punctuation(text) -> Feature:
+def punctuation(text:Document) -> Feature:
     return Counter(text.doc._.punctuation)
 
 @Feature.register
-def letters(text) -> Feature:
+def letters(text:Document) -> Feature:
     return Counter(text.doc._.letters)
 
 @Feature.register
-def dep_labels(text) -> Feature:
+def dep_labels(text:Document) -> Feature:
     return Counter(text.doc._.dep_labels)
 
 @Feature.register
-def morph_tags(text) -> Feature:
+def morph_tags(text:Document) -> Feature:
     return Counter(text.doc._.morph_tags)
 
 @Feature.register
-def sentences(text) -> Feature:
+def sentences(text:Document) -> Feature:
     return Counter(text.doc._.sentences)
 
 # emojis must get removed before processed through spaCy,
 # so spaCy extensions cannot be used here unfortunately
 @Feature.register
-def emojis(text) -> Feature:
+def emojis(text:Document) -> Feature:
     emojis_vocab = vocab.get("emojis")
     extracted_emojis = demoji.findall_list(text.raw, desc=False)
     return Counter([emoji for emoji in extracted_emojis if emoji in emojis_vocab])
 
 # ~~~ Processing ~~~
 
-@dataclass
-class Document:
-    """
-    Encapsulates the raw text and spacy doc. Needed because emojis must be taken out of the spacy doc before 
-    the dependency parse, but the emojis feature still needs access to the emojis from the text
-    """
-    raw:str
-    doc:Doc
+
     
 def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
