@@ -1,7 +1,6 @@
 import spacy
 from spacy.tokens import Doc
 from sys import stderr
-import demoji
 from typing import Callable, List, Tuple, Iterable
 
 from ._load_vocab import vocab, matcher

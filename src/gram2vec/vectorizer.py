@@ -23,8 +23,6 @@ def measure_time(func):
 
 #~~~ Features ~~~
 
-REGISTERD_FEATURES = {}
-
 @dataclass
 class Document:
     """
@@ -33,6 +31,8 @@ class Document:
     """
     raw:str
     doc:Doc
+    
+REGISTERD_FEATURES = {}
 
 class Feature:
     """Encapsulates a feature counting function. When the function is called, normalization is applied to the counted features"""
