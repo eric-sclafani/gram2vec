@@ -146,8 +146,8 @@ To verbalize **unseen documents**, use the `.verbalize_document_vector()` method
 |-------|----------------------------|-----------|---------------------------------------------------------------------------------|
 |  30   |          emojis:🥰            | 5.518523  | This document uses the emoji '🥰' more than the average document            |
 |  31   |       dep_labels:cc          | 2.400670  | This document uses the dependency parse label 'cc' more than the average document       |
-|  32   |     dep_labels:meta        | 4.329617  | This document uses the dependency parse label 'meta' less than the average document    |
-|  33   | morph_tags:ConjType=Cmp | 2.118285  | This document uses the morphological tag 'ConjType=Cmp' less than the average document |
+|  32   |     dep_labels:meta        | -4.329617  | This document uses the dependency parse label 'meta' less than the average document    |
+|  33   | morph_tags:ConjType=Cmp | -2.118285  | This document uses the morphological tag 'ConjType=Cmp' less than the average document |
 |  34   | sentences:coordinate-clause | 2.517907  | This document uses the sentence type 'coordinate-clause' more than the average document |
 
 ## Vocab

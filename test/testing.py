@@ -21,8 +21,8 @@ config = {
     "sentences":1
     }
 
-df = vectorizer.from_jsonlines("../data/pan22/preprocessed/", config=config)
-test_vector = df.select_dtypes(include=np.number).iloc[-1]
+df = vectorizer.from_jsonlines("data/pan22/preprocessed/", config=config)
+test_vector = df.select_dtypes(include=np.number).iloc[111]
 
 verbalizer = Verbalizer(df)
 
@@ -31,4 +31,4 @@ a = verbalizer.verbalize_author_id("en_112")
 d = verbalizer.verbalize_document_vector(test_vector)
 
 
-print(d)
+import ipdb;ipdb.set_trace()
