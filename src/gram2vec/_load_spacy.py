@@ -38,18 +38,18 @@ def get_pos_bigrams(doc) -> List[Bigram]:
                 if i == sent_start:
                     new_tokens.append("BOS")
                 elif i == sent_end:
-                    new_tokens.append("EOS")    
+                    new_tokens.append("EOS")
             new_tokens.append(pos)
-        new_tokens.append("EOS")  
+        new_tokens.append("EOS")
         return new_tokens
-    
+
     def convert_bigrams_to_strings(bigrams) -> List[str]:
         """Converts bigrams into a list of bigram strings"""
         return [" ".join(bigram) for bigram in bigrams]
-    
+
     def bigrams(iter:Iterable) -> List[Tuple]:
         return [tuple(iter[i:i+2]) for i in range(len(iter)-1)]
-    
+
     sent_spans = get_sentence_spans(doc)
     pos_tags_with_boundary_syms = insert_sentence_boundaries(sent_spans)
     pos_bigrams = bigrams(pos_tags_with_boundary_syms)
@@ -72,7 +72,7 @@ def get_letters(doc):
     return [letter for token in doc.doc._.tokens for letter in token if letter in letters_vocab]
 
 
-    
+
 # Add more extensions here as needed!
 # Extension syntax: (extension name, getter function that returns a list)
 
@@ -105,10 +105,11 @@ except OSError:
     download(model)
 
 nlp = spacy.load(model, exclude=["ner"])
+nlp.max_length = 4000000
 print(f"Gram2Vec: Using '{model}'")
 
 for name, function in helper_extensions:
     set_spacy_extension(name, function)
-    
+
 for name, function in feature_extensions:
     set_spacy_extension(name, function)
