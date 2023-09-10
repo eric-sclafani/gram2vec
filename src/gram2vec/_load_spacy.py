@@ -105,7 +105,7 @@ except OSError:
     download(model)
 
 nlp = spacy.load(model, exclude=["ner"])
-nlp.max_length = 4000000
+nlp.max_length = 10000000 
 print(f"Gram2Vec: Using '{model}'")
 
 for name, function in helper_extensions:
