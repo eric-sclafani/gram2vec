@@ -1,7 +1,7 @@
 # Gram2Vec
 
 ## Description
-`Gram2Vec` is a vectorization algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. 
+`Gram2Vec` is a grammatical style embedding algorithm that embeds documents into a higher dimensional space by extracting the normalized relative frequencies of stylistic features present in the text. 
 
 More specifically, Gram2vec vectorizes based off features pertaining to grammar, such as POS tags, punctuation, syntactic constructions, and much more.
 
