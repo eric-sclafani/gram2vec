@@ -130,7 +130,7 @@ def sentences(text:Document) -> Feature:
 def emojis(text:Document) -> Feature:
     emojis_vocab = vocab.get("emojis")
     extracted_emojis = demoji.findall_list(text.raw, desc=False)
-    counted_emojis = Co1unter()
+    counted_emojis = Counter()
 
     for emoji in extracted_emojis:
         if emoji in emojis_vocab:
