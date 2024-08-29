@@ -10,6 +10,15 @@ from typing import Tuple, List, Dict, Callable, Optional, Iterable
 from ._load_spacy import nlp, Doc
 from ._load_vocab import vocab
 
+def get_feature_counts(doc):
+    feature_types = ["pos_tags", "dep_labels", "morph_tags", "pos_bigrams", "sentences", "func_words", "punctuation", "letters", "tokens"]
+    feature_counts = {}
+    
+    for feature in feature_types:
+        feature_list = getattr(doc._, feature)
+        feature_counts[feature] = len(feature_list)
+    return feature_counts
+
 def measure_time(func):
     """Debugging function for measuring function execution time"""
     def wrapper(*args, **kwargs):
@@ -31,6 +40,7 @@ class Document:
     """
     raw:str
     doc:Doc
+    num_tokens:int
     
 REGISTERD_FEATURES = {}
 
@@ -43,7 +53,7 @@ class Feature:
     def __call__(self, doc, vocab):
         counted_features = self.func(doc)
         all_counts = self._include_zero_vocab_counts(counted_features, vocab)
-        normalized_counts = self._normalize(all_counts)
+        normalized_counts = self._normalize(all_counts, doc.num_tokens)
         return self._prefix_feature_names(normalized_counts)
     
     @classmethod
@@ -68,9 +78,12 @@ class Feature:
         """Gets sum of counts. Accounts for possible zero counts"""
         return sum(counts) if sum(counts) > 0 else 1
 
-    def _normalize(self, counts:pd.Series) -> pd.Series:
+    def _normalize(self, counts:pd.Series, num_tokens:int) -> pd.Series:
         """Normalizes each count by the sum of counts for that feature"""
-        return counts / self._get_sum(counts)
+        if self.name in ["emojis", "punctuation", "func_words", "sentences"]:
+            return counts / num_tokens
+        else:
+            return counts / self._get_sum(counts)
     
     def _prefix_feature_names(self, features:pd.Series) -> pd.Series:
         """
@@ -117,12 +130,16 @@ def sentences(text:Document) -> Feature:
 def emojis(text:Document) -> Feature:
     emojis_vocab = vocab.get("emojis")
     extracted_emojis = demoji.findall_list(text.raw, desc=False)
-    return Counter([emoji for emoji in extracted_emojis if emoji in emojis_vocab])
+    counted_emojis = Co1unter()
 
-# ~~~ Processing ~~~
+    for emoji in extracted_emojis:
+        if emoji in emojis_vocab:
+            counted_emojis[emoji] += 1
+        else:
+            counted_emojis["OOV_emoji"] += 1
+    return counted_emojis
 
-
-    
+# ~~~ Processing ~~~    
 def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
     if config is None:
@@ -156,9 +173,11 @@ def _remove_emojis(document:str) -> str:
 def _process_documents(documents:Iterable[str]) -> List[Document]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
     nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])
+    original_token_counts = [len(nlp(doc)) for doc in documents]
+    
     processed = []
-    for raw_text, nlp_doc in zip(documents, nlp_docs):
-        processed.append(Document(raw_text, nlp_doc))
+    for raw_text, nlp_doc, original_token_count in zip(documents, nlp_docs, original_token_counts):
+        processed.append(Document(raw_text, nlp_doc, original_token_count))
     return processed
 
 def _get_json_entries(df) -> Tuple[pd.Series, pd.Series, pd.Series]:
@@ -183,7 +202,6 @@ def _apply_features(doc:Document, config:Optional[Dict], include_content_embeddi
         feature_vocab = vocab.get(feature.name)
         extraction = feature(doc, feature_vocab)
         features.append(extraction)
-        
     if include_content_embedding:
         features.append(_content_embedding(doc))
     return pd.concat(features, axis=0)
