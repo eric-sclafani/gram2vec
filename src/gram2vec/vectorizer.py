@@ -1,4 +1,3 @@
-
 from collections import Counter
 import demoji
 import time
@@ -50,9 +49,12 @@ class Feature:
         self.func = func    
         self.name = func.__name__
         
-    def __call__(self, doc, vocab):
+    def __call__(self, doc, vocab=None):
         counted_features = self.func(doc)
-        all_counts = self._include_zero_vocab_counts(counted_features, vocab)
+        if vocab is not None:
+            all_counts = self._include_zero_vocab_counts(counted_features, vocab)
+        else:
+            all_counts = pd.Series(counted_features)
         normalized_counts = self._normalize(all_counts, doc.num_tokens)
         return self._prefix_feature_names(normalized_counts)
     
@@ -80,6 +82,8 @@ class Feature:
 
     def _normalize(self, counts:pd.Series, num_tokens:int) -> pd.Series:
         """Normalizes each count by the sum of counts for that feature"""
+        if self.name == "num_tokens":
+            return counts  # Skip normalization for num_tokens
         if self.name in ["emojis", "punctuation", "func_words", "sentences"]:
             return counts / num_tokens
         else:
@@ -87,7 +91,7 @@ class Feature:
     
     def _prefix_feature_names(self, features:pd.Series) -> pd.Series:
         """
-        For each low level feature, prefix the name of the high level feature to it 
+        For each low level feature, prefix the name of the high level feature to it z
                                 EXAMPLE:  ADJ -> pos_unigrams:ADJ
         """
         return features.add_prefix(f"{self.name}:")
@@ -139,6 +143,10 @@ def emojis(text:Document) -> Feature:
             counted_emojis["OOV_emoji"] += 1
     return counted_emojis
 
+@Feature.register
+def num_tokens(text:Document) -> Feature:
+    return Counter({"num_tokens": text.num_tokens})
+
 # ~~~ Processing ~~~    
 def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
@@ -148,11 +156,12 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "pos_bigrams":1,
             "func_words":1,
             "punctuation":1,
-            "letters":1,
+            "letters":0,
             "emojis":1,
             "dep_labels":1,
             "morph_tags":1,
-            "sentences":1
+            "sentences":1,
+            "num_tokens":1
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
@@ -196,11 +205,14 @@ def _content_embedding(doc:Document) -> pd.Series:
     return pd.Series(doc.doc.vector).add_prefix("Embedding dim: ")
     
 def _apply_features(doc:Document, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
-    """Applies all feature extractors to a given document, optionally adding the spaCy emedding vector"""
+    """Applies all feature extractors to a given document, optionally adding the spaCy embedding vector"""
     features = []
     for feature in get_activated_features(config):
-        feature_vocab = vocab.get(feature.name)
-        extraction = feature(doc, feature_vocab)
+        if feature.name == "num_tokens":
+            extraction = feature(doc)
+        else:
+            feature_vocab = vocab.get(feature.name)
+            extraction = feature(doc, feature_vocab)
         features.append(extraction)
     if include_content_embedding:
         features.append(_content_embedding(doc))
