@@ -2,6 +2,7 @@ import spacy
 from spacy.tokens import Doc
 from sys import stderr
 from typing import Callable, List, Tuple, Iterable
+import os
 
 from ._load_vocab import vocab, matcher
 
@@ -96,13 +97,13 @@ def set_spacy_extension(name:str, function:Callable) -> None:
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
 
-model = "en_core_web_lg"
+model = os.environ.get("SPACY_MODEL", "en_core_web_lg")
 try:
     nlp = spacy.load(model, exclude=["ner"])
 except OSError:
     print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
     from spacy.cli import download
-    download(model)
+    download(model) 
 
 nlp = spacy.load(model, exclude=["ner"])
 nlp.max_length = 10000000 
