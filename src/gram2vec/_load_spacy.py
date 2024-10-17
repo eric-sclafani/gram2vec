@@ -103,7 +103,7 @@ try:
 except OSError:
     print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
     from spacy.cli import download
-    download(model) 
+    download(model)
 
 nlp = spacy.load(model, exclude=["ner"])
 nlp.max_length = 10000000 
