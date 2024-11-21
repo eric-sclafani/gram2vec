@@ -11,6 +11,7 @@ from . import matcher
 SentenceSpan = Tuple[int,int]
 Bigram = Tuple[str,str]
 
+matcher = matcher.SyntaxRegexMatcher(language="en")
 # ~~~ Getters ~~~
 
 def get_tokens(doc):

@@ -58,6 +58,6 @@ vocab.add_from_path("letters")
 
 # ~~~ Non-path loaded vocabs ~~~
 
-matcher = matcher.SyntaxRegexMatcher(language="en")
-# matcher = SyntaxRegexMatcher(language="ru")
+# matcher = matcher.SyntaxRegexMatcher(language="en")
+matcher = matcher.SyntaxRegexMatcher(language="ru")
 vocab.add_items("sentences", tuple(matcher.patterns.keys()))

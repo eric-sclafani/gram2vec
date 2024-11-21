@@ -31,8 +31,9 @@ class SyntaxRegexMatcher:
                 "tag-question" : r"\([^-]*-(do|be|could|can|have)-[^-]*-ROOT.*\(\?-\?-\.-punct",
                 "coordinate-clause" : r"\([^-]*-[^-]*-CC-cc\).*\([^-]*-[^-]*-(VB[^-]*|JJ)-conj.*\([^-]*-[^-]*-[^-]*-nsubj"
             }
-            
+
         elif language == "ru":
+            print("using russian constructions")
             self.patterns = {
                 "passive_rus" : r"\([^-]*-[^-]*-(NOUN[^-]*|PRON)-nsubj:pass.*\)",
                 "parataxis_rus": r"\([^-]*-[^-]*-[^-]*-parataxis.*\)",
