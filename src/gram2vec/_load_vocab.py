@@ -1,5 +1,7 @@
 import os
 from typing import Tuple
+# from matcher import SyntaxRegexMatcher
+from . import matcher
 
 
 class Vocab:
@@ -55,8 +57,7 @@ vocab.add_from_path("punctuation")
 vocab.add_from_path("letters")
 
 # ~~~ Non-path loaded vocabs ~~~
-from srm import SyntaxRegexMatcher
 
-matcher = SyntaxRegexMatcher()
+matcher = matcher.SyntaxRegexMatcher(language="en")
+# matcher = SyntaxRegexMatcher(language="ru")
 vocab.add_items("sentences", tuple(matcher.patterns.keys()))
-

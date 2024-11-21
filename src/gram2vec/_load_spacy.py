@@ -4,8 +4,8 @@ from sys import stderr
 from typing import Callable, List, Tuple, Iterable
 import os
 
-from ._load_vocab import vocab, matcher
-
+from ._load_vocab import vocab
+from . import matcher
 # ~~~ Type aliases ~~~
 
 SentenceSpan = Tuple[int,int]
