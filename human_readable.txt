@@ -1,0 +1,40 @@
+ADJ: Adjective
+ADP: Adposition (preposition or postposition)
+ADV: Adverb
+AUX: Auxiliary verb
+CCONJ: Coordinating conjunction
+DET: Determiner
+INTJ: Interjection
+NOUN: Noun
+NUM: Numeral
+PART: Particle
+PRON: Pronoun
+PROPN: Proper noun
+PUNCT: Punctuation
+SCONJ: Subordinating conjunction
+SYM: Symbol
+VERB: Verb
+X: Other (foreign words, typos, abbreviations)
+SPACE: Space
+
+Aspect=Perf: Perfect aspect
+Aspect=Prog: Progressive aspect
+Case=Acc: Accusative case
+Case=Nom: Nominative case
+Definite=Def: Definite article
+Definite=Ind: Indefinite article
+Degree=Cmp: Comparative degree
+Degree=Pos: Positive degree
+Degree=Sup: Superlative degree
+Gender=Fem: Feminine gender
+Gender=Masc: Masculine gender
+Mood=Ind: Indicative mood
+Number=Plur: Plural number
+Number=Sing: Singular number
+Person=1: First person
+Person=2: Second person
+Person=3: Third person
+Tense=Past: Past tense
+Tense=Pres: Present tense
+VerbForm=Fin: Finite verb form
+VerbForm=Inf: Infinitive verb form

@@ -1,6 +1,5 @@
 import os
 from typing import Tuple
-# from matcher import SyntaxRegexMatcher
 from . import matcher
 
 
