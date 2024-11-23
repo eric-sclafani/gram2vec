@@ -19,7 +19,6 @@ dependencies = [
     "pandas", 
     "spacy",
     "demoji",
-    "srm @ git+https://github.com/eric-sclafani/syntax-regex-matcher"
 ]
 classifiers = [
     "Development Status :: 1 - Planning",
