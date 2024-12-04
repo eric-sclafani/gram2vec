@@ -35,12 +35,14 @@ class SyntaxRegexMatcher:
         elif language == "ru":
             print("using russian constructions")
             self.patterns = {
-                "passive_rus" : r"\([^-]*-[^-]*-(NOUN[^-]*|PRON)-nsubj:pass.*\)",
+                "passive_rus" : r"\([^-]*-[^-]*-VERB-ROOT.*?Voice=Pass.*?\)+$",
                 "parataxis_rus": r"\([^-]*-[^-]*-[^-]*-parataxis.*\)",
-                "participle_gerund_rus": r"\([^-]*-[^-]*-(VERB-acl(?!:relcl)|ADJ-amod|VERB-advcl).*?\)",
-                "conj_rus": r"\([^()]*-[^-]*-[^-]*-conj[^()]*\)",
-                "nested_structure_rus": r"\([^-]*-[^-]*-(VERB-acl:relcl).*?\)",
-                "one_word_sent_rus": r"\([^-]*-[^-]*-(NOUN|VERB)-ROOT\(.*?-PUNCT-punct\)\)"
+                "participle_rus": r"\([^-]*-[^-]*-(?:VERB|ADJ)-ROOT.*?(?:ADJ|VERB)-(?:amod|acl)(?!:relcl).*?(?:VerbForm=Part|[а-я]+(?:ющ|ащ|ящ|вш|ем|им|нн|т)[а-я]+).*?\)+$",
+                "gerund_rus": r"\([^-]*-[^-]*-(?:VERB|PROPN)-ROOT.*?(?:[А-Яа-я]+(?<!ющ|[ая]щ|вш)[яв(сь|ся)]-[^-]*-(?:VERB|NOUN|ADJ|PROPN)-(?:advcl|amod).*?(?:VerbForm=Conv|[^|]*)).*?\)+$",
+                "conj_rus": r"\([^-]*-[^-]*-(?!SCONJ)\w+-ROOT.*?-conj.*?\)+$",
+                "nested_structure_rus": r"\([^-]*-[^-]*-(?:VERB|ADV|NOUN)-ROOT.*?(?:VERB-(?:xcomp|advcl|ccomp|acl:relcl|acl)|AUX-aux:pass|ADV-advcl).*?(?:SCONJ-(?:mark|fixed|obj)|ADV-(?:mark|advmod)|который-PRON|что-PRON|чтобы-SCONJ|хотя-SCONJ|такой-DET).*?\)+$",
+                "one_word_sent_rus": r"\([^-]*-[^-]*-(NOUN|VERB|PROPN)-ROOT-[^()]*\([^-]*-[^-]*-PUNCT-punct-\)\)",
+                "diminutive_rus": r".*\([а-яё]*(?:ик|[её]к|[её]нок|очк|ечк|ышк|оньк|еньк)[а-яё]*-[а-яё]*-NOUN-.*?\).*"
             }
 
         self.language = language
@@ -123,7 +125,7 @@ class SyntaxRegexMatcher:
                 if self.language == "en":
                     result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}" 
                 elif self.language == "ru":
-                    result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}" 
+                    result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}-{token.morph}" 
                 
                 for child in reversed(list(token.children)):
                     stack.append(child)
