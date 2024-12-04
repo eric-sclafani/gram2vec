@@ -57,10 +57,10 @@ vocab.add_from_path("letters")
 
 # ~~~ Non-path loaded vocabs ~~~
 
-# matcher = matcher.SyntaxRegexMatcher(language="en")
-if os.environ.get("LANGUAGE") == "ru":
+language = os.environ.get("LANGUAGE", "en")
+if language == "ru":
     matcher = matcher.SyntaxRegexMatcher(language="ru")
-elif os.environ.get("LANGUAGE") == "en":
+elif language == "en":
     matcher = matcher.SyntaxRegexMatcher(language="en")
 
 vocab.add_items("sentences", tuple(matcher.patterns.keys()))

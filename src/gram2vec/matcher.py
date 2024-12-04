@@ -18,6 +18,8 @@ class SyntaxRegexMatcher:
     This class encapsulates the sentence regex patterns and methods to apply them to target documents
     """
     def __init__(self, language:str):
+        self.language = language
+
         if language == "en":
             self.patterns = {
                 "it-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-(relcl|advcl)",
@@ -31,9 +33,7 @@ class SyntaxRegexMatcher:
                 "tag-question" : r"\([^-]*-(do|be|could|can|have)-[^-]*-ROOT.*\(\?-\?-\.-punct",
                 "coordinate-clause" : r"\([^-]*-[^-]*-CC-cc\).*\([^-]*-[^-]*-(VB[^-]*|JJ)-conj.*\([^-]*-[^-]*-[^-]*-nsubj"
             }
-
         elif language == "ru":
-            print("using russian constructions")
             self.patterns = {
                 "passive_rus" : r"\([^-]*-[^-]*-VERB-ROOT.*?Voice=Pass.*?\)+$",
                 "parataxis_rus": r"\([^-]*-[^-]*-[^-]*-parataxis.*\)",
@@ -44,8 +44,7 @@ class SyntaxRegexMatcher:
                 "one_word_sent_rus": r"\([^-]*-[^-]*-(NOUN|VERB|PROPN)-ROOT-[^()]*\([^-]*-[^-]*-PUNCT-punct-\)\)",
                 "diminutive_rus": r".*\([а-яё]*(?:ик|[её]к|[её]нок|очк|ечк|ышк|оньк|еньк)[а-яё]*-[а-яё]*-NOUN-.*?\).*"
             }
-
-        self.language = language
+            
 
     def print_patterns(self) -> None:
         for pattern_name, pattern in self.patterns.items():
@@ -136,6 +135,6 @@ class SyntaxRegexMatcher:
         
         parse = parse_dependency_parse(sentence)
         nt_count = get_NT_count(sentence)
-        print(f"{parse}{ending_parenthesis(nt_count)}")
+        # print(f"{parse}{ending_parenthesis(nt_count)}")
         return f"{parse}{ending_parenthesis(nt_count)}"
     

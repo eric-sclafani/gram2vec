@@ -11,7 +11,12 @@ from . import matcher
 SentenceSpan = Tuple[int,int]
 Bigram = Tuple[str,str]
 
-matcher = matcher.SyntaxRegexMatcher(language="en")
+language = os.environ.get("LANGUAGE", "en")
+if language == "ru":
+    matcher = matcher.SyntaxRegexMatcher(language="ru")
+elif language == "en":
+    matcher = matcher.SyntaxRegexMatcher(language="en")
+
 # ~~~ Getters ~~~
 
 def get_tokens(doc):
