@@ -138,6 +138,6 @@ class SyntaxRegexMatcher:
         
         parse = parse_dependency_parse(sentence)
         nt_count = get_NT_count(sentence)
-        print(f"{parse}{ending_parenthesis(nt_count)}")
+        # print(f"{parse}{ending_parenthesis(nt_count)}")
         return f"{parse}{ending_parenthesis(nt_count)}"
     
