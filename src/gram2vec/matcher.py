@@ -33,7 +33,6 @@ class SyntaxRegexMatcher:
             }
 
         elif language == "ru":
-            print("using russian constructions")
             self.patterns = {
                 "passive_rus" : r"\([^-]*-[^-]*-VERB-ROOT.*?Voice=Pass.*?\)+$",
                 "parataxis_rus": r"\([^-]*-[^-]*-[^-]*-parataxis.*\)",
