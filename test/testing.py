@@ -18,7 +18,13 @@ config = {
     "emojis":1,
     "dep_labels":1,
     "morph_tags":1,
-    "sentences":1
+    "sentences":1,
+    "named_entities":1,
+    "NEs_person":1,
+    "NEs_location_loc":1,
+    "NEs_location_gpe":1,
+    "NEs_organization":1,
+    "NEs_date":1
     }
 
 example_sentences = [
@@ -31,7 +37,12 @@ example_sentences = [
     "All that glitters is not gold.",
     "The early bird catches the worm.",
     "A picture is worth a thousand words.",
-    "When in Rome, do as the Romans do."
+    "When in Rome, do as the Romans do.",
+    "I like you",
+    'It is what it is',
+    'This chocolate is the best chocolate I have ever had',
+    "My cat is smaller than my dog",
+    "This city is more beautiful than that city"
 ]
 
 features = vectorizer.from_documents(example_sentences)
