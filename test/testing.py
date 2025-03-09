@@ -40,10 +40,10 @@ example_sentences = [
     "When in Rome, do as the Romans do.",
     "I like you",
     'It is what it is',
-    'This chocolate is the best chocolate I have ever had',
-    "My cat is smaller than my dog",
-    "This city is more beautiful than that city",
-    "Maria lives in Mexico",
+    'This chocolate is the best chocolate I have ever had!🥳',
+    "My cat is smaller than my dog..",
+    "This city is more beautiful than that city.",
+    "Maria lives in Mexico : )",
     "Are you working at Stony Brook University???"
 ]
 
