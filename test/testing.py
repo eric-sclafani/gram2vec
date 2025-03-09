@@ -42,7 +42,8 @@ example_sentences = [
     'It is what it is',
     'This chocolate is the best chocolate I have ever had',
     "My cat is smaller than my dog",
-    "This city is more beautiful than that city"
+    "This city is more beautiful than that city",
+    "Maria lives in Mexico"
 ]
 
 features = vectorizer.from_documents(example_sentences)
