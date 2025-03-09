@@ -43,7 +43,8 @@ example_sentences = [
     'This chocolate is the best chocolate I have ever had',
     "My cat is smaller than my dog",
     "This city is more beautiful than that city",
-    "Maria lives in Mexico"
+    "Maria lives in Mexico",
+    "Are you working at Stony Brook University???"
 ]
 
 features = vectorizer.from_documents(example_sentences)
