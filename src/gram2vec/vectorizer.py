@@ -10,7 +10,48 @@ from ._load_spacy import nlp, Doc
 from ._load_vocab import vocab
 
 def get_feature_counts(doc):
-    feature_types = ["pos_tags", "dep_labels", "morph_tags", "pos_bigrams", "sentences", "func_words", "punctuation", "letters", "tokens"]
+    feature_types = ["pos_tags", 
+                     "pos_verbs",
+                     "pos_adjectives",
+                     "pos_adverbs",
+                     "pos_proper_nouns",
+                     "pos_adpositions",
+                     "dep_labels", 
+                     "morph_tags", 
+                     "pos_bigrams", 
+                     "sentences", 
+                     "func_words", 
+                     "punctuation",
+                     "punct_periods",
+                     "punct_commas",
+                     "punct_colons",
+                     "punct_semicolons",
+                     "punct_exclamations",
+                     "punct_questions",
+                     "letters", 
+                     "tokens", 
+                     "named_entities",
+                     "NEs_person",
+                     "NEs_location_loc",
+                     "NEs_location_gpe",
+                     "NEs_organization",
+                     "NEs_date",
+                     "NEs_without_date",
+                     "token_VB",
+                     "token_VBD",
+                     "token_VBG",
+                     "token_VBN",
+                     "token_VBP",
+                     "token_VBZ",
+                     "token_EX",
+                     "token_FW",
+                     "token_PRP",
+                     "token_superlatives",
+                     "token_comparatives",
+                     "first_second_person_pronouns",
+                     "third_person_pronouns",
+                     "pronoun_it"
+                     ]
     feature_counts = {}
     
     for feature in feature_types:
@@ -82,9 +123,45 @@ class Feature:
 
     def _normalize(self, counts:pd.Series, num_tokens:int) -> pd.Series:
         """Normalizes each count by the sum of counts for that feature"""
-        if self.name == "num_tokens":
-            return counts  # Skip normalization for num_tokens
-        if self.name in ["emojis", "punctuation", "func_words", "sentences"]:
+        if self.name in ["num_tokens", "avg_chars_per_token", "avg_tokens_per_sentence", "avg_noun_chunk_length", "avg_verb_chunk_length"]:
+            return counts  
+        if self.name in ["emojis", 
+                         "punctuation", 
+                         "punct_periods",
+                         "punct_commas",
+                         "punct_colons",
+                         "punct_semicolons",
+                         "punct_exclamations",
+                         "punct_questions",
+                         "func_words", 
+                         "sentences", 
+                         "named_entities", 
+                         "NEs_person", 
+                         "NEs_location_loc", 
+                         "NEs_location_gpe", 
+                         "NEs_organization", 
+                         "NEs_date", 
+                         "NEs_except_date",
+                         "pos_verbs",
+                         "pos_adjectives",
+                         "pos_adverbs",
+                         "pos_proper_nouns",
+                         "pos_adpositions",
+                         "token_VB",
+                         "token_VBD",
+                         "token_VBG",
+                         "token_VBN",
+                         "token_VBP",
+                         "token_VBZ",
+                         "token_EX",
+                         "token_FW",
+                         "token_PRP",
+                         "token_superlatives",
+                         "token_comparatives",
+                         "first_second_person_pronouns",
+                         "third_person_pronouns",
+                         "pronoun_it"
+                         ]:
             return counts / num_tokens
         else:
             return counts / self._get_sum(counts)
@@ -107,10 +184,54 @@ def pos_bigrams(text:Document) -> Feature:
 @Feature.register
 def func_words(text:Document) -> Feature:
     return Counter(text.doc._.func_words)
- 
+
+@Feature.register
+def pos_verbs(text:Document) -> Feature:
+    return Counter(text.doc._.pos_verbs)
+
+@Feature.register
+def pos_adjectives(text:Document) -> Feature:
+    return Counter(text.doc._.pos_adjectives)
+
+@Feature.register
+def pos_adverbs(text:Document) -> Feature:
+    return Counter(text.doc._.pos_adverbs)
+
+@Feature.register
+def pos_proper_nouns(text:Document) -> Feature:
+    return Counter(text.doc._.pos_proper_nouns)
+
+@Feature.register
+def pos_adpositions(text:Document) -> Feature:
+    return Counter(text.doc._.pos_adpositions)
+
 @Feature.register
 def punctuation(text:Document) -> Feature:
     return Counter(text.doc._.punctuation)
+
+@Feature.register   
+def punct_periods(text:Document) -> Feature:
+    return Counter(text.doc._.punct_periods)
+
+@Feature.register
+def punct_commas(text:Document) -> Feature:
+    return Counter(text.doc._.punct_commas)
+
+@Feature.register
+def punct_colons(text:Document) -> Feature:
+    return Counter(text.doc._.punct_colons)
+
+@Feature.register
+def punct_semicolons(text:Document) -> Feature:
+    return Counter(text.doc._.punct_semicolons)
+
+@Feature.register
+def punct_exclamations(text:Document) -> Feature:
+    return Counter(text.doc._.punct_exclamations)
+
+@Feature.register
+def punct_questions(text:Document) -> Feature:
+    return Counter(text.doc._.punct_questions)
 
 @Feature.register
 def letters(text:Document) -> Feature:
@@ -147,6 +268,166 @@ def emojis(text:Document) -> Feature:
 def num_tokens(text:Document) -> Feature:
     return Counter({"num_tokens": text.num_tokens})
 
+@Feature.register
+def named_entities(text:Document) -> Feature:
+    return Counter(text.doc._.named_entities)
+
+@Feature.register
+def NEs_person(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_person)
+
+@Feature.register
+def NEs_location_loc(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_location_loc)
+
+@Feature.register
+def NEs_location_gpe(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_location_gpe)
+
+@Feature.register
+def NEs_organization(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_organization)
+
+@Feature.register
+def NEs_date(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_date)
+
+@Feature.register
+def NEs_except_date(text:Document) -> Feature:
+    return Counter(text.doc._.NEs_except_date)
+
+@Feature.register
+def token_VB(text:Document) -> Feature:
+    return Counter(text.doc._.token_VB)
+
+@Feature.register
+def token_VBD(text:Document) -> Feature:
+    return Counter(text.doc._.token_VBD)
+
+@Feature.register
+def token_VBG(text:Document) -> Feature:
+    return Counter(text.doc._.token_VBG)
+
+@Feature.register
+def token_VBN(text:Document) -> Feature:
+    return Counter(text.doc._.token_VBN)
+
+@Feature.register
+def token_VBP(text:Document) -> Feature:
+    return Counter(text.doc._.token_VBP)
+
+@Feature.register
+def token_VBZ(text:Document) -> Feature:
+    return Counter(text.doc._.token_VBZ)
+
+@Feature.register
+def token_EX(text:Document) -> Feature:
+    return Counter(text.doc._.token_EX)
+
+@Feature.register
+def token_FW(text:Document) -> Feature:
+    return Counter(text.doc._.token_FW)
+
+@Feature.register
+def token_PRP(text:Document) -> Feature:
+    return Counter(text.doc._.token_PRP)
+
+@Feature.register
+def token_superlatives(text:Document) -> Feature:
+    superlatives = Counter()
+    for token in text.doc:
+        if token.tag_ in ["JJS", "RBS"]:
+            superlatives[token.text] += 1
+    return superlatives
+
+@Feature.register
+def token_comparatives(text:Document) -> Feature:
+    comparatives = Counter()
+    for token in text.doc:
+        if token.tag_ in ["JJR", "RBR"]:
+            comparatives[token.text] += 1
+    return comparatives
+
+@Feature.register
+def pronoun_person(text: Document) -> Feature:
+    pronoun_counter = Counter()
+    for token in text.doc:
+        if token.pos_ == "PRON":  # Check if the token is a pronoun
+            person = token.morph.get("Person")
+            if person:
+                person_label = f"person_{person[0]}"
+                pronoun_counter[person_label] += 1
+    
+    return pronoun_counter
+
+@Feature.register
+def first_second_person_pronouns(text: Document) -> Feature:
+    pronoun_counter = Counter()
+    for token in text.doc:
+        if token.pos_ == "PRON":
+            person = token.morph.get("Person")
+            if person and person[0] in {"1", "2"}:
+                pronoun_counter["1st_2nd_person"] += 1
+    return pronoun_counter
+
+@Feature.register
+def third_person_pronouns(text: Document) -> Feature:
+    """
+    Counts 3rd person pronouns, excluding 'it'
+    """
+    pronoun_counter = Counter()
+    for token in text.doc:
+        if token.pos_ == "PRON":
+            person = token.morph.get("Person")
+            if person and person[0] == "3" and token.text.lower() != "it":
+                pronoun_counter["3rd_person"] += 1
+    return pronoun_counter
+
+@Feature.register
+def pronoun_it(text: Document) -> Feature:
+    pronoun_counter = Counter()
+    for token in text.doc:
+        if token.pos_ == "PRON" and token.text.lower() == "it":
+            pronoun_counter["pronoun_it"] += 1
+    return pronoun_counter
+
+@Feature.register
+def avg_chars_per_token(text: Document) -> Feature:
+    total_characters = sum(len(token.text) for token in text.doc)
+    num_tokens =text.num_tokens
+    avg_chars_per_token = total_characters / num_tokens if num_tokens > 0 else 0
+    return Counter({"avg_chars_per_token": avg_chars_per_token})
+
+@Feature.register
+def avg_tokens_per_sentence(text: Document) -> Feature:
+    total_tokens = text.num_tokens
+    num_sentences = len(list(text.doc.sents))
+    avg_tokens_per_sentence = total_tokens / num_sentences if num_sentences > 0 else 0
+    return Counter({"avg_tokens_per_sentence": avg_tokens_per_sentence})
+
+@Feature.register
+def avg_noun_chunk_length(text: Document) -> Feature:
+    noun_chunks = list(text.doc.noun_chunks)
+    total_chunk_length = sum(len(chunk.text) for chunk in noun_chunks)
+    num_chunks = len(noun_chunks)
+    avg_chunk_length = total_chunk_length / num_chunks if num_chunks > 0 else 0
+    return Counter({"avg_noun_chunk_length": avg_chunk_length})
+
+@Feature.register
+def avg_verb_chunk_length(text: Document) -> Feature: #it's no built-in function to retrieve VP in spaCy, so we have do it manually
+    verb_chunks = []
+    for token in text.doc:
+        if token.pos_ == "VERB":
+            chunk = [token] + list(token.children)
+            chunk = [t for t in chunk if t.dep_ in {"aux", "xcomp", "ccomp", "advcl", "prep", "pobj", "dobj", "nsubj", "nsubjpass", "csubj", "csubjpass", "attr", "acomp"}]
+            verb_chunks.append(chunk)
+
+    total_chunk_length = sum(len(chunk) for chunk in verb_chunks)
+    num_chunks = len(verb_chunks)
+    avg_chunk_length = total_chunk_length / num_chunks if num_chunks > 0 else 0
+    return Counter({"avg_verb_chunk_length": avg_chunk_length})
+    
+
 # ~~~ Processing ~~~    
 def get_activated_features(config:Optional[Dict]) -> List[Feature]:
     """Retrieves activated features from register according to a given config. Falls back to default config if none is provided"""
@@ -155,13 +436,49 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "pos_unigrams":1,
             "pos_bigrams":1,
             "func_words":1,
+            "pos_verbs":1,
+            "pos_adjectives":1,
+            "pos_adverbs":1,
+            "pos_proper_nouns":1,
+            "pos_adpositions":1,
             "punctuation":1,
+            "punct_periods":1,
+            "punct_commas":1,
+            "punct_colons":1,
+            "punct_semicolons":1,
+            "punct_exclamations":1,
+            "punct_questions":1,
             "letters":0,
             "emojis":1,
             "dep_labels":1,
             "morph_tags":1,
             "sentences":1,
-            "num_tokens":1
+            "num_tokens":1,
+            "named_entities":1,
+            "NEs_person":1,
+            "NEs_location_loc":1,
+            "NEs_location_gpe":1,
+            "NEs_organization":1,
+            "NEs_date":1,
+            "NEs_except_date":1,
+            "token_VB":1,
+            "token_VBD":1,
+            "token_VBG":1,
+            "token_VBN":1,
+            "token_VBP":1,
+            "token_VBZ":1,
+            "token_EX":1,
+            "token_FW":1,
+            "token_PRP":1,
+            "token_superlatives":1,
+            "token_comparatives":1,
+            "first_second_person_pronouns":1,
+            "third_person_pronouns":1,
+            "pronoun_it":1,
+            "avg_chars_per_token":1,
+            "avg_tokens_per_sentence":1,
+            "avg_noun_chunk_length":1,
+            "avg_verb_chunk_length":1
             }
         config = default_config
     return [REGISTERD_FEATURES[feat_name] for feat_name, num in config.items() if num == 1]
@@ -204,18 +521,36 @@ def _content_embedding(doc:Document) -> pd.Series:
     """Retrieves the spacy document embedding and returns it as a Series object"""
     return pd.Series(doc.doc.vector).add_prefix("Embedding dim: ")
     
-def _apply_features(doc:Document, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
+def _apply_features(doc: Document, config: Optional[Dict], include_content_embedding: bool) -> pd.Series:
     """Applies all feature extractors to a given document, optionally adding the spaCy embedding vector"""
     features = []
+    # List of features that do not require a vocabulary
+    no_vocab_features = [
+        "num_tokens",
+        "avg_chars_per_token",
+        "avg_tokens_per_sentence",
+        "avg_noun_chunk_length",
+        "avg_verb_chunk_length",
+        "first_second_person_pronouns",
+        "third_person_pronouns",
+        "pronoun_it",
+        "all_personal_pronouns",
+        "token_superlatives",
+        "token_comparatives"
+    ]
+    
     for feature in get_activated_features(config):
-        if feature.name == "num_tokens":
+        if feature.name in no_vocab_features:
+            # Directly call the feature function without vocab
             extraction = feature(doc)
         else:
             feature_vocab = vocab.get(feature.name)
             extraction = feature(doc, feature_vocab)
         features.append(extraction)
+    
     if include_content_embedding:
         features.append(_content_embedding(doc))
+    
     return pd.concat(features, axis=0)
 
 def _apply_features_to_docs(docs:List[Document],
