@@ -76,6 +76,7 @@ class Verbalizer:
             "pos_adverbs" : "part of speech adverb",
             "pos_proper_nouns" : "part of speech proper noun",
             "pos_adpositions" : "part of speech adposition",
+            "pos_interjections" : "part of speech interjection",
             "punctuation" : "punctuation mark",
             "punct_periods" : "punctuation_mark_period",
             "punct_commas" : "punctuation_mark_comma",

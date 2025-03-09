@@ -16,6 +16,7 @@ def get_feature_counts(doc):
                      "pos_adverbs",
                      "pos_proper_nouns",
                      "pos_adpositions",
+                     "pos_interjections",
                      "dep_labels", 
                      "morph_tags", 
                      "pos_bigrams", 
@@ -152,6 +153,7 @@ class Feature:
                          "pos_adverbs",
                          "pos_proper_nouns",
                          "pos_adpositions",
+                         "pos_interjections",
                          "token_VB",
                          "token_VBD",
                          "token_VBG",
@@ -214,6 +216,11 @@ def pos_proper_nouns(text:Document) -> Feature:
 def pos_adpositions(text:Document) -> Feature:
     adposition_tokens = [token.text for token in text.doc if token.pos_ == "ADP"]
     return Counter(adposition_tokens)
+
+@Feature.register
+def pos_interjections(text:Document) -> Feature:
+    interjection_tokens = [token.text for token in text.doc if token.pos_ == "INTJ"]
+    return Counter(interjection_tokens)
 
 @Feature.register
 def punctuation(text:Document) -> Feature:
@@ -467,6 +474,7 @@ def get_activated_features(config:Optional[Dict]) -> List[Feature]:
             "pos_adverbs":1,
             "pos_proper_nouns":1,
             "pos_adpositions":1,
+            "pos_interjections":1,
             "punctuation":1,
             "punct_periods":1,
             "punct_commas":1,
@@ -583,7 +591,8 @@ def _apply_features(doc: Document, config: Optional[Dict], include_content_embed
         "pos_adjectives",
         "pos_adverbs",
         "pos_proper_nouns",
-        "pos_adpositions"
+        "pos_adpositions",
+        "pos_interjections"
     ]
 
     
