@@ -44,7 +44,8 @@ example_sentences = [
     "My cat is smaller than my dog..",
     "This city is more beautiful than that city.",
     "Maria lives in Mexico : )",
-    "Are you working at Stony Brook University???"
+    "Are you working at Stony Brook University???",
+    "Google is a big company; it has many employees."
 ]
 
 features = vectorizer.from_documents(example_sentences)
