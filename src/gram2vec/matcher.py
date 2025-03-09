@@ -125,7 +125,7 @@ class SyntaxRegexMatcher:
             while stack:
                 token = stack.pop()
                 if self.language == "en":
-                    result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}" 
+                    result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}-{token.ent_type_}" 
                 elif self.language == "ru":
                     result += f"({token.text}-{token.lemma_}-{token.tag_}-{token.dep_}-{token.morph}" 
                 
@@ -138,6 +138,6 @@ class SyntaxRegexMatcher:
         
         parse = parse_dependency_parse(sentence)
         nt_count = get_NT_count(sentence)
-        print(f"{parse}{ending_parenthesis(nt_count)}")
+        #print(f"{parse}{ending_parenthesis(nt_count)}")
         return f"{parse}{ending_parenthesis(nt_count)}"
     
