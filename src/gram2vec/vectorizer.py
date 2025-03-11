@@ -5,9 +5,18 @@ import pandas as pd
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Tuple, List, Dict, Callable, Optional, Iterable
+import warnings
+import re
+from concurrent.futures import ProcessPoolExecutor
+import functools
 
 from ._load_spacy import nlp, Doc
 from ._load_vocab import vocab
+
+# Filter out the specific deprecation warning
+warnings.filterwarnings("ignore", 
+                       message=r"open_text is deprecated\. Use files\(\) instead\.",
+                       category=DeprecationWarning)
 
 def get_feature_counts(doc):
     feature_types = ["pos_tags", "dep_labels", "morph_tags", "pos_bigrams", "sentences", "func_words", "punctuation", "letters", "tokens"]
@@ -32,20 +41,21 @@ def measure_time(func):
 #~~~ Features ~~~
 
 @dataclass
-class Document:
+class Gram2VecDocument:
     """
-    Encapsulates the raw text and spacy doc. Needed because emojis must be taken out of the spacy doc before 
+    Encapsulates the raw text and spaCy Doc Object. Needed because emojis must be taken out of the spacy doc before 
     the dependency parse, but the emojis feature still needs access to the emojis from the text
     """
-    raw:str
-    doc:Doc
-    num_tokens:int
-    
+    raw: str
+    doc: Doc
+    num_tokens: int
+    num_sentences: int
+
 REGISTERD_FEATURES = {}
 
 class Feature:
     """Encapsulates a feature counting function. When the function is called, normalization is applied to the counted features"""
-    def __init__(self, func:Callable):
+    def __init__(self, func: Callable):
         self.func = func    
         self.name = func.__name__
         
@@ -78,7 +88,8 @@ class Feature:
     
     def _get_sum(self, counts:pd.Series) -> int:
         """Gets sum of counts. Accounts for possible zero counts"""
-        return sum(counts) if sum(counts) > 0 else 1
+        total = sum(counts)
+        return total if total > 0 else 1
 
     def _normalize(self, counts:pd.Series, num_tokens:int) -> pd.Series:
         """Normalizes each count by the sum of counts for that feature"""
@@ -97,41 +108,41 @@ class Feature:
         return features.add_prefix(f"{self.name}:")
         
 @Feature.register
-def pos_unigrams(text:Document) -> Feature:
+def pos_unigrams(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.pos_tags)
     
 @Feature.register
-def pos_bigrams(text:Document) -> Feature:
+def pos_bigrams(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.pos_bigrams)
 
 @Feature.register
-def func_words(text:Document) -> Feature:
+def func_words(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.func_words)
  
 @Feature.register
-def punctuation(text:Document) -> Feature:
+def punctuation(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.punctuation)
 
 @Feature.register
-def letters(text:Document) -> Feature:
+def letters(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.letters)
 
 @Feature.register
-def dep_labels(text:Document) -> Feature:
+def dep_labels(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.dep_labels)
 
 @Feature.register
-def morph_tags(text:Document) -> Feature:
+def morph_tags(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.morph_tags)
 
 @Feature.register
-def sentences(text:Document) -> Feature:
+def sentences(text:Gram2VecDocument) -> Feature:
     return Counter(text.doc._.sentences)
 
 # emojis must get removed before processed through spaCy,
 # so spaCy extensions cannot be used here unfortunately
 @Feature.register
-def emojis(text:Document) -> Feature:
+def emojis(text:Gram2VecDocument) -> Feature:
     emojis_vocab = vocab.get("emojis")
     extracted_emojis = demoji.findall_list(text.raw, desc=False)
     counted_emojis = Counter()
@@ -144,7 +155,7 @@ def emojis(text:Document) -> Feature:
     return counted_emojis
 
 @Feature.register
-def num_tokens(text:Document) -> Feature:
+def num_tokens(text:Gram2VecDocument) -> Feature:
     return Counter({"num_tokens": text.num_tokens})
 
 # ~~~ Processing ~~~    
@@ -179,15 +190,28 @@ def _remove_emojis(document:str) -> str:
     new_string = demoji.replace(document, "").split()
     return " ".join(new_string)
 
-def _process_documents(documents:Iterable[str]) -> List[Document]:
+def _process_documents(documents:Iterable[str]) -> List[Gram2VecDocument]:
     """Converts all provided documents into Document instances, which encapsulates the raw text and spacy doc"""
-    nlp_docs = nlp.pipe([_remove_emojis(doc) for doc in documents])
-    original_token_counts = [len(nlp(doc)) for doc in documents]
+    # Convert iterator to list to avoid consuming it
+    documents = list(documents)
     
-    processed = []
-    for raw_text, nlp_doc, original_token_count in zip(documents, nlp_docs, original_token_counts):
-        processed.append(Document(raw_text, nlp_doc, original_token_count))
-    return processed
+    # Process in parallel with batching
+    batch_size = 1000  # Adjust based on your typical document size
+    
+    # Pre-clean all documents
+    cleaned_docs = [_remove_emojis(doc) for doc in documents]
+    
+    # Use spaCy's built-in batch processing with n_process
+    nlp_docs = list(nlp.pipe(cleaned_docs, batch_size=batch_size, n_process=4))  # Adjust n_process to your CPU count
+    
+    # Get counts directly from the processed docs
+    original_token_counts = [len(doc) for doc in nlp_docs]
+    sentence_counts = [len(list(doc.sents)) for doc in nlp_docs]
+    
+    # Create Gram2VecDocument objects with the original raw text
+    return [Gram2VecDocument(raw, doc, token_count, sent_count) 
+            for raw, doc, token_count, sent_count 
+            in zip(documents, nlp_docs, original_token_counts, sentence_counts)]
 
 def _get_json_entries(df) -> Tuple[pd.Series, pd.Series, pd.Series]:
     """Retrieves the 'fullText', 'authorIDs', and 'documentID' fields from a json-loaded dataframe"""
@@ -200,11 +224,11 @@ def _get_json_entries(df) -> Tuple[pd.Series, pd.Series, pd.Series]:
     
     return documents, author_ids, document_ids
 
-def _content_embedding(doc:Document) -> pd.Series:
+def _content_embedding(doc:Gram2VecDocument) -> pd.Series:
     """Retrieves the spacy document embedding and returns it as a Series object"""
     return pd.Series(doc.doc.vector).add_prefix("Embedding dim: ")
     
-def _apply_features(doc:Document, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
+def _apply_features(doc:Gram2VecDocument, config:Optional[Dict], include_content_embedding:bool) -> pd.Series:
     """Applies all feature extractors to a given document, optionally adding the spaCy embedding vector"""
     features = []
     for feature in get_activated_features(config):
@@ -218,7 +242,7 @@ def _apply_features(doc:Document, config:Optional[Dict], include_content_embeddi
         features.append(_content_embedding(doc))
     return pd.concat(features, axis=0)
 
-def _apply_features_to_docs(docs:List[Document],
+def _apply_features_to_docs(docs:List[Gram2VecDocument],
                             config:Optional[Dict], 
                             include_content_embedding:bool) -> pd.DataFrame:
     """Applies the feature extractors to all documents and creates a style vector matrix"""
