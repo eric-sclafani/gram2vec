@@ -29,13 +29,28 @@ class Vocab:
         else:
             raise KeyError(f"Requested vocab '{vocab_name}' not found")
 
-    def add_from_path(self, vocab_name: str) -> None:
-        """Adds vocab from a newline delimited txt file given a vocab name (the file must already exist)"""
-        path = f"{self._get_user_vocab_path()}/{vocab_name}.txt"
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Vocab path '{path}' does not exist")
+    def add_from_path(self, vocab_name: str, language: str = None) -> None:
+        """
+        Adds vocab from a newline delimited txt file given a vocab name (the file must already exist)
+        If language is specified, will first try to load the language-specific file (e.g., russian_dep_labels.txt),
+        and fall back to the default file if not found.
+        """
+        base_path = self._get_user_vocab_path()
+        
+        # Try language-specific file first if language is specified
+        if language and language != "en":
+            lang_path = f"{base_path}/{language}_{vocab_name}.txt"
+            if os.path.exists(lang_path):
+                items = self._load_from_txt(lang_path)
+                self._vocabs[vocab_name] = items
+                return
+        
+        # Fall back to default file
+        default_path = f"{base_path}/{vocab_name}.txt"
+        if not os.path.exists(default_path):
+            raise FileNotFoundError(f"Vocab path '{default_path}' does not exist")
 
-        items = self._load_from_txt(path)
+        items = self._load_from_txt(default_path)
         self._vocabs[vocab_name] = items
 
     def add_items(self, vocab_name: str, items: Tuple[str]) -> None:
@@ -45,19 +60,21 @@ class Vocab:
 
 vocab = Vocab()
 
+# Get the language from environment variables, default to English
+language = os.environ.get("LANGUAGE", "en")
+
 # ~~~ Path loaded vocabs ~~~
-vocab.add_from_path("pos_unigrams")
-vocab.add_from_path("pos_bigrams")
-vocab.add_from_path("dep_labels")
-vocab.add_from_path("emojis")
-vocab.add_from_path("func_words")
-vocab.add_from_path("morph_tags")
-vocab.add_from_path("punctuation")
-vocab.add_from_path("letters")
+vocab.add_from_path("pos_unigrams", language)
+vocab.add_from_path("pos_bigrams", language)
+vocab.add_from_path("dep_labels", language)
+vocab.add_from_path("emojis", language)
+vocab.add_from_path("func_words", language)
+vocab.add_from_path("morph_tags", language)
+vocab.add_from_path("punctuation", language)
+vocab.add_from_path("letters", language)
 
 # ~~~ Non-path loaded vocabs ~~~
 
-language = os.environ.get("LANGUAGE", "en")
 if language == "ru":
     matcher = matcher.SyntaxRegexMatcher(language="ru")
 elif language == "en":
