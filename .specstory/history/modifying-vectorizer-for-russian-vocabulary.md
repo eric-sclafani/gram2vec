@@ -634,7 +634,273 @@ Now let's run the test again to see if it properly loads the Russian morphologic
 
 _****_
 
+```bash
+cd /Users/peter/Documents/dev/gram2vec && python3 src/test_russian_vocab.py | cat
+```
 
+```
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34:
+ NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'L
+ibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+                                                        warnings.warn(
+Testing Russian vocabulary loading:
+
+Dependency labels (41 items):
+ROOT, acl, acl:relcl, advcl, advmod, amod, appos, aux, aux:pass, case...
+
+Morphological tags (60 items):
+Animacy=Anim, Animacy=Inan, Aspect=Perf, Aspect=Imp, Aspect=Prog, Case=Acc, Case
+=Nom, Case=Gen, Case=Loc, C
+ase=Ins...
+                           
+Function words (353 items):
+c, а, алло, без, близко, более, больше, будем, будет, будете...
+
+Sentence patterns (10 items):
+passive_rus, parataxis_rus, participle_rus, gerund_rus, conj_rus, nested_structu
+re_rus, one_word_sent_rus, 
+diminutive_rus, multiple_punct_rus, additional_info_rus
+                           
+```
+
+---
+
+_****_
+
+Great! Now we can see that it's correctly loading the Russian morphological tags with 60 items (including Russian-specific tags like "Animacy=Anim" and "Animacy=Inan").
+
+Let's also check the vectorization test to see if it's using the Russian-specific tags when processing Russian text:
+
+---
+
+_****_
+
+```bash
+cd /Users/peter/Documents/dev/gram2vec && python3 src/test_russian_vectorization.py | cat
+```
+
+```
+peter@Peters-MacBook-Air gram2vec % cd /Users/peter/Documents/dev/gram2vec && python3 src/test_russian_vect
+orization.py | cat                  cd /Users/peter/Documents/dev/gram2vec && python3 src/test_russian_vect
+orization.py | cat
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https:
+//github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Downloading spaCy language model 'ru_core_news_lg' (this will only happen once)
+Defaulting to user installation because normal site-packages is not writeable
+Collecting ru-core-news-lg==3.7.0
+  Downloading https://github.com/explosion/spacy-models/releases/download/ru_core_news_lg-3.7.0/ru_core_new
+s_lg-3.7.0-py3-none-any.whl (513.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 513.4/513.4 MB 3.5 MB/s eta 0:00:00
+Requirement already satisfied: spacy<3.8.0,>=3.7.0 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from ru-core-news-lg==3.7.0) (3.7.2)
+Requirement already satisfied: pymorphy3>=1.0.0 in /Users/peter/Library/Python/3.9/lib/python/site-packages
+ (from ru-core-news-lg==3.7.0) (2.0.3)
+Requirement already satisfied: dawg2-python>=0.8.0 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from pymorphy3>=1.0.0->ru-core-news-lg==3.7.0) (0.9.0)
+Requirement already satisfied: pymorphy3-dicts-ru in /Users/peter/Library/Python/3.9/lib/python/site-packag
+es (from pymorphy3>=1.0.0->ru-core-news-lg==3.7.0) (2.4.417150.4580142)
+Requirement already satisfied: spacy-legacy<3.1.0,>=3.0.11 in /Users/peter/Library/Python/3.9/lib/python/si
+te-packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.0.12)
+Requirement already satisfied: spacy-loggers<2.0.0,>=1.0.0 in /Users/peter/Library/Python/3.9/lib/python/si
+te-packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (1.0.5)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /Users/peter/Library/Python/3.9/lib/python/site
+-packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (1.0.10)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.0.8)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /Users/peter/Library/Python/3.9/lib/python/site-pac
+kages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.0.9)
+Requirement already satisfied: thinc<8.3.0,>=8.1.8 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (8.2.2)
+Requirement already satisfied: wasabi<1.2.0,>=0.9.1 in /Users/peter/Library/Python/3.9/lib/python/site-pack
+ages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (1.1.2)
+Requirement already satisfied: srsly<3.0.0,>=2.4.3 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.4.8)
+Requirement already satisfied: catalogue<2.1.0,>=2.0.6 in /Users/peter/Library/Python/3.9/lib/python/site-p
+ackages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.0.10)
+Requirement already satisfied: weasel<0.4.0,>=0.1.0 in /Users/peter/Library/Python/3.9/lib/python/site-pack
+ages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.3.4)
+Requirement already satisfied: typer<0.10.0,>=0.3.0 in /Users/peter/Library/Python/3.9/lib/python/site-pack
+ages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.9.0)
+Requirement already satisfied: smart-open<7.0.0,>=5.2.1 in /Users/peter/Library/Python/3.9/lib/python/site-
+packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (6.4.0)
+Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (4.66.1)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in /Users/peter/Library/Python/3.9/lib/python/site-p
+ackages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.31.0)
+Requirement already satisfied: pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4 in /Users/peter/Library/Python/3.9/lib/
+python/site-packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.5.3)
+Requirement already satisfied: jinja2 in /Users/peter/Library/Python/3.9/lib/python/site-packages (from spa
+cy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.1.2)
+Requirement already satisfied: setuptools in /Library/Developer/CommandLineTools/Library/Frameworks/Python3
+.framework/Versions/3.9/lib/python3.9/site-packages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (58.
+0.4)
+Requirement already satisfied: packaging>=20.0 in /Users/peter/Library/Python/3.9/lib/python/site-packages 
+(from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (23.2)
+Requirement already satisfied: langcodes<4.0.0,>=3.2.0 in /Users/peter/Library/Python/3.9/lib/python/site-p
+ackages (from spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.3.0)
+Requirement already satisfied: numpy>=1.19.0 in /Users/peter/Library/Python/3.9/lib/python/site-packages (f
+rom spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (1.26.0)
+Requirement already satisfied: typing-extensions>=4.0 in /Users/peter/Library/Python/3.9/lib/python/site-pa
+ckages (from dawg2-python>=0.8.0->pymorphy3>=1.0.0->ru-core-news-lg==3.7.0) (4.9.0)
+Requirement already satisfied: annotated-types>=0.4.0 in /Users/peter/Library/Python/3.9/lib/python/site-pa
+ckages (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.6.0)
+Requirement already satisfied: pydantic-core==2.14.6 in /Users/peter/Library/Python/3.9/lib/python/site-pac
+kages (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.14.6)
+Requirement already satisfied: charset-normalizer<4,>=2 in /Users/peter/Library/Python/3.9/lib/python/site-
+packages (from requests<3.0.0,>=2.13.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.3.2)
+Requirement already satisfied: idna<4,>=2.5 in /Users/peter/Library/Python/3.9/lib/python/site-packages (fr
+om requests<3.0.0,>=2.13.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (3.6)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /Users/peter/Library/Python/3.9/lib/python/site-packag
+es (from requests<3.0.0,>=2.13.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.1.0)
+Requirement already satisfied: certifi>=2017.4.17 in /Users/peter/Library/Python/3.9/lib/python/site-packag
+es (from requests<3.0.0,>=2.13.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2023.11.17)
+Requirement already satisfied: blis<0.8.0,>=0.7.8 in /Users/peter/Library/Python/3.9/lib/python/site-packag
+es (from thinc<8.3.0,>=8.1.8->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.7.11)
+Requirement already satisfied: confection<1.0.0,>=0.0.1 in /Users/peter/Library/Python/3.9/lib/python/site-
+packages (from thinc<8.3.0,>=8.1.8->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.1.4)
+Requirement already satisfied: click<9.0.0,>=7.1.1 in /Users/peter/Library/Python/3.9/lib/python/site-packa
+ges (from typer<0.10.0,>=0.3.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (8.1.7)
+Requirement already satisfied: cloudpathlib<0.17.0,>=0.7.0 in /Users/peter/Library/Python/3.9/lib/python/si
+te-packages (from weasel<0.4.0,>=0.1.0->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (0.16.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /Users/peter/Library/Python/3.9/lib/python/site-packages 
+(from jinja2->spacy<3.8.0,>=3.7.0->ru-core-news-lg==3.7.0) (2.1.3)
+Installing collected packages: ru-core-news-lg
+Successfully installed ru-core-news-lg-3.7.0
+
+[notice] A new release of pip is available: 24.0 -> 25.0.1
+[notice] To update, run: /Library/Developer/CommandLineTools/usr/bin/python3 -m pip install --upgrade pip
+✔ Download and installation successful
+You can now load the package via spacy.load('ru_core_news_lg')
+Gram2Vec: Using 'ru_core_news_lg'
+Testing Russian text vectorization:
+
+Input texts:
+1. Мой дядя самых честных правил, когда не в шутку занемог, он уважать себя заставил и лучше выдумать не мо
+г.
+2. Москва и Петербург - два главных города России, они отличаются по своей истории и архитектуре.
+
+Vectorizing Russian text...
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https:
+//github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https:
+//github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https:
+//github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/peter/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:34: NotOpenSSLWarning: urllib3
+ v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https:
+//github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+
+Result shape: (2, 835)
+
+Sample features:
+
+dep_labels samples:
+   dep_labels:ROOT  dep_labels:acl  dep_labels:acl:relcl
+0         0.045455             0.0              0.045455
+1         0.058824             0.0              0.000000
+
+morph_tags samples:
+   morph_tags:Animacy=Anim  morph_tags:Animacy=Inan  morph_tags:Aspect=Perf
+0                 0.017857                 0.035714                0.053571
+1                 0.000000                 0.170213                0.000000
+
+func_words samples:
+   func_words:c  func_words:а  func_words:алло
+0           0.0           0.0              0.0
+1           0.0           0.0              0.0
+peter@Peters-MacBook-Air gram2vec %
+```
+
+---
+
+_****_
+
+Perfect! We can see that the vectorization is now correctly using Russian-specific morphological tags like "Animacy=Anim" and "Animacy=Inan", which are unique to Russian grammar. This confirms that the code is now correctly loading and using the Russian vocabulary files.
+
+To summarize what we fixed:
+
+1. The issue was that the code was looking for vocabulary files with language code prefixes (like "ru_morph_tags.txt") but your files had full language name prefixes (like "russian_morph_tags.txt").
+
+2. We modified the `add_from_path` method in the `Vocab` class to:
+   - First check for files with the full language name prefix (e.g., "russian_morph_tags.txt")
+   - Then check for files with the language code prefix (e.g., "ru_morph_tags.txt")
+   - Fall back to the default files if neither language-specific file is found
+
+3. We added a language name mapping dictionary to translate language codes to full language names (e.g., "ru" → "russian"), making the system more flexible for future language additions.
+
+The tests now confirm that:
+- The system correctly loads Russian-specific vocabulary files
+- It's using Russian morphological tags when processing Russian text
+- The vectorization produces broader feature vectors (835 features for Russian vs likely fewer for English) due to the inclusion of language-specific features
+
+This implementation is now more robust and correctly handles the Russian vocabulary files according to your naming convention.
+
+---
+
+_**User**_
+
+do you know why the "using model" messsage prints thrice?
+
+---
+
+_**Assistant**_
+
+The "using model" message is printing three times because the message is being displayed in three different places:
+
+1. When the spaCy model is initially loaded during the import process
+2. When the vectorizer processes each document in the list (and you have two documents)
+
+This is likely happening in the `_load_spacy.py` file where the message "Gram2Vec: Using '{model}'" is printed right after loading the spaCy model. When you process multiple documents, the spaCy model might be reloaded or initialized for each document, causing the message to print repeatedly.
+
+To fix this, we should modify the `_load_spacy.py` file to only print this message once during initial import, not during document processing. Let's update it:
+
+---
+
+_****_
+
+
+
+---
+
+_****_
+
+Let's try a different search approach:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "print.*Using" • **2** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/peter/Documents/dev/gram2vec/src/gram2vec/_load_spacy.py` | L115 | `print(f"Gram2Vec: Using '{model}'")` |
+| `file:///Users/peter/Documents/dev/gram2vec/src/gram2vec/_load_spacy.py` | L115 | `print(f"Gram2Vec: Using '{model}'")` |
+
+</details>
+
+---
+
+_****_
+
+Now let's look at the full file:
+
+---
+
+_****_
+
+Read file: undefined
 
 ---
 

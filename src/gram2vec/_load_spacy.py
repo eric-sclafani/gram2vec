@@ -103,18 +103,35 @@ def set_spacy_extension(name:str, function:Callable) -> None:
     if not Doc.has_extension(name):
         Doc.set_extension(name, getter=function)
 
-model = os.environ.get("SPACY_MODEL", "en_core_web_lg")
-try:
-    nlp = spacy.load(model, exclude=["ner"])
-except OSError:
-    print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
-    from spacy.cli import download
-    download(model)
+# Flag to track if the model info has been printed
+_model_info_printed = False
 
-nlp = spacy.load(model, exclude=["ner"])
-nlp.max_length = 10000000 
-print(f"Gram2Vec: Using '{model}'")
+def get_nlp():
+    """Get the spaCy NLP model, initializing it if needed"""
+    global _model_info_printed
+    
+    model = os.environ.get("SPACY_MODEL", "en_core_web_lg")
+    try:
+        nlp_model = spacy.load(model, exclude=["ner"])
+    except OSError:
+        print(f"Downloading spaCy language model '{model}' (this will only happen once)", file=stderr)
+        from spacy.cli import download
+        download(model)
+        nlp_model = spacy.load(model, exclude=["ner"])
+    
+    nlp_model.max_length = 10000000
+    
+    # Only print the model info once
+    if not _model_info_printed:
+        print(f"Gram2Vec: Using '{model}'")
+        _model_info_printed = True
+    
+    return nlp_model
 
+# Initialize NLP model
+nlp = get_nlp()
+
+# Set up extensions
 for name, function in helper_extensions:
     set_spacy_extension(name, function)
 
