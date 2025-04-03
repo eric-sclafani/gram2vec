@@ -37,6 +37,7 @@ class Vocab:
         """
         base_path = self._get_user_vocab_path()
         
+        print("language: ", language)
         # Try language-specific file first if language is specified
         if language and language != "en":
             lang_path = f"{base_path}/{language}_{vocab_name}.txt"
@@ -47,6 +48,7 @@ class Vocab:
         
         # Fall back to default file
         default_path = f"{base_path}/{vocab_name}.txt"
+        print("default_path: ", default_path)
         if not os.path.exists(default_path):
             raise FileNotFoundError(f"Vocab path '{default_path}' does not exist")
 
@@ -76,8 +78,8 @@ vocab.add_from_path("letters", language)
 # ~~~ Non-path loaded vocabs ~~~
 
 if language == "ru":
-    matcher = matcher.SyntaxRegexMatcher(language="ru")
+    sentence_matcher = matcher.SyntaxRegexMatcher(language="ru")
 elif language == "en":
-    matcher = matcher.SyntaxRegexMatcher(language="en")
+    sentence_matcher = matcher.SyntaxRegexMatcher(language="en")
 
-vocab.add_items("sentences", tuple(matcher.patterns.keys()))
+vocab.add_items("sentences", tuple(sentence_matcher.patterns.keys()))
