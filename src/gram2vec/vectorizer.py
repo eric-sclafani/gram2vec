@@ -14,8 +14,6 @@ import os
 from ._load_spacy import nlp, Doc
 from ._load_vocab import vocab
 
-# Get the language setting
-language = os.environ.get("LANGUAGE", "en")
 
 # Filter out the specific deprecation warning
 warnings.filterwarnings("ignore", 
