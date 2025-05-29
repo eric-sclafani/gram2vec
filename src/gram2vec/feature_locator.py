@@ -96,12 +96,22 @@ class FeatureLocator:
         return spans
     
     def _locate_pos_bigrams(self, doc: Gram2VecDocument, feature_value: str) -> List[FeatureSpan]:
-        """Locate all POS bigrams in the text"""
+        """
+        Locate all occurrences of a specific POS bigram pattern.
+        
+        Args:
+            doc: The processed document
+            feature_value: Space-separated POS tags (e.g., "NOUN VERB" or "BOS NOUN" or "VERB EOS")
+        
+        Returns:
+            List of spans where this specific POS bigram occurs
+        """
         spans = []
         pos1, pos2 = feature_value.split()
         
         # Handle special boundary symbols
         if pos1 == "BOS" and pos2 != "EOS":
+            # Only match sentences that start with pos2
             for sent in doc.doc.sents:
                 if sent[0].pos_ == pos2:
                     spans.append(FeatureSpan(
@@ -112,6 +122,7 @@ class FeatureLocator:
                         end_char=sent[0].idx + len(sent[0].text)
                     ))
         elif pos2 == "EOS" and pos1 != "BOS":
+            # Only match sentences that end with pos1
             for sent in doc.doc.sents:
                 if sent[-1].pos_ == pos1:
                     spans.append(FeatureSpan(
@@ -133,7 +144,7 @@ class FeatureLocator:
                         end_char=sent[0].idx + len(sent.text)
                     ))
         else:
-            # Regular POS bigrams
+            # Regular POS bigrams - only match the specific requested pattern
             for sent in doc.doc.sents:
                 for i in range(len(sent) - 1):
                     if sent[i].pos_ == pos1 and sent[i+1].pos_ == pos2:
