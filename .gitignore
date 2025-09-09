@@ -134,3 +134,6 @@ dmypy.json
 data
 *.xlsx
 visualize_linearization.ipynb
+
+
+.specstory/
