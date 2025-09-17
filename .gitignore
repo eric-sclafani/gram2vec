@@ -136,3 +136,4 @@ data
 visualize_linearization.ipynb
 
 speedy-gram2vec/
+.specstory/
