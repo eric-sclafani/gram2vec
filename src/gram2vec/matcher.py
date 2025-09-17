@@ -19,7 +19,7 @@ class SyntaxRegexMatcher:
     """
     def __init__(self, language:str):
         if language == "en":
-            print("using english constructions")
+            # print("using english constructions")
             self.patterns = {
                 "it-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([iI]t-it-PRP-nsubj\).*\([^-]*-[^-]*-NN[^-]*-attr.*\([^-]*-[^-]*-VB[^-]*-(relcl|advcl)",
                 "pseudo-cleft": r"\([^-]*-be-[^-]*-[^-]*.*\([^-]*-[^-]*-(WP|WRB)-(dobj|advmod)",
@@ -34,7 +34,7 @@ class SyntaxRegexMatcher:
             }
 
         elif language == "ru":
-            print("using russian constructions")
+            # print("using russian constructions")
             self.patterns = {
                 "passive_rus" : r"\([^-]*-[^-]*-VERB-ROOT.*?Voice=Pass.*?\)+$",
                 "parataxis_rus": r"\([^-]*-[^-]*-[^-]*-parataxis.*\)",

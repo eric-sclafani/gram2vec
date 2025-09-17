@@ -134,3 +134,5 @@ dmypy.json
 data
 *.xlsx
 visualize_linearization.ipynb
+
+speedy-gram2vec/

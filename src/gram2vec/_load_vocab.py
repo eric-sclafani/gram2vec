@@ -37,7 +37,7 @@ class Vocab:
         """
         base_path = self._get_user_vocab_path()
         
-        print("language: ", language)
+        # print("language: ", language)
         # Try language-specific file first if language is specified
         if language and language != "en":
             lang_path = f"{base_path}/{language}_{vocab_name}.txt"
@@ -48,7 +48,7 @@ class Vocab:
         
         # Fall back to default file
         default_path = f"{base_path}/{vocab_name}.txt"
-        print("default_path: ", default_path)
+        # print("default_path: ", default_path)
         if not os.path.exists(default_path):
             raise FileNotFoundError(f"Vocab path '{default_path}' does not exist")
 
